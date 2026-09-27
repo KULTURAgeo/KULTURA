@@ -13,7 +13,7 @@ async function as(who,fn,role="authenticated"){await db.exec("begin");try{await 
 async function denied(who,sql,args=[],code="42501"){await as(who,()=>assert.rejects(()=>db.query(sql,args),e=>e.code===code));}
 const form=obj=>{const f=new FormData();for(const [k,v]of Object.entries(obj))f.set(k,String(v));return f;};
 try{
-await db.query("insert into auth.users(id,raw_user_meta_data) values ($1,'{\"role\":\"admin\"}'),($2,'{}'),($3,'{}')",[a,b,admin]);
+await db.query("insert into auth.users(id,email,raw_user_meta_data) values ($1,'a@example.invalid','{\"role\":\"admin\"}'),($2,'b@example.invalid','{}'),($3,'admin@example.invalid','{}')",[a,b,admin]);
 await db.query("update profiles set role='admin' where id=$1",[admin]);
 const p=(await db.query("select * from products order by slug limit 1")).rows[0];
 const v=(await db.query("select * from product_variants where product_id=$1 limit 1",[p.id])).rows[0];
@@ -56,6 +56,27 @@ await db.query("insert into orders(customer_id,subtotal,final_total,customer_ema
 await check("Other customer orders hidden",()=>as(a,async()=>assert.equal((await db.query("select * from orders")).rows.length,0)));
 await check("Admin can read real orders",()=>as(admin,async()=>assert.equal((await db.query("select * from orders")).rows.length,1)));
 for(const who of [a,admin])await check("Order total/payment writes denied: "+who,()=>denied(who,"update orders set payment_status='paid',final_total=0"));
+const testCart=JSON.stringify([{product_id:p.id,variant_id:v.id,quantity:1}]);
+const testAddress=JSON.stringify({recipient_name:"KULTURA TEST",phone:"555000000",city:"Tbilisi",address_line_1:"Test 1",address_line_2:null,postal_code:"0170"});
+await check("Customer cannot create paid test checkout",()=>denied(a,"select admin_create_test_order($1::jsonb,$2::jsonb)",[testCart,testAddress]));
+await check("Admin test checkout reprices server-side and does not decrement stock",()=>as(admin,async()=>{
+const before=(await db.query("select stock_quantity from product_variants where id=$1",[v.id])).rows[0].stock_quantity;
+const orderId=(await db.query("select admin_create_test_order($1::jsonb,$2::jsonb) id",[testCart,testAddress])).rows[0].id;
+const order=(await db.query("select * from orders where id=$1",[orderId])).rows[0];
+assert.equal(order.is_test,true);
+assert.equal(order.customer_id,admin);
+assert.equal(order.customer_email,"admin@example.invalid");
+assert.equal(order.payment_status,"paid");
+assert.equal(order.fulfillment_status,"unfulfilled");
+assert.equal(order.subtotal,p.price);
+assert.equal(order.shipping_total,p.price>=19900?0:1000);
+assert.equal(order.final_total,p.price+(p.price>=19900?0:1000));
+const item=(await db.query("select * from order_items where order_id=$1",[orderId])).rows[0];
+assert.equal(item.unit_price,p.price);
+assert.equal(item.quantity,1);
+assert.equal(item.line_total,p.price);
+assert.equal((await db.query("select stock_quantity from product_variants where id=$1",[v.id])).rows[0].stock_quantity,before);
+}));
 const path=p.id+"/"+a+".webp";
 await check("Customer Storage upload denied",()=>denied(a,"insert into storage.objects(bucket_id,name) values('product-images',$1)",[path]));
 await check("Admin Storage upload/delete allowed",()=>as(admin,async()=>{await db.query("insert into storage.objects(bucket_id,name) values('product-images',$1)",[path]);assert.equal((await db.query("delete from storage.objects where name=$1 returning name",[path])).rows.length,1);}));
