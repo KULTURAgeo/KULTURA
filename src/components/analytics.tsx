@@ -40,6 +40,15 @@ export function Analytics({
   const [googleReady, setGoogleReady] = useState(false);
   const [metaReady, setMetaReady] = useState(false);
 
+  const analyticsReady =
+    (!googleAnalyticsId || googleReady) && (!metaPixelId || metaReady);
+
+  useEffect(() => {
+    if (analyticsReady) {
+      window.dispatchEvent(new Event("kultura:analytics-ready"));
+    }
+  }, [analyticsReady]);
+
   useEffect(() => {
     if (googleReady && googleAnalyticsId && window.gtag) {
       window.gtag("event", "page_view", {
