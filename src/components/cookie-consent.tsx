@@ -59,9 +59,11 @@ export function CookieConsent({
 
   useEffect(() => {
     const saved = readCookieConsent();
-    setPreferences(saved);
-    setDraft(saved ?? { analytics: false, marketing: false });
-    setLoaded(true);
+    const hydrationTimer = window.setTimeout(() => {
+      setPreferences(saved);
+      setDraft(saved ?? { analytics: false, marketing: false });
+      setLoaded(true);
+    }, 0);
 
     const openSettings = () => {
       const current = readCookieConsent();
@@ -71,8 +73,10 @@ export function CookieConsent({
     };
 
     window.addEventListener(OPEN_COOKIE_SETTINGS_EVENT, openSettings);
-    return () =>
+    return () => {
+      window.clearTimeout(hydrationTimer);
       window.removeEventListener(OPEN_COOKIE_SETTINGS_EVENT, openSettings);
+    };
   }, []);
 
   const save = (next: CookieConsentPreferences) => {
