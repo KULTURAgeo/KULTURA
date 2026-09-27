@@ -207,9 +207,7 @@ from public, anon, authenticated;
 grant execute on function public.admin_save_promo(uuid,timestamptz,jsonb)
 to authenticated;
 
-drop function if exists public.admin_create_test_order(jsonb,jsonb);
-
-create function public.admin_create_test_order(
+create function public.admin_create_test_order_v2(
   p_cart jsonb,
   p_address jsonb,
   p_promo_code text
@@ -449,9 +447,9 @@ begin
 end
 $$;
 
-revoke all on function public.admin_create_test_order(jsonb,jsonb,text)
+revoke all on function public.admin_create_test_order_v2(jsonb,jsonb,text)
 from public, anon, authenticated;
-grant execute on function public.admin_create_test_order(jsonb,jsonb,text)
+grant execute on function public.admin_create_test_order_v2(jsonb,jsonb,text)
 to authenticated;
 
 commit;
