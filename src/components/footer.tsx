@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Container } from "./ui";
+import { CookieSettingsButton } from "./cookie-settings-button";
 export function Footer() {
   return (
     <footer>
@@ -26,6 +27,7 @@ export function Footer() {
               </Link>
             ))}
             <span className="muted">INSTAGRAM — COMING SOON</span>
+            <CookieSettingsButton />
           </nav>
         </div>
         <div className="footer-bottom">
