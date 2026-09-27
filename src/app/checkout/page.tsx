@@ -53,6 +53,7 @@ export default async function CheckoutPage() {
           phone: profile.phone ?? "",
           email: user.email ?? "",
         }}
+        testCheckoutEnabled={profile.role === "admin"}
       />
     </Container>
   );
