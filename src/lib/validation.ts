@@ -58,7 +58,11 @@ export function version(data: FormData): string {
     return value;
 }
 export function safeNext(value: unknown): string {
-    return typeof value === "string" && /^\/(account|admin)(\/[a-zA-Z0-9-]+)*$/.test(value) ? value : "/account";
+    if (typeof value !== "string")
+        return "/account";
+    if (value === "/checkout")
+        return value;
+    return /^\/(account|admin)(\/[a-zA-Z0-9-]+)*$/.test(value) ? value : "/account";
 }
 export function productInput(data: FormData) {
     const slug = text(data, "slug", 160);
