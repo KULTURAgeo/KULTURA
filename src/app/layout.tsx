@@ -1,19 +1,26 @@
 import { AuthSession } from "@/components/auth-session";
+import { StructuredData } from "@/components/structured-data";
 import { supabaseConfig } from "@/lib/supabase/config";
 import type { Metadata } from "next";
-import {siteUrl, isIndexable} from "@/lib/site";
+import { siteUrl, isIndexable } from "@/lib/site";
 import { Header } from "@/components/header";
-import {CartProvider} from "@/components/cart-provider";
-import {CartDrawer} from "@/components/cart-view";
+import { CartProvider } from "@/components/cart-provider";
+import { CartDrawer } from "@/components/cart-view";
 import { Footer } from "@/components/footer";
 import "./globals.css";
 import "./phase3.css";
+
+const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+
 export const metadata: Metadata = {
   metadataBase: siteUrl(),
   title: { default: "KULTURA — Step Into Kultura", template: "%s | KULTURA" },
   description:
     "Independent streetwear. Strong silhouettes. An everyday uniform for those who move differently.",
   robots: { index: isIndexable(), follow: isIndexable() },
+  verification: googleSiteVerification
+    ? { google: googleSiteVerification }
+    : undefined,
   icons: { icon: "/icon.svg", apple: "/apple-touch-icon.png" },
   twitter: { card: "summary_large_image", images: ["/social-card.png"] },
   openGraph: {
@@ -21,24 +28,64 @@ export const metadata: Metadata = {
     description: "Independent spirit. Everyday uniform.",
     type: "website",
     siteName: "KULTURA",
-    images: [{url:"/social-card.png",width:1200,height:630,alt:"KULTURA — Step Into Kultura"}],
+    images: [
+      {
+        url: "/social-card.png",
+        width: 1200,
+        height: 630,
+        alt: "KULTURA — Step Into Kultura",
+      },
+    ],
   },
 };
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const origin = siteUrl();
+  const organizationId = new URL("/#organization", origin).href;
+  const websiteId = new URL("/#website", origin).href;
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": organizationId,
+        name: "KULTURA",
+        url: origin.href,
+        logo: {
+          "@type": "ImageObject",
+          url: new URL("/icon.svg", origin).href,
+        },
+      },
+      {
+        "@type": "WebSite",
+        "@id": websiteId,
+        url: origin.href,
+        name: "KULTURA",
+        publisher: { "@id": organizationId },
+        inLanguage: "en",
+      },
+    ],
+  };
+
   return (
     <html lang="en">
       <body>
+        <StructuredData data={structuredData} />
         <AuthSession config={supabaseConfig()} />
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <CartProvider><Header />
-        <main id="main">{children}</main>
-        <CartDrawer/><Footer /></CartProvider>
+        <CartProvider>
+          <Header />
+          <main id="main">{children}</main>
+          <CartDrawer />
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );
