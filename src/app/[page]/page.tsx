@@ -22,7 +22,7 @@ const pages: Record<string, { title: string; text: string }> = {
   },
   privacy: {
     title: "PRIVACY",
-    text: "Customer accounts use Supabase authentication and store the profile and delivery details you provide. The full privacy notice is being prepared before public registration opens. Newsletter entries are not submitted or saved by this preview.",
+    text: "Customer accounts use Supabase authentication and store the profile and delivery details you provide. Necessary storage supports core site features. Google Analytics and Meta Pixel are optional and load only according to your Cookie Settings choice. You can change that choice at any time from the footer. A fuller privacy notice will be published before launch.",
   },
   terms: {
     title: "TERMS",

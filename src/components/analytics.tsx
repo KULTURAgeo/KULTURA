@@ -3,6 +3,7 @@
 import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { readCookieConsent } from "@/lib/cookie-consent";
 
 declare global {
   interface Window {
@@ -118,8 +119,9 @@ export function trackViewItem({
   price: number;
 }) {
   const value = price / 100;
+  const consent = readCookieConsent();
 
-  window.gtag?.("event", "view_item", {
+  if (consent?.analytics) window.gtag?.("event", "view_item", {
     currency: "GEL",
     value,
     items: [
@@ -134,7 +136,7 @@ export function trackViewItem({
     ],
   });
 
-  window.fbq?.("track", "ViewContent", {
+  if (consent?.marketing) window.fbq?.("track", "ViewContent", {
     content_ids: [id],
     content_name: name,
     content_type: "product",
@@ -157,8 +159,9 @@ export function trackAddToCart({
   price: number;
 }) {
   const value = price / 100;
+  const consent = readCookieConsent();
 
-  window.gtag?.("event", "add_to_cart", {
+  if (consent?.analytics) window.gtag?.("event", "add_to_cart", {
     currency: "GEL",
     value,
     items: [
@@ -174,7 +177,7 @@ export function trackAddToCart({
     ],
   });
 
-  window.fbq?.("track", "AddToCart", {
+  if (consent?.marketing) window.fbq?.("track", "AddToCart", {
     content_ids: [id],
     content_name: name,
     content_type: "product",
