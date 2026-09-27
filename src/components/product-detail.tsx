@@ -1,9 +1,10 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { money, type Product } from "@/lib/catalog";
 import {useCart} from "./cart-provider";
 import { Badge, Button } from "./ui";
+import { trackAddToCart, trackViewItem } from "./analytics";
 export function ProductDetail({ product }: { product: Product }) {
   const cart=useCart();
   const [size, setSize] = useState("");
@@ -38,6 +39,9 @@ export function ProductDetail({ product }: { product: Product }) {
         ];
   const currentImage = gallery[view] ?? gallery[0];
   const sampleImagery = product.images.some(image => /^\/images\/(hoodie|tee|pants|cap)\.jpg$/.test(image.src));
+  useEffect(() => {
+    trackViewItem({ id: product.id, name: product.name, category: product.category, price: product.price });
+  }, [product.id, product.name, product.category, product.price]);
   return (
     <div className="product-detail">
       <div>
@@ -124,7 +128,7 @@ export function ProductDetail({ product }: { product: Product }) {
         <Button
           className="add-button"
           disabled={!variant || variant.stock === 0 || cart.busy}
-          onClick={async()=>{if(!variant)return;const ok=await cart.add({productId:product.id,variantId:variant.id,size:variant.size,color:variant.color,quantity:1,observedPrice:product.price});setMessage(ok?"Your bag has been updated.":"Unable to add this item. Please try again.");}}
+          onClick={async()=>{if(!variant)return;const ok=await cart.add({productId:product.id,variantId:variant.id,size:variant.size,color:variant.color,quantity:1,observedPrice:product.price});if(ok){trackAddToCart({id:product.id,name:product.name,category:product.category,variant:`${variant.color} / ${variant.size}`,price:product.price});}setMessage(ok?"Your bag has been updated.":"Unable to add this item. Please try again.");}}
         >
           {soldOut ? "SOLD OUT" : "ADD TO CART"}{" "}
           <span aria-hidden="true">↗</span>
