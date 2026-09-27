@@ -2,7 +2,7 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { requireActor } from "@/lib/auth/guards";
-import { productInput, variantInput, text, id, version, InputError } from "@/lib/validation";
+import { productInput, variantInput, promoInput, text, id, version, InputError } from "@/lib/validation";
 import { safeFailure, type ActionState } from "@/lib/actions";
 import { processProductImage } from "@/lib/admin/image";
 function refresh() { revalidatePath("/", "page");
@@ -171,6 +171,36 @@ export async function advanceFulfillment(_state: ActionState, data: FormData): P
         revalidatePath("/admin/orders");
         revalidatePath("/admin/orders/" + orderId);
         return { ok: true, message: "Fulfillment status updated." };
+    }
+    catch (error) {
+        return safeFailure(error);
+    }
+}
+
+
+export async function savePromo(_state: ActionState, data: FormData): Promise<ActionState> {
+    try {
+        const { client } = await requireActor(true);
+        const rawId = data.get("id");
+        const promoId = rawId ? id(rawId, "promo") : null;
+        const promo = promoInput(data);
+        const { data: result, error } = await client.rpc("admin_save_promo", {
+            p_id: promoId,
+            p_expected_updated_at: promoId ? version(data) : null,
+            p_promo: promo,
+        });
+        if (error) {
+            if (error.code === "23505")
+                return { ok: false, message: "That promo code already exists." };
+            throw error;
+        }
+        revalidatePath("/admin/promos");
+        revalidatePath("/checkout");
+        return {
+            ok: true,
+            message: promoId ? "Promo code updated." : "Promo code created.",
+            redirectTo: promoId ? undefined : "/admin/promos/" + result,
+        };
     }
     catch (error) {
         return safeFailure(error);
