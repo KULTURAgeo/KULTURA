@@ -79,9 +79,12 @@ assert.equal((await db.query("select stock_quantity from product_variants where 
 }));
 const promoPayload=JSON.stringify({code:"SAVE10",kind:"percentage",amount:1000,currency:null,minimum_subtotal:0,maximum_discount:null,starts_at:null,expires_at:null,max_uses:3,is_active:true});
 await check("Customer cannot create promo codes",()=>denied(a,"select admin_save_promo(null,null,$1::jsonb)",[promoPayload]));
-const promoId=(await as(admin,async()=> (await db.query("select admin_save_promo(null,null,$1::jsonb) id",[promoPayload])).rows[0].id));
+await check("Admin can create and read promo codes",()=>as(admin,async()=>{
+const id=(await db.query("select admin_save_promo(null,null,$1::jsonb) id",[promoPayload])).rows[0].id;
+assert.equal((await db.query("select id from promo_codes where id=$1",[id])).rows.length,1);
+}));
+const promoId=(await db.query("insert into promo_codes(code,kind,amount,currency,minimum_subtotal,maximum_discount,starts_at,expires_at,max_uses,is_active) values('SAVE10','percentage',1000,null,0,null,null,null,3,true) returning id")).rows[0].id;
 await check("Promo codes cannot be enumerated by customers",()=>as(a,async()=>assert.equal((await db.query("select * from promo_codes")).rows.length,0)));
-await check("Admin can read promo codes",()=>as(admin,async()=>assert.equal((await db.query("select id from promo_codes where id=$1",[promoId])).rows.length,1)));
 await check("Customer can validate an exact promo without enumerating codes",()=>as(a,async()=>{
 const row=(await db.query("select (checkout_quote_promo('SAVE10',$1)->>'valid')::boolean valid,(checkout_quote_promo('SAVE10',$1)->>'discount')::int discount",[p.price])).rows[0];
 assert.equal(row.valid,true);
