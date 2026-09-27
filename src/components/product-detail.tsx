@@ -40,7 +40,17 @@ export function ProductDetail({ product }: { product: Product }) {
   const currentImage = gallery[view] ?? gallery[0];
   const sampleImagery = product.images.some(image => /^\/images\/(hoodie|tee|pants|cap)\.jpg$/.test(image.src));
   useEffect(() => {
-    trackViewItem({ id: product.id, name: product.name, category: product.category, price: product.price });
+    const track = () =>
+      trackViewItem({
+        id: product.id,
+        name: product.name,
+        category: product.category,
+        price: product.price,
+      });
+
+    track();
+    window.addEventListener("kultura:analytics-ready", track, { once: true });
+    return () => window.removeEventListener("kultura:analytics-ready", track);
   }, [product.id, product.name, product.category, product.price]);
   return (
     <div className="product-detail">
