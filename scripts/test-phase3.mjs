@@ -58,10 +58,10 @@ await check("Admin can read real orders",()=>as(admin,async()=>assert.equal((awa
 for(const who of [a,admin])await check("Order total/payment writes denied: "+who,()=>denied(who,"update orders set payment_status='paid',final_total=0"));
 const testCart=JSON.stringify([{product_id:p.id,variant_id:v.id,quantity:1}]);
 const testAddress=JSON.stringify({recipient_name:"KULTURA TEST",phone:"555000000",city:"Tbilisi",address_line_1:"Test 1",address_line_2:null,postal_code:"0170"});
-await check("Customer cannot create paid test checkout",()=>denied(a,"select admin_create_test_order($1::jsonb,$2::jsonb,$3)",[testCart,testAddress,null]));
+await check("Customer cannot create paid test checkout",()=>denied(a,"select admin_create_test_order($1::jsonb,$2::jsonb)",[testCart,testAddress]));
 await check("Admin test checkout reprices server-side and does not decrement stock",()=>as(admin,async()=>{
 const before=(await db.query("select stock_quantity from product_variants where id=$1",[v.id])).rows[0].stock_quantity;
-const orderId=(await db.query("select admin_create_test_order($1::jsonb,$2::jsonb,$3) id",[testCart,testAddress,null])).rows[0].id;
+const orderId=(await db.query("select admin_create_test_order($1::jsonb,$2::jsonb) id",[testCart,testAddress])).rows[0].id;
 const order=(await db.query("select * from orders where id=$1",[orderId])).rows[0];
 assert.equal(order.is_test,true);
 assert.equal(order.customer_id,admin);
@@ -92,7 +92,7 @@ assert.equal(row.discount,Math.floor(p.price*.10));
 }));
 await check("Test checkout applies promo server-side without consuming usage",()=>as(admin,async()=>{
 const beforeUses=(await db.query("select used_count from promo_codes where id=$1",[promoId])).rows[0].used_count;
-const orderId=(await db.query("select admin_create_test_order($1::jsonb,$2::jsonb,$3) id",[testCart,testAddress,"SAVE10"])).rows[0].id;
+const orderId=(await db.query("select admin_create_test_order_v2($1::jsonb,$2::jsonb,$3) id",[testCart,testAddress,"SAVE10"])).rows[0].id;
 const order=(await db.query("select * from orders where id=$1",[orderId])).rows[0];
 const discount=Math.floor(p.price*.10);
 const shipping=p.price>=19900?0:1000;
