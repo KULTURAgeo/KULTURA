@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { requireActor } from "@/lib/auth/guards";
-import { normalizeLines } from "@/lib/cart/model";
+import { normalizeLines, quoteLines } from "@/lib/cart/model";
+import { getProductsByIds } from "@/lib/catalog/repository";
+import { money } from "@/lib/catalog";
 import { InputError } from "@/lib/validation";
 import { safeFailure } from "@/lib/actions";
 
@@ -18,6 +20,7 @@ type TestAddressInput = {
 type TestCheckoutInput = {
   lines?: unknown;
   address?: TestAddressInput;
+  promoCode?: unknown;
 };
 
 type TestCheckoutResult = {
@@ -25,6 +28,19 @@ type TestCheckoutResult = {
   message: string;
   orderId?: string;
 };
+
+export type PromoQuoteResult =
+  | {
+      ok: true;
+      code: string;
+      discount: number;
+      subtotal: number;
+      message: string;
+    }
+  | {
+      ok: false;
+      message: string;
+    };
 
 function requiredString(value: unknown, label: string, max: number) {
   if (typeof value !== "string") throw new InputError(label + " is required.");
@@ -44,6 +60,105 @@ function optionalString(value: unknown, label: string, max: number) {
   return result || null;
 }
 
+function promoCode(value: unknown) {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string") throw new InputError("Promo code is invalid.");
+  const code = value.trim().toUpperCase();
+  if (!/^[A-Z0-9][A-Z0-9_-]{0,49}$/.test(code))
+    throw new InputError("Enter a valid promo code.");
+  return code;
+}
+
+export async function quotePromo(input: {
+  code?: unknown;
+  lines?: unknown;
+}): Promise<PromoQuoteResult> {
+  try {
+    const { client } = await requireActor();
+    const code = promoCode(input.code);
+    if (!code) throw new InputError("Enter a promo code.");
+
+    const lines = normalizeLines(input.lines);
+    if (!lines.length) throw new InputError("Your bag is empty.");
+
+    const catalog = await getProductsByIds([
+      ...new Set(lines.map((line) => line.productId)),
+    ]);
+    if (catalog.status !== "ready")
+      return {
+        ok: false,
+        message: "We cannot validate promo codes right now. Try again shortly.",
+      };
+
+    const quote = quoteLines(lines, catalog.products);
+    if (quote.lines.some((line) => !line.available))
+      return {
+        ok: false,
+        message: "Refresh your bag before applying a promo code.",
+      };
+
+    const { data, error } = await client.rpc("checkout_quote_promo", {
+      p_code: code,
+      p_subtotal: quote.subtotal,
+    });
+    if (error) throw error;
+
+    if (
+      !data ||
+      typeof data !== "object" ||
+      Array.isArray(data) ||
+      data.valid !== true
+    ) {
+      const message =
+        data &&
+        typeof data === "object" &&
+        !Array.isArray(data) &&
+        typeof data.message === "string"
+          ? data.message
+          : "Promo code is unavailable.";
+
+      if (
+        data &&
+        typeof data === "object" &&
+        !Array.isArray(data) &&
+        data.reason === "minimum" &&
+        typeof data.minimum_subtotal === "number"
+      ) {
+        return {
+          ok: false,
+          message:
+            "This promo requires at least " +
+            money(data.minimum_subtotal) +
+            " merchandise subtotal.",
+        };
+      }
+
+      return { ok: false, message };
+    }
+
+    if (
+      typeof data.code !== "string" ||
+      typeof data.discount !== "number" ||
+      !Number.isSafeInteger(data.discount)
+    )
+      return { ok: false, message: "Promo code response is invalid." };
+
+    return {
+      ok: true,
+      code: data.code,
+      discount: data.discount,
+      subtotal: quote.subtotal,
+      message: data.code + " applied.",
+    };
+  } catch (error) {
+    const failure = safeFailure(error);
+    return {
+      ok: false,
+      message: failure.message ?? "Promo code could not be applied.",
+    };
+  }
+}
+
 export async function createTestOrder(
   input: TestCheckoutInput,
 ): Promise<TestCheckoutResult> {
@@ -51,10 +166,7 @@ export async function createTestOrder(
     const { client } = await requireActor(true);
     const lines = normalizeLines(input.lines);
 
-    if (!lines.length)
-      throw new InputError("Your bag is empty.");
-    if (lines.some((line) => line.quantity < 1))
-      throw new InputError("Your bag contains an invalid quantity.");
+    if (!lines.length) throw new InputError("Your bag is empty.");
 
     const address = input.address ?? {};
     const payload = {
@@ -87,6 +199,7 @@ export async function createTestOrder(
     const { data, error } = await client.rpc("admin_create_test_order", {
       p_cart: cart,
       p_address: payload,
+      p_promo_code: promoCode(input.promoCode),
     });
 
     if (error) {
@@ -97,6 +210,12 @@ export async function createTestOrder(
             ok: false,
             message:
               "Stock changed. Refresh your bag before creating the test order.",
+          };
+        if (message.includes("promo"))
+          return {
+            ok: false,
+            message:
+              "The promo code changed or expired. Apply it again before creating the test order.",
           };
         if (message.includes("unavailable"))
           return {
