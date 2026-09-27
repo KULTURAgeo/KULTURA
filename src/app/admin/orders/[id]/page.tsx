@@ -54,7 +54,10 @@ export default async function Order({ params }: {
                 <div>
                     <Link className="text-link" href="/admin/orders">← ALL ORDERS</Link>
                     <p className="eyebrow">ORDER DETAIL</p>
-                    <h1>{order.order_number}</h1>
+                    <h1>
+                        {order.order_number}
+                        {order.is_test ? <span className="test-order-badge detail-test-badge">TEST</span> : null}
+                    </h1>
                     <p className="muted">
                         Placed {new Date(order.created_at).toLocaleString("en-GB", {
                             timeZone: "UTC",

@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
 import { money } from "@/lib/catalog";
 import type { Database } from "@/lib/supabase/database.types";
+import { createTestOrder } from "@/app/checkout/actions";
 
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 
@@ -16,6 +18,7 @@ type CheckoutProps = {
     phone: string;
     email: string;
   };
+  testCheckoutEnabled: boolean;
 };
 
 type DraftAddress = {
@@ -44,8 +47,12 @@ function deliveryPrice(subtotal: number, city: string) {
 export function Checkout({
   addresses,
   profile,
+  testCheckoutEnabled,
 }: CheckoutProps) {
   const cart = useCart();
+  const router = useRouter();
+  const [testPending, startTestTransition] = useTransition();
+  const [testMessage, setTestMessage] = useState("");
   const defaultAddress =
     addresses.find((address) => address.is_default) ?? addresses[0] ?? null;
   const [addressMode, setAddressMode] = useState<"saved" | "new">(
@@ -96,6 +103,58 @@ export function Checkout({
 
   const updateDraft = (key: keyof DraftAddress, value: string) =>
     setDraft((current) => ({ ...current, [key]: value }));
+
+  const activeAddress: DraftAddress | null =
+    addressMode === "saved"
+      ? selectedAddress
+        ? {
+            recipient_name: selectedAddress.recipient_name,
+            phone: selectedAddress.phone,
+            city: selectedAddress.city,
+            address_line_1: selectedAddress.address_line_1,
+            address_line_2: selectedAddress.address_line_2 ?? "",
+            postal_code: selectedAddress.postal_code ?? "",
+          }
+        : null
+      : draft;
+
+  const canCreateTestOrder =
+    testCheckoutEnabled &&
+    cart.ready &&
+    !cart.busy &&
+    !cart.error &&
+    !!cart.quote.lines.length &&
+    !unavailable &&
+    !missingDelivery &&
+    !!activeAddress &&
+    !testPending;
+
+  const runTestCheckout = () => {
+    if (!canCreateTestOrder || !activeAddress) return;
+    setTestMessage("");
+    startTestTransition(async () => {
+      const result = await createTestOrder({
+        lines: cart.quote.lines.map((line) => ({
+          productId: line.productId,
+          variantId: line.variantId,
+          size: line.size,
+          color: line.color,
+          quantity: line.quantity,
+          observedPrice: line.price,
+        })),
+        address: activeAddress,
+      });
+
+      if (!result.ok) {
+        setTestMessage(result.message);
+        return;
+      }
+
+      cart.clear();
+      router.push("/account/orders?test_order=created");
+      router.refresh();
+    });
+  };
 
   return (
     <div className="checkout-shell">
@@ -405,16 +464,41 @@ export function Checkout({
                 </p>
               ) : null}
 
-              <button
-                type="button"
-                className="button checkout-pay-button"
-                disabled
-              >
-                PAYMENT CONNECTION PENDING
-              </button>
-              <p className="checkout-secure-note">
-                CHECKOUT PREVIEW · NO PAYMENT WILL BE TAKEN
-              </p>
+              {testCheckoutEnabled ? (
+                <div className="checkout-test-mode">
+                  <div className="checkout-test-mode-label">
+                    <span>ADMIN TEST MODE</span>
+                    <small>Creates a paid test order without charging money.</small>
+                  </div>
+                  <button
+                    type="button"
+                    className="button checkout-pay-button"
+                    disabled={!canCreateTestOrder}
+                    onClick={runTestCheckout}
+                  >
+                    {testPending ? "CREATING TEST ORDER…" : "CREATE TEST ORDER · NO CHARGE"}
+                  </button>
+                  {testMessage ? (
+                    <p className="form-error" role="alert">{testMessage}</p>
+                  ) : null}
+                  <p className="checkout-secure-note">
+                    TEST ONLY · INVENTORY IS NOT DECREMENTED · NO PAYMENT IS TAKEN
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="button checkout-pay-button"
+                    disabled
+                  >
+                    PAYMENT CONNECTION PENDING
+                  </button>
+                  <p className="checkout-secure-note">
+                    CHECKOUT PREVIEW · NO PAYMENT WILL BE TAKEN
+                  </p>
+                </>
+              )}
             </>
           ) : null}
         </div>

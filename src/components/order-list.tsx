@@ -10,6 +10,7 @@ export type OrderSummary = {
     final_total: number;
     payment_status: string;
     fulfillment_status: string;
+    is_test?: boolean;
 };
 
 function label(value: string) {
@@ -50,13 +51,16 @@ export function OrderList({ orders, admin = false }: {
                     {orders.map((order) => (
                         <tr key={order.id}>
                             <td>
-                                {admin ? (
-                                    <Link href={`/admin/orders/${order.id}`}>
-                                        {order.order_number} ↗
-                                    </Link>
-                                ) : (
-                                    order.order_number
-                                )}
+                                <div className="order-number-cell">
+                                    {admin ? (
+                                        <Link href={`/admin/orders/${order.id}`}>
+                                            {order.order_number} ↗
+                                        </Link>
+                                    ) : (
+                                        <span>{order.order_number}</span>
+                                    )}
+                                    {order.is_test ? <span className="test-order-badge">TEST</span> : null}
+                                </div>
                             </td>
                             {admin && (
                                 <td>

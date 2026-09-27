@@ -1,7 +1,7 @@
 import "server-only";
 import { requirePage } from "../auth/guards";
 import { id } from "../validation";
-const orderColumns = "id,order_number,customer_email,delivery_name,created_at,currency,final_total,payment_status,fulfillment_status" as const;
+const orderColumns = "id,order_number,customer_email,delivery_name,created_at,currency,final_total,payment_status,fulfillment_status,is_test" as const;
 
 export const ADMIN_PAYMENT_STATUSES = [
     "pending",
