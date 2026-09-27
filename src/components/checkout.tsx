@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
 import { money } from "@/lib/catalog";
 import type { Database } from "@/lib/supabase/database.types";
-import { createTestOrder } from "@/app/checkout/actions";
+import { createTestOrder, quotePromo } from "@/app/checkout/actions";
 
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 
@@ -53,6 +53,14 @@ export function Checkout({
   const router = useRouter();
   const [testPending, startTestTransition] = useTransition();
   const [testMessage, setTestMessage] = useState("");
+  const [promoPending, startPromoTransition] = useTransition();
+  const [promoInput, setPromoInput] = useState("");
+  const [promoMessage, setPromoMessage] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    discount: number;
+    subtotal: number;
+  } | null>(null);
   const defaultAddress =
     addresses.find((address) => address.is_default) ?? addresses[0] ?? null;
   const [addressMode, setAddressMode] = useState<"saved" | "new">(
@@ -84,7 +92,11 @@ export function Checkout({
     [cart.quote.lines.length, cart.quote.subtotal, deliveryCity],
   );
 
-  const total = cart.quote.subtotal + shipping;
+  const promoIsCurrent =
+    appliedPromo !== null && appliedPromo.subtotal === cart.quote.subtotal;
+  const promoDiscount = promoIsCurrent ? appliedPromo.discount : 0;
+  const activePromoCode = promoIsCurrent ? appliedPromo.code : null;
+  const total = cart.quote.subtotal + shipping - promoDiscount;
   const unavailable = cart.quote.lines.some((line) => !line.available);
   const missingDelivery =
     addressMode === "saved"
@@ -127,22 +139,52 @@ export function Checkout({
     !unavailable &&
     !missingDelivery &&
     !!activeAddress &&
-    !testPending;
+    !testPending &&
+    !promoPending;
+
+  const checkoutLines = () =>
+    cart.quote.lines.map((line) => ({
+      productId: line.productId,
+      variantId: line.variantId,
+      size: line.size,
+      color: line.color,
+      quantity: line.quantity,
+      observedPrice: line.price,
+    }));
+
+  const applyPromo = () => {
+    if (promoPending || !cart.quote.lines.length) return;
+    setPromoMessage("");
+    startPromoTransition(async () => {
+      const result = await quotePromo({
+        code: promoInput,
+        lines: checkoutLines(),
+      });
+
+      if (!result.ok) {
+        setAppliedPromo(null);
+        setPromoMessage(result.message);
+        return;
+      }
+
+      setAppliedPromo({
+        code: result.code,
+        discount: result.discount,
+        subtotal: result.subtotal,
+      });
+      setPromoInput(result.code);
+      setPromoMessage(result.message);
+    });
+  };
 
   const runTestCheckout = () => {
     if (!canCreateTestOrder || !activeAddress) return;
     setTestMessage("");
     startTestTransition(async () => {
       const result = await createTestOrder({
-        lines: cart.quote.lines.map((line) => ({
-          productId: line.productId,
-          variantId: line.variantId,
-          size: line.size,
-          color: line.color,
-          quantity: line.quantity,
-          observedPrice: line.price,
-        })),
+        lines: checkoutLines(),
         address: activeAddress,
+        promoCode: activePromoCode,
       });
 
       if (!result.ok) {
@@ -373,6 +415,45 @@ export function Checkout({
             </span>
             <span>VISA · MC</span>
           </label>
+
+          <div className="checkout-promo">
+            <div>
+              <p className="eyebrow">PROMO CODE</p>
+              <span>Have a discount code? Apply it before payment.</span>
+            </div>
+            <div className="checkout-promo-row">
+              <input
+                value={promoInput}
+                onChange={(event) => setPromoInput(event.target.value.toUpperCase())}
+                maxLength={50}
+                autoComplete="off"
+                placeholder="ENTER CODE"
+                aria-label="Promo code"
+              />
+              <button
+                type="button"
+                className="button secondary"
+                onClick={applyPromo}
+                disabled={promoPending || !cart.quote.lines.length || !promoInput.trim()}
+              >
+                {promoPending ? "APPLYING…" : "APPLY"}
+              </button>
+            </div>
+            {promoMessage ? (
+              <p
+                className={promoIsCurrent ? "form-success" : "form-error"}
+                role={promoIsCurrent ? "status" : "alert"}
+              >
+                {promoMessage}
+              </p>
+            ) : null}
+            {appliedPromo && !promoIsCurrent ? (
+              <p className="form-error" role="status">
+                Your bag changed. Apply the promo code again.
+              </p>
+            ) : null}
+          </div>
+
           <p className="muted">
             When payment goes live, card entry and payment confirmation will be
             handled through the connected bank payment provider. This preview
@@ -446,10 +527,18 @@ export function Checkout({
                         : money(shipping)}
                   </strong>
                 </div>
+                {promoIsCurrent ? (
+                  <div className="checkout-discount-row">
+                    <span>PROMO · {activePromoCode}</span>
+                    <strong>−{money(promoDiscount)}</strong>
+                  </div>
+                ) : null}
                 <div className="checkout-total-final">
                   <span>TOTAL</span>
                   <strong>
-                    {deliveryCity ? money(total) : money(cart.quote.subtotal)}
+                    {deliveryCity
+                      ? money(total)
+                      : money(cart.quote.subtotal - promoDiscount)}
                   </strong>
                 </div>
               </div>

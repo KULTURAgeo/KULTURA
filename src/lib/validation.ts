@@ -87,3 +87,63 @@ export function variantInput(data: FormData) {
         throw new InputError("SKU must use uppercase letters, numbers, underscores or hyphens.");
     return { sku, size: text(data, "size", 40), color: text(data, "color", 80), stock_quantity: integer(data.get("stock_quantity"), "Stock", 0, 1000000), is_active: data.get("is_active") === "on" };
 }
+
+
+function optionalMoney(data: FormData, key: string): number | null {
+    const raw = text(data, key, 20, false);
+    return raw ? price(raw) : null;
+}
+
+function utcDateTime(data: FormData, key: string): string | null {
+    const raw = text(data, key, 30, false);
+    if (!raw)
+        return null;
+    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw))
+        throw new InputError("Enter a valid UTC date and time.");
+    const value = new Date(raw + ":00Z");
+    if (!Number.isFinite(value.getTime()))
+        throw new InputError("Enter a valid UTC date and time.");
+    return value.toISOString();
+}
+
+export function promoInput(data: FormData) {
+    const code = text(data, "code", 50).toUpperCase();
+    if (!/^[A-Z0-9][A-Z0-9_-]{0,49}$/.test(code))
+        throw new InputError("Promo code may use uppercase letters, numbers, underscores and hyphens.");
+
+    const kind = text(data, "kind", 20);
+    if (kind !== "fixed" && kind !== "percentage")
+        throw new InputError("Choose a valid discount type.");
+
+    const amount = price(text(data, "amount", 20));
+    if (amount <= 0)
+        throw new InputError("Discount amount must be greater than zero.");
+    if (kind === "percentage" && amount > 10000)
+        throw new InputError("Percentage discount cannot exceed 100%.");
+
+    const minimumSubtotal = optionalMoney(data, "minimum_subtotal") ?? 0;
+    const maximumDiscount = optionalMoney(data, "maximum_discount");
+    if (maximumDiscount !== null && maximumDiscount <= 0)
+        throw new InputError("Maximum discount must be greater than zero.");
+
+    const maxUsesRaw = text(data, "max_uses", 12, false);
+    const maxUses = maxUsesRaw ? integer(maxUsesRaw, "Maximum uses", 1, 1000000000) : null;
+
+    const startsAt = utcDateTime(data, "starts_at");
+    const expiresAt = utcDateTime(data, "expires_at");
+    if (startsAt && expiresAt && Date.parse(expiresAt) <= Date.parse(startsAt))
+        throw new InputError("Expiry must be later than the start time.");
+
+    return {
+        code,
+        kind,
+        amount,
+        currency: kind === "fixed" ? "GEL" : null,
+        minimum_subtotal: minimumSubtotal,
+        maximum_discount: maximumDiscount,
+        starts_at: startsAt,
+        expires_at: expiresAt,
+        max_uses: maxUses,
+        is_active: data.get("is_active") === "on",
+    };
+}

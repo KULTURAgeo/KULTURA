@@ -4,7 +4,7 @@ import sharp from "sharp";
 import {createTestDatabase} from "./database-harness.mjs";
 import {addLine,removeLine,changeQuantity,normalizeLines,readStoredCart,quoteLines} from "../src/lib/cart/model.ts";
 import {verifyActor} from "../src/lib/auth/access.ts";
-import {price,safeNext,variantInput,productInput} from "../src/lib/validation.ts";
+import {price,safeNext,variantInput,productInput,promoInput} from "../src/lib/validation.ts";
 import {processProductImage} from "../src/lib/admin/image.ts";
 const passed=[];const check=async(name,fn)=>{await fn();passed.push(name);};
 const a="10000000-0000-4000-8000-000000000001",b="10000000-0000-4000-8000-000000000002",admin="10000000-0000-4000-8000-000000000003";
@@ -77,6 +77,30 @@ assert.equal(item.quantity,1);
 assert.equal(item.line_total,p.price);
 assert.equal((await db.query("select stock_quantity from product_variants where id=$1",[v.id])).rows[0].stock_quantity,before);
 }));
+const promoPayload=JSON.stringify({code:"SAVE10",kind:"percentage",amount:1000,currency:null,minimum_subtotal:0,maximum_discount:null,starts_at:null,expires_at:null,max_uses:3,is_active:true});
+await check("Customer cannot create promo codes",()=>denied(a,"select admin_save_promo(null,null,$1::jsonb)",[promoPayload]));
+await check("Admin can create and read promo codes",()=>as(admin,async()=>{
+const id=(await db.query("select admin_save_promo(null,null,$1::jsonb) id",[promoPayload])).rows[0].id;
+assert.equal((await db.query("select id from promo_codes where id=$1",[id])).rows.length,1);
+}));
+const promoId=(await db.query("insert into promo_codes(code,kind,amount,currency,minimum_subtotal,maximum_discount,starts_at,expires_at,max_uses,is_active) values('SAVE10','percentage',1000,null,0,null,null,null,3,true) returning id")).rows[0].id;
+await check("Promo codes cannot be enumerated by customers",()=>as(a,async()=>assert.equal((await db.query("select * from promo_codes")).rows.length,0)));
+await check("Customer can validate an exact promo without enumerating codes",()=>as(a,async()=>{
+const row=(await db.query("select (checkout_quote_promo('SAVE10',$1)->>'valid')::boolean valid,(checkout_quote_promo('SAVE10',$1)->>'discount')::int discount",[p.price])).rows[0];
+assert.equal(row.valid,true);
+assert.equal(row.discount,Math.floor(p.price*.10));
+}));
+await check("Test checkout applies promo server-side without consuming usage",()=>as(admin,async()=>{
+const beforeUses=(await db.query("select used_count from promo_codes where id=$1",[promoId])).rows[0].used_count;
+const orderId=(await db.query("select admin_create_test_order_v2($1::jsonb,$2::jsonb,$3) id",[testCart,testAddress,"SAVE10"])).rows[0].id;
+const order=(await db.query("select * from orders where id=$1",[orderId])).rows[0];
+const discount=Math.floor(p.price*.10);
+const shipping=p.price>=19900?0:1000;
+assert.equal(order.promo_code_snapshot,"SAVE10");
+assert.equal(order.discount_total,discount);
+assert.equal(order.final_total,p.price+shipping-discount);
+assert.equal((await db.query("select used_count from promo_codes where id=$1",[promoId])).rows[0].used_count,beforeUses);
+}));
 const path=p.id+"/"+a+".webp";
 await check("Customer Storage upload denied",()=>denied(a,"insert into storage.objects(bucket_id,name) values('product-images',$1)",[path]));
 await check("Admin Storage upload/delete allowed",()=>as(admin,async()=>{await db.query("insert into storage.objects(bucket_id,name) values('product-images',$1)",[path]);assert.equal((await db.query("delete from storage.objects where name=$1 returning name",[path])).rows.length,1);}));
@@ -98,6 +122,7 @@ await check("Cart clamps quantity to stock and flags price changes",()=>{const q
 await check("Missing/inactive products and removed variants are unavailable",()=>{assert.equal(quoteLines([line],[]).subtotal,0);assert.equal(quoteLines([line],[{...catalog[0],variants:[]}]).lines[0].available,false);});
 await check("Sold-out stock excludes line from subtotal",()=>assert.equal(quoteLines([line],[{...catalog[0],variants:[{...catalog[0].variants[0],stock:0}]}]).subtotal,0));
 await check("Validation rejects invalid price, slug, SKU and stock",()=>{assert.equal(price("12.34"),1234);for(const val of ["-1","1e4","1.234","NaN"])assert.throws(()=>price(val));assert.throws(()=>variantInput(form({sku:"bad sku",size:"M",color:"Black",stock_quantity:1})));assert.throws(()=>variantInput(form({sku:"TEST",size:"M",color:"Black",stock_quantity:-1})));assert.throws(()=>productInput(form({...product,price:"12",slug:"../bad"})));assert.equal(safeNext("//evil.test"),"/account");assert.equal(safeNext("/checkout"),"/checkout");});
+await check("Promo validation normalizes codes and percentage basis points",()=>{const promo=promoInput(form({code:"save10",kind:"percentage",amount:"10",minimum_subtotal:"0",maximum_discount:"",max_uses:"5",starts_at:"",expires_at:"",is_active:"on"}));assert.equal(promo.code,"SAVE10");assert.equal(promo.amount,1000);assert.equal(promo.max_uses,5);assert.equal(promo.is_active,true);assert.throws(()=>promoInput(form({code:"bad code",kind:"percentage",amount:"10",minimum_subtotal:"0",maximum_discount:"",max_uses:"",starts_at:"",expires_at:""})));assert.throws(()=>promoInput(form({code:"TOO",kind:"percentage",amount:"101",minimum_subtotal:"0",maximum_discount:"",max_uses:"",starts_at:"",expires_at:""})));});
 function client(user,role){return {auth:{getUser:async()=>({data:{user},error:null})},from:()=>({select:()=>({eq:(_key,id)=>({single:async()=>({data:{id,role},error:null})})})})};}
 await check("Server auth rejects missing/expired identity",()=>assert.rejects(()=>verifyActor(client(null,"admin")),e=>e.code==="unauthenticated"));
 await check("Customer cannot bypass admin server guard",()=>assert.rejects(()=>verifyActor(client({id:a,user_metadata:{role:"admin"}},"customer"),true),e=>e.code==="forbidden"));

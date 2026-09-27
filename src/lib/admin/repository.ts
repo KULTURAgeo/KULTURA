@@ -144,3 +144,30 @@ export async function adminOrder(orderId: string) {
         throw new Error("Order unavailable.");
     return data;
 }
+
+
+export async function adminPromos(page = 1) {
+    const { client } = await requirePage(true);
+    const safePage = Math.floor(Math.max(1, Math.min(10000, page)));
+    const { data, count, error } = await client
+        .from("promo_codes")
+        .select("id,code,kind,amount,currency,minimum_subtotal,maximum_discount,starts_at,expires_at,max_uses,used_count,is_active,updated_at", { count: "exact" })
+        .order("created_at", { ascending: false })
+        .order("id")
+        .range((safePage - 1) * 25, safePage * 25 - 1);
+    if (error)
+        throw new Error("Promo codes unavailable.");
+    return { promos: data ?? [], count: count ?? 0, page: safePage };
+}
+
+export async function adminPromo(promoId: string) {
+    const { client } = await requirePage(true);
+    const { data, error } = await client
+        .from("promo_codes")
+        .select("*")
+        .eq("id", id(promoId, "promo"))
+        .maybeSingle();
+    if (error)
+        throw new Error("Promo code unavailable.");
+    return data;
+}
