@@ -1,6 +1,6 @@
 import { AuthSession } from "@/components/auth-session";
 import { StructuredData } from "@/components/structured-data";
-import { Analytics } from "@/components/analytics";
+import { CookieConsent } from "@/components/cookie-consent";
 import { supabaseConfig } from "@/lib/supabase/config";
 import type { Metadata } from "next";
 import { siteUrl, isIndexable } from "@/lib/site";
@@ -85,7 +85,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <StructuredData data={structuredData} />
-        <Analytics
+        <CookieConsent
           googleAnalyticsId={googleAnalyticsId}
           metaPixelId={metaPixelId}
         />
