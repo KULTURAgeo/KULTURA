@@ -1,5 +1,6 @@
 import { AuthSession } from "@/components/auth-session";
 import { StructuredData } from "@/components/structured-data";
+import { Analytics } from "@/components/analytics";
 import { supabaseConfig } from "@/lib/supabase/config";
 import type { Metadata } from "next";
 import { siteUrl, isIndexable } from "@/lib/site";
@@ -11,6 +12,14 @@ import "./globals.css";
 import "./phase3.css";
 
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+const googleAnalyticsId = /^G-[A-Z0-9]+$/.test(
+  process.env.GOOGLE_ANALYTICS_ID?.trim() ?? "",
+)
+  ? process.env.GOOGLE_ANALYTICS_ID?.trim()
+  : undefined;
+const metaPixelId = /^\d+$/.test(process.env.META_PIXEL_ID?.trim() ?? "")
+  ? process.env.META_PIXEL_ID?.trim()
+  : undefined;
 
 export const metadata: Metadata = {
   metadataBase: siteUrl(),
@@ -76,6 +85,10 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <StructuredData data={structuredData} />
+        <Analytics
+          googleAnalyticsId={googleAnalyticsId}
+          metaPixelId={metaPixelId}
+        />
         <AuthSession config={supabaseConfig()} />
         <a className="skip-link" href="#main">
           Skip to content
