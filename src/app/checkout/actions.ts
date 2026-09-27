@@ -196,7 +196,7 @@ export async function createTestOrder(
       quantity: line.quantity,
     }));
 
-    const { data, error } = await client.rpc("admin_create_test_order", {
+    const { data, error } = await client.rpc("admin_create_test_order_v2", {
       p_cart: cart,
       p_address: payload,
       p_promo_code: promoCode(input.promoCode),
