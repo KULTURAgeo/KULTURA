@@ -1,0 +1,19 @@
+{
+  "passed": 14,
+  "checks": [
+    "Local metadata origin defaults safely",
+    "Vercel requires explicit origin",
+    "Reject malformed/development origin http://localhost:3000",
+    "Reject malformed/development origin https://store.example",
+    "Reject malformed/development origin https://store.example/path",
+    "Reject malformed/development origin https://store.example?token=x",
+    "Preview indexing always disabled",
+    "Production indexing explicitly enabled",
+    "Production prelaunch noindex",
+    "Canonical and social metadata use page path",
+    "Supabase credential-bearing URLs rejected",
+    "Upload leaves room beneath Vercel payload limit",
+    "Production build rejects insecure/test configuration without printing values",
+    "Vercel invokes deployment environment validation"
+  ]
+}

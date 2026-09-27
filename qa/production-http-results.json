@@ -1,0 +1,30 @@
+{
+  "scope": "Latest production build; Supabase unconfigured; prelaunch indexing disabled",
+  "passed": 24,
+  "checks": [
+    "Public route and security headers /",
+    "Public route and security headers /shop",
+    "Public route and security headers /drops",
+    "Public route and security headers /about",
+    "Public route and security headers /contact",
+    "Public route and security headers /shipping",
+    "Public route and security headers /returns",
+    "Public route and security headers /privacy",
+    "Public route and security headers /terms",
+    "Public route and security headers /size-guide",
+    "Public route and security headers /login",
+    "Public route and security headers /register",
+    "Public route and security headers /forgot-password",
+    "Public route and security headers /cart",
+    "Unknown information page is 404 /constructor",
+    "Unknown information page is 404 /toString",
+    "Unknown information page is 404 /this-page-does-not-exist",
+    "Prelaunch robots blocks indexing",
+    "Prelaunch sitemap excludes URLs",
+    "Metadata asset /social-card.png",
+    "Metadata asset /apple-touch-icon.png",
+    "Metadata asset /icon.svg",
+    "Canonical and Open Graph metadata",
+    "Invalid callback never follows external next URL"
+  ]
+}

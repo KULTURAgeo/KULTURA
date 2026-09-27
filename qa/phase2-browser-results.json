@@ -1,0 +1,218 @@
+{
+  "scope": "Production app with Supabase intentionally unconfigured",
+  "checks": 30,
+  "results": [
+    {
+      "width": 375,
+      "route": "/",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 375,
+      "route": "/shop",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 375,
+      "route": "/drops",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 375,
+      "route": "/product/distressed-hoodie",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 375,
+      "route": "/shop/hoodies",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 390,
+      "route": "/",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 390,
+      "route": "/shop",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 390,
+      "route": "/drops",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 390,
+      "route": "/product/distressed-hoodie",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 390,
+      "route": "/shop/hoodies",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 430,
+      "route": "/",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 430,
+      "route": "/shop",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 430,
+      "route": "/drops",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 430,
+      "route": "/product/distressed-hoodie",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 430,
+      "route": "/shop/hoodies",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 768,
+      "route": "/",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 768,
+      "route": "/shop",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 768,
+      "route": "/drops",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 768,
+      "route": "/product/distressed-hoodie",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 768,
+      "route": "/shop/hoodies",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 1024,
+      "route": "/",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 1024,
+      "route": "/shop",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 1024,
+      "route": "/drops",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 1024,
+      "route": "/product/distressed-hoodie",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 1024,
+      "route": "/shop/hoodies",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 1440,
+      "route": "/",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 1440,
+      "route": "/shop",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 1440,
+      "route": "/drops",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 1440,
+      "route": "/product/distressed-hoodie",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    },
+    {
+      "width": 1440,
+      "route": "/shop/hoodies",
+      "status": 200,
+      "overflow": false,
+      "unconfiguredNotice": true
+    }
+  ],
+  "errors": [],
+  "mobileNavigation": "passed"
+}

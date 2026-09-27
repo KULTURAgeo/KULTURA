@@ -1,0 +1,215 @@
+{
+  "layouts": [
+    {
+      "width": 375,
+      "route": "/",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 375,
+      "route": "/shop",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 375,
+      "route": "/product/distressed-hoodie",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 390,
+      "route": "/",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 390,
+      "route": "/shop",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 390,
+      "route": "/product/distressed-hoodie",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 430,
+      "route": "/",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 430,
+      "route": "/shop",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 430,
+      "route": "/product/distressed-hoodie",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 768,
+      "route": "/",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 768,
+      "route": "/shop",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 768,
+      "route": "/product/distressed-hoodie",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 1024,
+      "route": "/",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 1024,
+      "route": "/shop",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 1024,
+      "route": "/product/distressed-hoodie",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 1440,
+      "route": "/",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 1440,
+      "route": "/shop",
+      "overflow": false,
+      "brokenImages": 0
+    },
+    {
+      "width": 1440,
+      "route": "/product/distressed-hoodie",
+      "overflow": false,
+      "brokenImages": 0
+    }
+  ],
+  "routes": [
+    {
+      "route": "/",
+      "status": 200
+    },
+    {
+      "route": "/shop",
+      "status": 200
+    },
+    {
+      "route": "/drops",
+      "status": 200
+    },
+    {
+      "route": "/about",
+      "status": 200
+    },
+    {
+      "route": "/contact",
+      "status": 200
+    },
+    {
+      "route": "/shipping",
+      "status": 200
+    },
+    {
+      "route": "/returns",
+      "status": 200
+    },
+    {
+      "route": "/privacy",
+      "status": 200
+    },
+    {
+      "route": "/terms",
+      "status": 200
+    },
+    {
+      "route": "/cart",
+      "status": 200
+    },
+    {
+      "route": "/account",
+      "status": 200
+    },
+    {
+      "route": "/size-guide",
+      "status": 200
+    },
+    {
+      "route": "/shop/hoodies",
+      "status": 200
+    },
+    {
+      "route": "/shop/tees",
+      "status": 200
+    },
+    {
+      "route": "/shop/pants",
+      "status": 200
+    },
+    {
+      "route": "/shop/accessories",
+      "status": 200
+    },
+    {
+      "route": "/product/distressed-hoodie",
+      "status": 200
+    },
+    {
+      "route": "/product/heavy-tee",
+      "status": 200
+    },
+    {
+      "route": "/product/wide-leg-pants",
+      "status": 200
+    },
+    {
+      "route": "/product/star-cap",
+      "status": 200
+    },
+    {
+      "route": "/not-a-page",
+      "status": 404
+    },
+    {
+      "route": "/product/not-a-product",
+      "status": 404
+    },
+    {
+      "route": "/shop/not-a-category",
+      "status": 404
+    }
+  ],
+  "interactions": [
+    "Mobile menu opens and closes with Escape",
+    "Category filtering and empty search",
+    "Size selection, stock, cart preview, gallery, accordion",
+    "Sold-out selection blocked",
+    "Newsletter explicitly does not save email",
+    "Reduced motion honored"
+  ],
+  "errors": []
+}

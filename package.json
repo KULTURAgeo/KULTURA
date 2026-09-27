@@ -1,0 +1,47 @@
+{
+  "name": "kultura",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "db:types": "node scripts/generate-database-types.mjs",
+    "db:types:check": "node scripts/generate-database-types.mjs --check",
+    "test:db": "node scripts/test-database.mjs",
+    "test:catalog": "node --conditions=react-server --import ./scripts/typescript-loader.mjs scripts/test-catalog.mjs",
+    "test:phase3": "node --conditions=react-server --import ./scripts/typescript-loader.mjs scripts/test-phase3.mjs",
+    "build:vercel": "node scripts/validate-production-env.mjs && next build",
+    "test:production": "node --conditions=react-server --import ./scripts/typescript-loader.mjs scripts/test-production.mjs",
+    "check": "pnpm typecheck && pnpm lint && pnpm test:db && pnpm test:catalog && pnpm test:phase3 && pnpm test:production && pnpm db:types:check",
+    "audit:secrets": "node scripts/audit-repository.mjs && node scripts/audit-client-bundle.mjs",
+    "test:http": "node scripts/test-production-http.mjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.0",
+    "next": "16.3.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.4"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": "24.x"
+  }
+}

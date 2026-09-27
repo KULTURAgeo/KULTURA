@@ -1,0 +1,19 @@
+{
+  "scope": "Real Supabase JS client with test-only HTTP responses from RLS-protected PGlite SQL; not hosted PostgREST",
+  "checks": 13,
+  "passed": [
+    "Unconfigured catalog is empty; no mock fallback",
+    "Supabase SDK listing maps all four seeded products and categories",
+    "Product detail maps price, variants, image and stock",
+    "Missing product returns null",
+    "Draft product is invisible through anon RLS",
+    "Listing retrieves multiple PostgREST pages without 100-row truncation",
+    "Image ordering, alt text and storage-path encoding",
+    "Unapproved external images use local placeholder",
+    "GEL formatting preserves tetri",
+    "Empty database handled distinctly from failure",
+    "Transport failure becomes safe unavailable state",
+    "Privileged secret key rejected before any network request",
+    "Legacy service-role JWT also rejected"
+  ]
+}
