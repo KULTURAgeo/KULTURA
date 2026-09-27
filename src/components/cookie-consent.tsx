@@ -15,7 +15,6 @@ type CookieConsentProps = {
   metaPixelId?: string;
 };
 
-const OPTIONAL_COOKIE_PREFIXES = ["_ga", "_gid", "_gat", "_fbp", "_fbc"];
 
 function expireCookie(name: string) {
   const hostname = window.location.hostname;
