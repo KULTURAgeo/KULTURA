@@ -1,10 +1,12 @@
 export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
-import {pageMetadata} from "@/lib/site";
+import { pageMetadata } from "@/lib/site";
+import { isSearchIndexableCategorySlug } from "@/lib/seo-indexing";
 import { Container } from "@/components/ui";
 import { CatalogGrid } from "@/components/catalog-grid";
 import { CatalogNotice } from "@/components/catalog-notice";
 import { getCatalog } from "@/lib/catalog/repository";
+
 export async function generateMetadata({
   params,
 }: {
@@ -12,8 +14,18 @@ export async function generateMetadata({
 }) {
   const { category } = await params;
   const { categories } = await getCatalog();
-  return pageMetadata(categories.find(c => c.slug === category)?.name ?? "Category unavailable", "/shop/"+category);
+  const metadata = pageMetadata(
+    categories.find((c) => c.slug === category)?.name ?? "Category unavailable",
+    "/shop/" + category,
+  );
+
+  if (!isSearchIndexableCategorySlug(category)) {
+    metadata.robots = { index: false, follow: false };
+  }
+
+  return metadata;
 }
+
 export default async function Category({
   params,
 }: {
@@ -27,8 +39,10 @@ export default async function Category({
         <CatalogNotice status={status} />
       </Container>
     );
+
   const selected = categories.find((c) => c.slug === category);
   if (!selected) notFound();
+
   return (
     <Container className="page-section">
       <p className="eyebrow">THE COLLECTION</p>
