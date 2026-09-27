@@ -141,3 +141,38 @@ export async function moveImage(_state: ActionState, data: FormData): Promise<Ac
         return safeFailure(error);
     }
 }
+
+
+export async function advanceFulfillment(_state: ActionState, data: FormData): Promise<ActionState> {
+    try {
+        const { client } = await requireActor(true);
+        const orderId = id(data.get("order_id"), "order");
+        const expectedUpdatedAt = version(data);
+        const nextStatus = text(data, "next_status", 30);
+
+        if (nextStatus !== "processing" && nextStatus !== "shipped" && nextStatus !== "delivered")
+            throw new InputError("Invalid fulfillment step.");
+
+        const { error } = await client.rpc("admin_advance_fulfillment", {
+            p_order_id: orderId,
+            p_expected_updated_at: expectedUpdatedAt,
+            p_next_status: nextStatus,
+        });
+
+        if (error) {
+            if (error.code === "22023" && error.message.includes("must be paid"))
+                return { ok: false, message: "This order must be marked paid by the payment gateway before fulfillment can start." };
+            if (error.code === "22023")
+                return { ok: false, message: "That fulfillment step is no longer available. Reload the order and try again." };
+            throw error;
+        }
+
+        revalidatePath("/admin");
+        revalidatePath("/admin/orders");
+        revalidatePath("/admin/orders/" + orderId);
+        return { ok: true, message: "Fulfillment status updated." };
+    }
+    catch (error) {
+        return safeFailure(error);
+    }
+}

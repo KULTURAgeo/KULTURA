@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { adminOrder } from "@/lib/admin/repository";
 import { UUID } from "@/lib/validation";
+import { ActionForm } from "@/components/action-form";
+import { advanceFulfillment } from "@/app/admin/actions";
 
 function statusClass(value: string) {
     return "status-badge status-" + value.replaceAll("_", "-");
@@ -32,6 +34,19 @@ export default async function Order({ params }: {
         (sum: number, item: { quantity: number }) => sum + item.quantity,
         0,
     );
+
+    const nextFulfillmentStatus =
+        order.fulfillment_status === "unfulfilled"
+            ? "processing"
+            : order.fulfillment_status === "processing"
+                ? "shipped"
+                : order.fulfillment_status === "shipped"
+                    ? "delivered"
+                    : null;
+
+    const fulfillmentCanAdvance =
+        !!nextFulfillmentStatus &&
+        (order.fulfillment_status !== "unfulfilled" || order.payment_status === "paid");
 
     return (
         <>
@@ -169,14 +184,45 @@ export default async function Order({ params }: {
                 </div>
             </section>
 
-            <section className="panel admin-order-readonly-note">
-                <p className="eyebrow">STATUS MANAGEMENT</p>
-                <h2>Payment and fulfillment updates are protected.</h2>
-                <p className="muted">
-                    This dashboard is intentionally read-only until checkout and the payment gateway are live.
-                    Payment status should come from verified payment callbacks, not manual browser edits.
-                    Fulfillment controls can be enabled safely when the live order workflow is connected.
-                </p>
+            <section className="panel admin-order-status-control">
+                <div>
+                    <p className="eyebrow">FULFILLMENT CONTROL</p>
+                    <h2>
+                        {nextFulfillmentStatus
+                            ? `Next step: ${statusLabel(nextFulfillmentStatus)}`
+                            : "Fulfillment workflow complete"}
+                    </h2>
+                    <p className="muted">
+                        Payment status stays protected and will be controlled by verified payment callbacks.
+                        Fulfillment can only move forward in order: UNFULFILLED → PROCESSING → SHIPPED → DELIVERED.
+                    </p>
+                </div>
+
+                {nextFulfillmentStatus ? (
+                    fulfillmentCanAdvance ? (
+                        <ActionForm
+                            action={advanceFulfillment}
+                            className="fulfillment-action"
+                            label={`MARK AS ${statusLabel(nextFulfillmentStatus)}`}
+                            confirm={`Change fulfillment status to ${statusLabel(nextFulfillmentStatus)}?`}
+                        >
+                            <input type="hidden" name="order_id" value={order.id} />
+                            <input type="hidden" name="updated_at" value={order.updated_at} />
+                            <input type="hidden" name="next_status" value={nextFulfillmentStatus} />
+                        </ActionForm>
+                    ) : (
+                        <div className="fulfillment-lock">
+                            <span className={statusClass(order.payment_status)}>
+                                PAYMENT · {statusLabel(order.payment_status)}
+                            </span>
+                            <p>This order must be confirmed as PAID by the payment gateway before processing can begin.</p>
+                        </div>
+                    )
+                ) : (
+                    <span className={statusClass(order.fulfillment_status)}>
+                        {statusLabel(order.fulfillment_status)}
+                    </span>
+                )}
             </section>
         </>
     );
