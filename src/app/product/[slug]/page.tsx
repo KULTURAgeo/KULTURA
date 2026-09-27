@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { pageMetadata, siteUrl } from "@/lib/site";
+import { isSearchIndexableProductSlug } from "@/lib/seo-indexing";
 import { notFound } from "next/navigation";
 import { getCatalog, getProductBySlug } from "@/lib/catalog/repository";
 import { CatalogNotice } from "@/components/catalog-notice";
@@ -26,7 +27,11 @@ export async function generateMetadata({
       ...metadata.openGraph,
       images: [{ url: p.image, alt: p.name }],
     };
-  else metadata.robots = { index: false, follow: false };
+
+  if (!p || !isSearchIndexableProductSlug(slug)) {
+    metadata.robots = { index: false, follow: false };
+  }
+
   return metadata;
 }
 
@@ -105,7 +110,9 @@ export default async function ProductPage({
   const { products } = await getCatalog();
   return (
     <>
-      <StructuredData data={structuredData} />
+      {isSearchIndexableProductSlug(product.slug) ? (
+        <StructuredData data={structuredData} />
+      ) : null}
       <Container className="page-section">
         <nav className="breadcrumb" aria-label="Breadcrumb">
           <Link href="/shop">SHOP</Link>
