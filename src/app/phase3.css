@@ -268,3 +268,51 @@
     text-align:center;
   }
 }
+
+
+.admin-order-status-control {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(280px,auto);
+  gap:28px;
+  align-items:center;
+}
+.admin-order-status-control h2 {
+  margin-bottom:10px;
+}
+.fulfillment-action {
+  margin:0;
+  min-width:280px;
+}
+.fulfillment-action fieldset {
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+}
+.fulfillment-action .button {
+  width:100%;
+  min-height:50px;
+}
+.fulfillment-action p {
+  margin:10px 0 0;
+  max-width:320px;
+}
+.fulfillment-lock {
+  max-width:360px;
+  padding:16px;
+  border:1px solid #4b4130;
+  background:#17140f;
+}
+.fulfillment-lock p {
+  margin:12px 0 0;
+  color:#bbb;
+  font-size:13px;
+}
+@media(max-width:767px){
+  .admin-order-status-control {
+    grid-template-columns:1fr;
+  }
+  .fulfillment-action {
+    min-width:0;
+    width:100%;
+  }
+}
