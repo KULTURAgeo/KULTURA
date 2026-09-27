@@ -707,6 +707,43 @@ footer {
   text-decoration: line-through;
   border-color: #333;
 }
+.product-quantity {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+.product-quantity button {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #555;
+  background: transparent;
+  color: #eee;
+  font-size: 20px;
+}
+.product-quantity button:hover:not(:disabled) {
+  border-color: #ddd;
+}
+.product-quantity button:disabled {
+  color: #666;
+  border-color: #333;
+  cursor: not-allowed;
+}
+.product-quantity output {
+  width: 58px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-block: 1px solid #555;
+  font-size: 14px;
+  background: #111;
+}
+.product-quantity-limit {
+  margin-left: 14px;
+  color: #888;
+  font-size: 10px;
+  letter-spacing: .08em;
+}
 .stock {
   font-size: 13px;
 }
