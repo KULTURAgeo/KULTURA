@@ -114,7 +114,6 @@ export function CookieConsent({
         <section
           className="cookie-consent"
           role="dialog"
-          aria-modal="true"
           aria-labelledby="cookie-consent-title"
         >
           <div className="cookie-consent-copy">
