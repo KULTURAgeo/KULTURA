@@ -1181,3 +1181,55 @@ footer {
     align-items: flex-start;
   }
 }
+
+
+.information .information-intro {
+  max-width: 760px;
+  margin-bottom: 45px;
+  font-size: 18px;
+  color: #bbb;
+}
+.policy-sections {
+  max-width: 900px;
+  margin: 0 0 50px;
+  border-top: 1px solid var(--line);
+}
+.policy-section {
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line);
+}
+.policy-section h2 {
+  margin: 0 0 16px;
+  font-size: clamp(20px, 2.1vw, 30px);
+  letter-spacing: -0.02em;
+}
+.policy-section p,
+.policy-section li {
+  color: #bbb;
+  font-size: 16px;
+}
+.policy-section p:last-child,
+.policy-section ul:last-child {
+  margin-bottom: 0;
+}
+.policy-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+.policy-section li + li {
+  margin-top: 8px;
+}
+
+@media (max-width: 767px) {
+  .information .information-intro {
+    font-size: 16px;
+    margin-bottom: 32px;
+  }
+  .policy-section {
+    padding: 22px 0;
+  }
+  .policy-section p,
+  .policy-section li {
+    font-size: 15px;
+  }
+}
