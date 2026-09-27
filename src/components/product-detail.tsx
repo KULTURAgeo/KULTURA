@@ -5,9 +5,11 @@ import { money, type Product } from "@/lib/catalog";
 import {useCart} from "./cart-provider";
 import { Badge, Button } from "./ui";
 import { trackAddToCart, trackViewItem } from "./analytics";
+import { MAX_QUANTITY } from "@/lib/cart/model";
 export function ProductDetail({ product }: { product: Product }) {
   const cart=useCart();
   const [size, setSize] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [view, setView] = useState(0);
   const [message, setMessage] = useState("");
   const colors = [...new Set(product.variants.map((v) => v.color))];
@@ -16,6 +18,7 @@ export function ProductDetail({ product }: { product: Product }) {
     (v) => v.size === size && v.color === color,
   );
   const soldOut = product.variants.every((v) => v.stock === 0);
+  const maxQuantity = variant ? Math.min(variant.stock, MAX_QUANTITY) : 1;
   const gallery =
     product.images.length > 1
       ? product.images.map((image, i) => ({
@@ -97,6 +100,7 @@ export function ProductDetail({ product }: { product: Product }) {
               onClick={() => {
                 setColor(c);
                 setSize("");
+                setQuantity(1);
                 setMessage("");
               }}
             >
@@ -117,6 +121,7 @@ export function ProductDetail({ product }: { product: Product }) {
                   aria-pressed={size === v.size}
                   onClick={() => {
                     setSize(v.size);
+                    setQuantity(1);
                     setMessage("");
                   }}
                 >
@@ -126,6 +131,37 @@ export function ProductDetail({ product }: { product: Product }) {
                   </span>
                 </button>
               ))}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>QUANTITY</legend>
+          <div className="product-quantity" aria-label="Quantity selector">
+            <button
+              type="button"
+              aria-label="Decrease quantity"
+              disabled={!variant || variant.stock === 0 || quantity <= 1 || cart.busy}
+              onClick={() => {
+                setQuantity((current) => Math.max(1, current - 1));
+                setMessage("");
+              }}
+            >
+              −
+            </button>
+            <output aria-label="Selected quantity">{quantity}</output>
+            <button
+              type="button"
+              aria-label="Increase quantity"
+              disabled={!variant || variant.stock === 0 || quantity >= maxQuantity || cart.busy}
+              onClick={() => {
+                setQuantity((current) => Math.min(maxQuantity, current + 1));
+                setMessage("");
+              }}
+            >
+              +
+            </button>
+            <span className="product-quantity-limit">
+              {variant ? `MAX ${maxQuantity}` : "SELECT SIZE FIRST"}
+            </span>
           </div>
         </fieldset>
         <p className="stock" role="status">
@@ -138,7 +174,7 @@ export function ProductDetail({ product }: { product: Product }) {
         <Button
           className="add-button"
           disabled={!variant || variant.stock === 0 || cart.busy}
-          onClick={async()=>{if(!variant)return;const ok=await cart.add({productId:product.id,variantId:variant.id,size:variant.size,color:variant.color,quantity:1,observedPrice:product.price});if(ok){trackAddToCart({id:product.id,name:product.name,category:product.category,variant:`${variant.color} / ${variant.size}`,price:product.price});}setMessage(ok?"Your bag has been updated.":"Unable to add this item. Please try again.");}}
+          onClick={async()=>{if(!variant)return;const ok=await cart.add({productId:product.id,variantId:variant.id,size:variant.size,color:variant.color,quantity,observedPrice:product.price});if(ok){trackAddToCart({id:product.id,name:product.name,category:product.category,variant:`${variant.color} / ${variant.size}`,price:product.price,quantity});}setMessage(ok?`${quantity} item${quantity === 1 ? "" : "s"} added to your bag.`:"Unable to add this item. Please try again.");}}
         >
           {soldOut ? "SOLD OUT" : "ADD TO CART"}{" "}
           <span aria-hidden="true">↗</span>
