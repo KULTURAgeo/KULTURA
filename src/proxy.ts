@@ -32,4 +32,4 @@ export async function proxy(request: NextRequest) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
     return response;
 }
-export const config = { matcher: ["/account/:path*", "/admin/:path*", "/auth/:path*", "/login", "/register", "/forgot-password", "/reset-password"] };
+export const config = { matcher: ["/account/:path*", "/admin/:path*", "/auth/:path*", "/login", "/register", "/forgot-password", "/reset-password", "/checkout/:path*", "/api/checkout"] };
