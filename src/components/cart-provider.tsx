@@ -15,6 +15,7 @@ type CartContextValue = {
     setQuantity: (id: string, n: number) => Promise<boolean>;
     remove: (id: string) => Promise<boolean>;
     refresh: () => Promise<boolean>;
+    clear: () => void;
 };
 const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: {
@@ -104,7 +105,13 @@ export function CartProvider({ children }: {
         setQuote(current => { const lines = current.lines.filter(line => line.variantId !== id); return { lines, subtotal: lines.reduce((sum, line) => sum + line.lineTotal, 0) }; });
         return true;
     };
-    return <CartContext.Provider value={{ quote, count, busy, ready, error, drawerOpen, open: () => { setDrawerOpen(true); void resolve(stored.current); }, close: () => setDrawerOpen(false), add, setQuantity: (id, n) => resolve(changeQuantity(stored.current, id, n)), remove, refresh: () => resolve(stored.current) }}>{children}</CartContext.Provider>;
+    const clear = () => {
+        persist([]);
+        setQuote({ lines: [], subtotal: 0 });
+        setError("");
+        setDrawerOpen(false);
+    };
+    return <CartContext.Provider value={{ quote, count, busy, ready, error, drawerOpen, open: () => { setDrawerOpen(true); void resolve(stored.current); }, close: () => setDrawerOpen(false), add, setQuantity: (id, n) => resolve(changeQuantity(stored.current, id, n)), remove, refresh: () => resolve(stored.current), clear }}>{children}</CartContext.Provider>;
 }
 export function useCart() { const cart = useContext(CartContext); if (!cart)
     throw new Error("Cart provider is missing."); return cart; }
