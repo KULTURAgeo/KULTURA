@@ -1,5 +1,9 @@
 import type { MetadataRoute } from "next";
 import { isIndexable, siteUrl } from "@/lib/site";
+import {
+  isSearchIndexableCategorySlug,
+  isSearchIndexableProductSlug,
+} from "@/lib/seo-indexing";
 import { getCatalog } from "@/lib/catalog/repository";
 
 export const dynamic = "force-dynamic";
@@ -25,15 +29,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority,
       changeFrequency,
     })),
-    ...categories.map((category) => ({
-      url: new URL("/shop/" + category.slug, siteUrl()).href,
-      priority: 0.8,
-      changeFrequency: "daily" as const,
-    })),
-    ...products.map((product) => ({
-      url: new URL("/product/" + product.slug, siteUrl()).href,
-      priority: 0.7,
-      changeFrequency: "daily" as const,
-    })),
+    ...categories
+      .filter((category) => isSearchIndexableCategorySlug(category.slug))
+      .map((category) => ({
+        url: new URL("/shop/" + category.slug, siteUrl()).href,
+        priority: 0.8,
+        changeFrequency: "daily" as const,
+      })),
+    ...products
+      .filter((product) => isSearchIndexableProductSlug(product.slug))
+      .map((product) => ({
+        url: new URL("/product/" + product.slug, siteUrl()).href,
+        priority: 0.7,
+        changeFrequency: "daily" as const,
+      })),
   ];
 }
