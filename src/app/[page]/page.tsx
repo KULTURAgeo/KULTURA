@@ -126,9 +126,110 @@ const pages: Record<string, InformationPage> = {
       "Customer accounts use Supabase authentication and store the profile and delivery details you provide. Necessary storage supports core site features. Google Analytics and Meta Pixel are optional and load only according to your Cookie Settings choice. You can change that choice at any time from the footer. A fuller privacy notice will be published before launch.",
   },
   terms: {
-    title: "TERMS",
+    title: "TERMS & CONDITIONS",
     intro:
-      "Commercial terms will be published before launch. Products, imagery, prices and stock currently shown are demonstration content.",
+      "These Terms & Conditions explain how KULTURA's online store works. The store is currently in preview and online ordering is not yet open. Before paid ordering launches, the trader information required by Georgian law will be completed on this page.",
+    sections: [
+      {
+        heading: "TRADER & CONTACT",
+        items: [
+          "Trading name: KULTURA.",
+          "Customer care email: kultura.geo@gmail.com.",
+          "Instagram: @kultura.geo.",
+          "Legal/business address: to be published before online ordering opens.",
+        ],
+        paragraphs: [
+          "Instagram is an additional contact channel. Once online ordering is available, KULTURA will also publish the trader address and any other information required by applicable law.",
+        ],
+      },
+      {
+        heading: "STORE STATUS",
+        paragraphs: [
+          "The website may currently display products, prices, images and stock information for preview or testing purposes. Until checkout is enabled, browsing the site or adding an item to the cart does not create a purchase contract or payment obligation.",
+        ],
+      },
+      {
+        heading: "PRODUCTS, PRICES & AVAILABILITY",
+        paragraphs: [
+          "Product descriptions, materials, sizing, colours, images and prices are presented as accurately as reasonably possible. Screen settings and photography may cause minor visual differences.",
+          "Prices are shown in Georgian lari (GEL). Any delivery charge or other applicable charge will be disclosed before an order is placed.",
+          "Products are subject to availability. If an item becomes unavailable after an order is submitted, KULTURA will inform the customer and handle any amount already paid in accordance with applicable law.",
+        ],
+      },
+      {
+        heading: "ORDERS & CONTRACT FORMATION",
+        paragraphs: [
+          "When ordering becomes available, the checkout process will clearly indicate when placing the order creates an obligation to pay. Before that final step, the customer will be able to review the order, delivery information, price and applicable charges.",
+          "An order is considered accepted when KULTURA confirms acceptance through the website, email or another durable medium. KULTURA may refuse or cancel an order where permitted by law, including where there is an obvious pricing error, suspected fraud, unavailable stock or an inability to fulfil the order.",
+        ],
+      },
+      {
+        heading: "PAYMENT",
+        paragraphs: [
+          "Available payment methods will be shown before checkout. KULTURA will not require payment through a method that is not presented on the checkout page.",
+          "Where a payment is authorised but an order cannot be fulfilled, any refundable amount will be returned in accordance with applicable law and the relevant payment provider's processing times.",
+        ],
+      },
+      {
+        heading: "SHIPPING",
+        paragraphs: [
+          "Current standard delivery pricing is 10 GEL in Tbilisi with an estimated delivery time of up to 48 hours, and 20 GEL to other regions of Georgia with an estimated delivery time of up to 7 days.",
+          "Standard delivery is free when the merchandise subtotal is 199 GEL or more. Full delivery terms and possible delays are explained on the Shipping page.",
+        ],
+      },
+      {
+        heading: "WITHDRAWAL, RETURNS & REFUNDS",
+        paragraphs: [
+          "For distance purchases, consumers have the statutory right to withdraw from the contract within 14 calendar days after receiving the goods, except where a legal exception applies.",
+          "A withdrawal notice should be sent to kultura.geo@gmail.com within the applicable period. After giving notice, the goods must be sent back without undue delay and no later than 7 calendar days after the notice, unless KULTURA agrees to collect them.",
+          "The customer bears the direct cost of returning the goods unless KULTURA agrees otherwise or applicable law requires otherwise. Refund timing, return conditions and legal exceptions are described in detail on the Returns page.",
+        ],
+      },
+      {
+        heading: "NO VOLUNTARY EXCHANGE SERVICE",
+        paragraphs: [
+          "KULTURA does not currently offer a separate voluntary size or colour exchange service. This does not limit any statutory right relating to defective, damaged, incorrect or otherwise non-conforming goods.",
+        ],
+      },
+      {
+        heading: "CONFORMITY & STATUTORY RIGHTS",
+        paragraphs: [
+          "Nothing in these Terms limits rights that a consumer has under mandatory Georgian consumer law. If goods are defective, damaged, incorrect or otherwise fail to conform to the contract, the customer may have remedies provided by law.",
+        ],
+      },
+      {
+        heading: "PROMOTIONS & DISCOUNT CODES",
+        paragraphs: [
+          "Promotions and discount codes may be subject to separate conditions, including validity dates, eligible products, minimum order values or usage limits. Where separate promotional terms conflict with these Terms, the promotional terms apply only to that promotion to the extent permitted by law.",
+        ],
+      },
+      {
+        heading: "INTELLECTUAL PROPERTY",
+        paragraphs: [
+          "The KULTURA name, visual identity, original product imagery, graphics, copy and other original site content may be protected by intellectual property rights. They may not be reproduced, distributed or used commercially without permission, except where use is permitted by law.",
+        ],
+      },
+      {
+        heading: "LIABILITY",
+        paragraphs: [
+          "KULTURA does not exclude or limit liability where doing so would be prohibited by law. Nothing on this website should be interpreted as excluding mandatory consumer protections.",
+          "The website may occasionally be unavailable because of maintenance, technical issues or circumstances outside KULTURA's reasonable control. KULTURA will take reasonable steps to restore service where practical.",
+        ],
+      },
+      {
+        heading: "CHANGES TO THESE TERMS",
+        paragraphs: [
+          "KULTURA may update these Terms from time to time. The version that applies to a purchase is the version presented to the customer when the relevant order is placed, subject to mandatory law.",
+        ],
+      },
+      {
+        heading: "GOVERNING LAW & CONTACT",
+        paragraphs: [
+          "These Terms are governed by the laws of Georgia, without limiting any mandatory consumer protection that applies to the customer.",
+          "Questions about these Terms can be sent to kultura.geo@gmail.com or to @kultura.geo on Instagram.",
+        ],
+      },
+    ],
   },
   "size-guide": {
     title: "FIND YOUR FIT",
