@@ -285,11 +285,11 @@ export function Checkout({
               </small>
             </div>
             <strong>
-              {cart.quote.subtotal >= FREE_DELIVERY_THRESHOLD
-                ? "FREE"
-                : deliveryCity
-                  ? money(shipping)
-                  : "—"}
+              {!deliveryCity
+                ? "—"
+                : cart.quote.subtotal >= FREE_DELIVERY_THRESHOLD
+                  ? "FREE"
+                  : money(shipping)}
             </strong>
           </div>
 
@@ -315,9 +315,9 @@ export function Checkout({
             <span>VISA · MC</span>
           </label>
           <p className="muted">
-            KULTURA will not store your full card number. Payment status will be
-            confirmed by the connected payment provider when checkout goes
-            live.
+            When payment goes live, card entry and payment confirmation will be
+            handled through the connected bank payment provider. This preview
+            does not collect card details.
           </p>
         </section>
       </div>
