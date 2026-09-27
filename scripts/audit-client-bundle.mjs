@@ -12,7 +12,6 @@ const files = (await walk(".next/static")).filter((f) => f.endsWith(".js"));
 const forbidden = [
   "SUPABASE_PUBLISHABLE_KEY",
   "SUPABASE_URL",
-  "sb_secret_",
   "TEST_ONLY_NOT_A_REAL_KEY",
   "Incomplete Supabase catalog configuration.",
   "The catalog requires a publishable",
@@ -20,6 +19,9 @@ const forbidden = [
 const violations = [];
 for (const file of files) {
   const text = await readFile(file, "utf8");
+  // The browser SDK contains the literal prefix in its key validation.
+  // Flag actual private key material, not the SDK validation string.
+  if (/\bsb_secret_[A-Za-z0-9_-]{16,}/.test(text)) violations.push({file, token: "Private Supabase key (redacted)"});
   for (const token of forbidden)
     if (text.includes(token)) violations.push({ file, token });
 }

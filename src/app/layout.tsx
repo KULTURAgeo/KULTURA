@@ -1,3 +1,5 @@
+import { AuthSession } from "@/components/auth-session";
+import { supabaseConfig } from "@/lib/supabase/config";
 import type { Metadata } from "next";
 import {siteUrl, isIndexable} from "@/lib/site";
 import { Header } from "@/components/header";
@@ -30,6 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <AuthSession config={supabaseConfig()} />
         <a className="skip-link" href="#main">
           Skip to content
         </a>

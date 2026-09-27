@@ -17,7 +17,7 @@ export async function authenticate(_state: ActionState, data: FormData): Promise
                 return { ok: false, message: "Unable to sign in. Check your details and email confirmation, then try again." };
             revalidatePath("/account", "layout");
             revalidatePath("/admin", "layout");
-            return { ok: true, redirectTo: safeNext(data.get("next")) };
+            return { ok: true, reload: true, redirectTo: safeNext(data.get("next")) };
         }
         if (mode === "register") {
             const { error } = await client.auth.signUp({ email: email(data), password: password(data), options: { emailRedirectTo: siteOrigin() + "/auth/callback" } });
@@ -36,10 +36,11 @@ export async function authenticate(_state: ActionState, data: FormData): Promise
             const { error } = await client.auth.updateUser({ password: password(data) });
             if (error)
                 return { ok: false, message: "Unable to update the password. Request a fresh reset link and try again." };
-            await client.auth.signOut({ scope: "global" });
+            const { error: signOutError } = await client.auth.signOut({ scope: "global" });
+            if (signOutError) throw signOutError;
             revalidatePath("/account", "layout");
             revalidatePath("/admin", "layout");
-            return { ok: true, redirectTo: "/login?reset=1" };
+            return { ok: true, reload: true, redirectTo: "/login?reset=1" };
         }
         throw new InputError("Invalid request.");
     }
@@ -57,7 +58,7 @@ export async function logout(): Promise<ActionState> {
             throw error;
         revalidatePath("/account", "layout");
             revalidatePath("/admin", "layout");
-        return { ok: true, redirectTo: "/login" };
+        return { ok: true, reload: true, redirectTo: "/login" };
     }
     catch (error) {
         return safeFailure(error);

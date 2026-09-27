@@ -6,7 +6,9 @@ export async function verifyActor(client: SupabaseClient<Database> | null, admin
     if (!client)
         throw new AccessError("unavailable");
     const { data: { user }, error } = await client.auth.getUser();
-    if (error || !user)
+    if (error)
+        throw new AccessError(error.status === 400 || error.status === 401 || error.status === 403 || error.name === "AuthSessionMissingError" ? "unauthenticated" : "unavailable");
+    if (!user)
         throw new AccessError("unauthenticated");
     const { data: profile, error: profileError } = await client.from("profiles").select("id,role,full_name,phone").eq("id", user.id).single();
     if (profileError || !profile)

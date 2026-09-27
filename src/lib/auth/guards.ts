@@ -11,6 +11,8 @@ export async function requirePage(admin = false) {
     catch (error) {
         if (error instanceof AccessError && error.code === "forbidden")
             redirect("/account?restricted=1");
-        redirect("/login?next=" + (admin ? "/admin" : "/account"));
+        if (error instanceof AccessError && error.code === "unauthenticated")
+            redirect("/login?next=" + (admin ? "/admin" : "/account"));
+        throw error;
     }
 }

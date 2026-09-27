@@ -1,0 +1,24 @@
+{
+  "scope": "Real SSR SDK, auth actions, guards, proxy and callback routes with simulated Supabase HTTP and cookies; not hosted Supabase.",
+  "passed": 18,
+  "checks": [
+    "Unauthenticated account redirects to login",
+    "Password login persists production cookies and safe next destination",
+    "New server request reads login cookies and grants account access",
+    "Authenticated customer still cannot access admin",
+    "Profile failure is not disguised as a logged-out session",
+    "Auth service outage does not become a login redirect",
+    "External next destination is rejected",
+    "Browser SSR client sees the server-issued session",
+    "Browser password sign-in is persisted for a new server request",
+    "Proxy refresh forwards rotated cookies to browser and downstream server",
+    "Registration uses configured production callback and stores PKCE verifier",
+    "Email PKCE exchange writes session before account redirect",
+    "Email token-hash confirmation persists session",
+    "Password recovery uses production URL",
+    "Recovery confirmation redirects to password reset",
+    "Password update clears cookies and reloads login",
+    "Logout clears persisted session after a new login",
+    "Invalid confirmation link cannot create session"
+  ]
+}

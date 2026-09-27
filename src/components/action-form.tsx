@@ -15,7 +15,10 @@ export function ActionForm({action, children, label="SAVE", confirm, className="
  },{});
  const router=useRouter();
  useEffect(()=>{
-  if(state.redirectTo){router.replace(state.redirectTo);router.refresh();}
+  if(state.redirectTo){
+   if(state.reload){window.location.replace(state.redirectTo);return;}
+   router.replace(state.redirectTo);router.refresh();
+  }
   else if(state.ok)router.refresh();
  },[state,router]);
  return <form onReset={event=>event.preventDefault()} action={formAction} className={`k-form ${className}`}

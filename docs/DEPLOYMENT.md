@@ -33,7 +33,7 @@ Still missing: approved real product photography/descriptions/SKUs/stock, garmen
 
 Node is pinned to 24.x. The package manager is pinned in package.json. Vercel uses the lockfile/Corepack and the build:vercel command from vercel.json. That command rejects missing URLs, localhost URLs, credentials in URLs, privileged keys and known test keys before building. It does not verify that credentials work or that migrations are applied.
 
-There are no NEXT_PUBLIC variables, application SMTP keys, payment keys or service-role keys. Supabase's publishable key is intentionally public by design, but this app still accesses Supabase on the server.
+There are no NEXT_PUBLIC variables, application SMTP keys, payment keys or service-role keys. Supabase's publishable key is intentionally public by design, but the server validates it and passes only this public key and URL to the browser SSR session client. Data authorization remains enforced by RLS and server guards.
 
 Use separate Supabase projects for production and development/staging. Set Preview environment variables separately. For staging Auth, use a fixed staging URL on the same origin you actually open; PKCE recovery may not survive a change of browser or domain. Do not point arbitrary preview deployments at production customer data. Vercel previews stay noindex regardless of SITE_INDEXABLE.
 
@@ -132,13 +132,13 @@ The domain and DNS provider were not supplied. Replace YOUR_DOMAIN with the actu
 9. Test apex and www, HTTPS, redirect behavior, login, confirmation and recovery again on the primary domain. Confirm canonical URLs and social cards point to the new domain.
 10. When launch-approved, set SITE_INDEXABLE=true and redeploy. Submit https://YOUR_PRIMARY_DOMAIN/sitemap.xml to your search console.
 
-The application makes same-origin Server Action requests; Supabase calls are server-side. No wildcard CORS policy or Server Action allowedOrigins override is necessary. Preserve Next.js built-in origin validation.
+The application makes same-origin Server Action requests; Supabase data queries and form actions are server-side; the browser SSR client also calls Supabase Auth to refresh the shared session. No wildcard CORS policy or Server Action allowedOrigins override is necessary. Preserve Next.js built-in origin validation.
 
 ## Hosted acceptance checklist — mandatory
 
 - All public routes and navigation; unknown /constructor, /toString, product and category slugs return a real not-found experience.
 - Responsive checks at 375, 390, 430, 768, 1024 and 1440 px. Keyboard tab order, visible focus, mobile navigation and bag dialog focus/escape.
-- Real signup email, confirmation, login, session refresh/expiry, logout, recovery and invalid/expired links. Cookies are HTTP-only, SameSite=Lax and Secure over HTTPS.
+- Real signup email, confirmation, login, session refresh/expiry, logout, recovery and invalid/expired links. Session cookies are shared with the browser SSR client (not HTTP-only), host-only, SameSite=Lax and Secure over HTTPS.
 - Customer cannot open admin pages, replay admin actions, update roles or access another customer's address/orders.
 - Real admin product save, stock validation, archive confirmation, image upload under 3 MiB, rejected oversize/non-image upload, image alt text/reorder/remove.
 - Cart add/deduplicate/change/remove, reload persistence, price changes, lower stock, missing/inactive/sold-out variants and corrupt local storage.

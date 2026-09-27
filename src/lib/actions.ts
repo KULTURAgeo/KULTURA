@@ -3,6 +3,7 @@ export type ActionState = {
     ok?: boolean;
     message?: string;
     redirectTo?: string;
+    reload?: boolean;
 };
 export class AccessError extends Error {
     constructor(public code: "unauthenticated" | "forbidden" | "unavailable") { super(code); }
