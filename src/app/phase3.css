@@ -145,6 +145,15 @@
 }
 .order-detail-stats .panel {
   min-height:135px;
+  container-type:inline-size;
+}
+.order-detail-stats .panel:first-child strong {
+  max-width:100%;
+  font-size:clamp(20px,11cqi,42px);
+  line-height:1.05;
+  letter-spacing:-.045em;
+  overflow-wrap:anywhere;
+  word-break:break-word;
 }
 .order-detail-stats .stat-word {
   font-size:clamp(18px,2.2vw,29px);
