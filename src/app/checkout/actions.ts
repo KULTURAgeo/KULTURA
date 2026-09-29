@@ -98,11 +98,11 @@ export async function quotePromo(input: {
       };
 
     const { data, error } = await client.rpc("checkout_quote_promo", {
-  p_code: code,
-  p_subtotal: quote.subtotal.toString(),
-});
+      p_code: code,
+      p_subtotal: quote.subtotal.toString(),
+    });
 
-if (error) throw error;
+    if (error) throw error;
     if (
       !data ||
       typeof data !== "object" ||
