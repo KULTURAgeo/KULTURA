@@ -9,10 +9,11 @@ import { Button, Icon } from "./ui";
 
 export function CartContents({ compact = false }: { compact?: boolean }) {
   const cart = useCart();
+  const { ready, busy, refresh } = cart;
 
   useEffect(() => {
-    if (!cart.ready && !cart.busy) void cart.refresh();
-  }, [cart.ready, cart.busy, cart.refresh]);
+    if (!ready && !busy) void refresh();
+  }, [ready, busy, refresh]);
 
   const canCheckout =
     cart.ready &&
@@ -53,36 +54,22 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
             ) : (
               <strong>{line.name}</strong>
             )}
-            <p>
-              {line.color} / {line.size}
-            </p>
+            <p>{line.color} / {line.size}</p>
             <p>{line.available ? money(line.price) : "Unavailable"}</p>
-            {line.notice ? (
-              <p className="muted" role="status">
-                {line.notice}
-              </p>
-            ) : null}
+            {line.notice ? <p className="muted" role="status">{line.notice}</p> : null}
             <div className="quantity-control">
               <button
                 aria-label={`Decrease quantity for ${line.name}`}
                 disabled={cart.busy || line.quantity <= 1 || !line.available}
-                onClick={() =>
-                  void cart.setQuantity(line.variantId, line.quantity - 1)
-                }
+                onClick={() => void cart.setQuantity(line.variantId, line.quantity - 1)}
               >
                 −
               </button>
               <output aria-label="Quantity">{line.quantity}</output>
               <button
                 aria-label={`Increase quantity for ${line.name}`}
-                disabled={
-                  cart.busy ||
-                  !line.available ||
-                  line.quantity >= Math.min(line.stock, MAX_QUANTITY)
-                }
-                onClick={() =>
-                  void cart.setQuantity(line.variantId, line.quantity + 1)
-                }
+                disabled={cart.busy || !line.available || line.quantity >= Math.min(line.stock, MAX_QUANTITY)}
+                onClick={() => void cart.setQuantity(line.variantId, line.quantity + 1)}
               >
                 +
               </button>
@@ -103,23 +90,16 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
         <div className="cart-total">
           <div>
             <span>SUBTOTAL</span>
-            <strong>
-              {cart.error ? "Refresh required" : money(cart.quote.subtotal)}
-            </strong>
+            <strong>{cart.error ? "Refresh required" : money(cart.quote.subtotal)}</strong>
           </div>
           <p className="muted">
-            Prices and availability are refreshed from the store. Delivery is
-            calculated at checkout. Items are not reserved.
+            Prices and availability are refreshed from the store. Delivery is calculated at checkout. Items are not reserved.
           </p>
 
           {compact ? (
-            <Link className="button" href="/cart" onClick={cart.close}>
-              VIEW YOUR BAG ↗
-            </Link>
+            <Link className="button" href="/cart" onClick={cart.close}>VIEW YOUR BAG ↗</Link>
           ) : canCheckout ? (
-            <Link className="button" href="/checkout">
-              PROCEED TO CHECKOUT ↗
-            </Link>
+            <Link className="button" href="/checkout">PROCEED TO CHECKOUT ↗</Link>
           ) : (
             <Button disabled>CHECKOUT UNAVAILABLE</Button>
           )}
@@ -150,11 +130,7 @@ export function CartDrawer() {
     >
       <div className="drawer-heading">
         <h2 id="bag-title">YOUR BAG</h2>
-        <button
-          className="icon-button"
-          aria-label="Close bag"
-          onClick={cart.close}
-        >
+        <button className="icon-button" aria-label="Close bag" onClick={cart.close}>
           <Icon name="close" />
         </button>
       </div>

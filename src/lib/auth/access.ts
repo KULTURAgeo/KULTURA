@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../supabase/database.types";
 import { AccessError } from "../actions";
+
 export async function verifyActor(client: SupabaseClient<Database> | null, admin = false) {
     if (!client)
         throw new AccessError("unavailable");
