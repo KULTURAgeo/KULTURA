@@ -472,9 +472,11 @@ admin_attach_image: { Args: { p_product_id: string | null; p_storage_path: strin
 admin_create_test_order: { Args: { p_cart: Json | null; p_address: Json | null }; Returns: string };
 admin_create_test_order_v2: { Args: { p_cart: Json | null; p_address: Json | null; p_promo_code: string | null }; Returns: string };
 admin_reorder_images: { Args: { p_product_id: string | null; p_ids: string[] | null; p_expected_ids: string[] | null }; Returns: undefined };
+admin_save_checkout_settings: { Args: { p_shipping_total: string | null; p_free_shipping_threshold: string | null }; Returns: Json };
 admin_save_product: { Args: { p_id: string | null; p_expected_updated_at: string | null; p_product: Json | null; p_collection_ids: string[] | null }; Returns: string };
 admin_save_promo: { Args: { p_id: string | null; p_expected_updated_at: string | null; p_promo: Json | null }; Returns: string };
 checkout_create_unpaid_order: { Args: { p_cart: Json | null; p_address: Json | null; p_promo_code: string | null }; Returns: string };
+checkout_get_shipping_settings: { Args: { p_request: boolean | null }; Returns: Json };
 checkout_quote_promo: { Args: { p_code: string | null; p_subtotal: string | null }; Returns: Json };
 customer_save_address: { Args: { p_id: string | null; p_address: Json | null }; Returns: string };
 }; Enums: {

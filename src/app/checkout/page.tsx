@@ -3,6 +3,7 @@ import { Container } from "@/components/ui";
 import { Checkout } from "@/components/checkout";
 import { requireActor } from "@/lib/auth/guards";
 import { AccessError } from "@/lib/actions";
+import { parseSettings } from "@/lib/admin/shipping";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -23,15 +24,26 @@ export default async function CheckoutPage() {
   }
 
   const { client, user, profile } = actor;
-  const { data: addresses, error } = await client
-    .from("addresses")
-    .select("*")
-    .eq("profile_id", user.id)
-    .order("is_default", { ascending: false })
-    .order("created_at");
+  const [addressResult, shippingResult] = await Promise.all([
+    client
+      .from("addresses")
+      .select("*")
+      .eq("profile_id", user.id)
+      .order("is_default", { ascending: false })
+      .order("created_at"),
+    client.rpc("checkout_get_shipping_settings", { p_request: true }),
+  ]);
 
-  if (error) {
+  if (addressResult.error) {
     throw new Error("Checkout details are temporarily unavailable.");
+  }
+
+  let shippingSettings = {
+    shippingTotal: 0,
+    freeShippingThreshold: null as number | null,
+  };
+  if (!shippingResult.error) {
+    shippingSettings = parseSettings(shippingResult.data);
   }
 
   return (
@@ -47,12 +59,13 @@ export default async function CheckoutPage() {
       </div>
 
       <Checkout
-        addresses={addresses ?? []}
+        addresses={addressResult.data ?? []}
         profile={{
           fullName: profile.full_name ?? "",
           phone: profile.phone ?? "",
           email: user.email ?? "",
         }}
+        shippingSettings={shippingSettings}
         testCheckoutEnabled={profile.role === "admin"}
       />
     </Container>
