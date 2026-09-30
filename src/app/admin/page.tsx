@@ -1,29 +1,44 @@
 import { Suspense } from "react";
-import { adminOverviewFast } from "@/lib/admin/overview";
-import { OrderList } from "@/components/order-list";
+import { AdminDashboardMetrics } from "@/components/admin-dashboard-metrics";
+import { AdminRecentOrders } from "@/components/admin-recent-orders";
 import { AdminBestSellers } from "@/components/admin-best-sellers";
-import { money } from "@/lib/catalog";
 import styles from "./admin-dashboard.module.css";
 
-function BestSellersFallback() {
+function MetricsFallback() {
   return (
-    <section className={styles.panel}>
-      <p className="eyebrow">SALES</p>
-      <h2>BEST SELLERS</h2>
-      <p className="muted">Loading sales analytics…</p>
+    <>
+      <div className={styles.heroStats} aria-busy="true">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div className={styles.metric} key={index}>
+            <span className="eyebrow">LOADING</span>
+            <strong>—</strong>
+            <small>UPDATING BUSINESS DATA</small>
+          </div>
+        ))}
+      </div>
+      <div className={styles.inventory} aria-busy="true">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div key={index}>
+            <span className="eyebrow">LOADING</span>
+            <strong>—</strong>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function PanelFallback({ title }: { title: string }) {
+  return (
+    <section className={styles.panel} aria-busy="true">
+      <p className="eyebrow">UPDATING</p>
+      <h2>{title}</h2>
+      <p className="muted">Loading…</p>
     </section>
   );
 }
 
-export default async function Admin() {
-  const data = await adminOverviewFast();
-  const metrics = [
-    ["ORDERS TODAY", data.todayOrders, "NON-TEST ORDERS"],
-    ["REVENUE TODAY", money(data.todayRevenue), "PAID · TBILISI DAY"],
-    ["PENDING PAYMENT", data.pendingPayment, "AWAITING PAYMENT"],
-    ["LOW STOCK", data.low, "ACTIVE VARIANTS · 1–5"],
-  ] as const;
-
+export default function Admin() {
   return (
     <>
       <div className="section-heading">
@@ -33,40 +48,18 @@ export default async function Admin() {
         </div>
       </div>
 
-      <div className={styles.heroStats}>
-        {metrics.map(([label, value, note]) => (
-          <div className={styles.metric} key={label}>
-            <span className="eyebrow">{label}</span>
-            <strong>{value}</strong>
-            <small>{note}</small>
-          </div>
-        ))}
-      </div>
-
-      <div className={styles.inventory}>
-        {[
-          ["TOTAL PRODUCTS", data.total],
-          ["ACTIVE PRODUCTS", data.active],
-          ["LOW STOCK · 1–5", data.low],
-          ["OUT OF STOCK", data.empty],
-        ].map(([label, value]) => (
-          <div key={label}>
-            <span className="eyebrow">{label}</span>
-            <strong>{value}</strong>
-          </div>
-        ))}
-      </div>
+      <Suspense fallback={<MetricsFallback />}>
+        <AdminDashboardMetrics />
+      </Suspense>
 
       <div className={styles.split}>
-        <Suspense fallback={<BestSellersFallback />}>
+        <Suspense fallback={<PanelFallback title="BEST SELLERS" />}>
           <AdminBestSellers />
         </Suspense>
 
-        <section className={styles.panel}>
-          <p className="eyebrow">FULFILLMENT</p>
-          <h2>RECENT ORDERS</h2>
-          <OrderList orders={data.orders} admin />
-        </section>
+        <Suspense fallback={<PanelFallback title="RECENT ORDERS" />}>
+          <AdminRecentOrders />
+        </Suspense>
       </div>
     </>
   );

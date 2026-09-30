@@ -12,7 +12,7 @@ function tbilisiDayStartIso(now = new Date()) {
   return new Date(`${year}-${month}-${day}T00:00:00+04:00`).toISOString();
 }
 
-export async function adminOverviewFast() {
+export async function adminDashboardMetrics() {
   const { client } = await requirePage(true);
   const dayStart = tbilisiDayStartIso();
   const results = await Promise.all([
@@ -32,11 +32,6 @@ export async function adminOverviewFast() {
       .select("id", { count: "exact", head: true })
       .eq("is_active", true)
       .eq("stock_quantity", 0),
-    client
-      .from("orders")
-      .select(orderColumns)
-      .order("created_at", { ascending: false })
-      .limit(5),
     client
       .from("orders")
       .select("id", { count: "exact", head: true })
@@ -59,21 +54,30 @@ export async function adminOverviewFast() {
     if (result.error) throw new Error("Admin data unavailable.");
   }
 
-  const todayRevenue = (results[7].data ?? []).reduce(
-    (sum, order) => sum + order.final_total,
-    0,
-  );
-
   return {
     total: results[0].count ?? 0,
     active: results[1].count ?? 0,
     low: results[2].count ?? 0,
     empty: results[3].count ?? 0,
-    orders: results[4].data ?? [],
-    todayOrders: results[5].count ?? 0,
-    pendingPayment: results[6].count ?? 0,
-    todayRevenue,
+    todayOrders: results[4].count ?? 0,
+    pendingPayment: results[5].count ?? 0,
+    todayRevenue: (results[6].data ?? []).reduce(
+      (sum, order) => sum + order.final_total,
+      0,
+    ),
   };
+}
+
+export async function adminRecentOrders() {
+  const { client } = await requirePage(true);
+  const { data, error } = await client
+    .from("orders")
+    .select(orderColumns)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  if (error) throw new Error("Recent orders unavailable.");
+  return data ?? [];
 }
 
 export async function adminBestSellers() {
