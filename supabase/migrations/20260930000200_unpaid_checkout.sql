@@ -4,7 +4,8 @@ begin;
 
 create schema if not exists private;
 
--- Keep checkout delivery settings private and expose only a safe read function.
+-- Keep delivery configuration private. The default matches the currently
+-- configured free-shipping test setup and preserves an existing row.
 create table if not exists private.checkout_settings (
   singleton boolean primary key default true check (singleton),
   shipping_total integer check (shipping_total between 0 and 1000000),
@@ -14,23 +15,6 @@ revoke all on private.checkout_settings from public, anon, authenticated;
 insert into private.checkout_settings (singleton, shipping_total, free_shipping_threshold)
 values (true, 0, null)
 on conflict (singleton) do nothing;
-
-create or replace function public.checkout_get_settings()
-returns jsonb
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select jsonb_build_object(
-    'shipping_total', shipping_total,
-    'free_shipping_threshold', free_shipping_threshold
-  )
-  from private.checkout_settings
-  where singleton = true;
-$$;
-revoke all on function public.checkout_get_settings() from public, anon, authenticated;
-grant execute on function public.checkout_get_settings() to authenticated;
 
 create or replace function public.checkout_create_unpaid_order(
   p_cart jsonb,
@@ -248,9 +232,10 @@ begin
 
     select p.name, p.slug, p.price,
            v.sku, v.size, v.color,
-           (select coalesce(pi.image_url, case when pi.storage_path is not null then '/storage/' || pi.storage_path else null end)
+           (select pi.image_url
               from public.product_images pi
              where pi.product_id = p.id
+               and pi.image_url is not null
              order by pi.sort_position, pi.id
              limit 1)
     into v_name, v_slug, v_price,
