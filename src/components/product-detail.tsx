@@ -6,7 +6,10 @@ import {useCart} from "./cart-provider";
 import { Badge, Button } from "./ui";
 import { trackAddToCart, trackViewItem } from "./analytics";
 import { MAX_QUANTITY } from "@/lib/cart/model";
-export function ProductDetail({ product }: { product: Product }) {
+import { ProductBadges } from "./product-badges";
+import { SizeGuide } from "./size-guide";
+import { WishlistButton } from "./wishlist-button";
+export function ProductDetail({ product, wishlistSaved = false }: { product: Product; wishlistSaved?: boolean }) {
   const cart=useCart();
   const [size, setSize] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -88,6 +91,7 @@ export function ProductDetail({ product }: { product: Product }) {
         <p className="eyebrow">KULTURA / {product.category}</p>
         <h1>{product.name.replace("KULTURA ", "")}</h1>
         <p className="detail-price">{money(product.price)} {product.compareAt && product.compareAt > product.price ? <del className="muted" aria-label="Original price">{money(product.compareAt)}</del> : null}</p>
+        <ProductBadges product={product} />
         {product.drop && <Badge>DROP 001</Badge>}
         <p>{product.description}</p>
         <fieldset>
@@ -132,6 +136,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 </button>
               ))}
           </div>
+          <SizeGuide product={product} />
         </fieldset>
         <fieldset>
           <legend>QUANTITY</legend>
@@ -180,7 +185,7 @@ export function ProductDetail({ product }: { product: Product }) {
           <span aria-hidden="true">↗</span>
         </Button>
         <p role="status">{message}</p>
-        <p className="muted">Preview collection · Ordering is not open.</p>
+        <WishlistButton product={product} saved={wishlistSaved} />
         <div className="accordions">
           <details>
             <summary>DETAILS & CARE</summary>
