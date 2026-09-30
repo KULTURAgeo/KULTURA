@@ -7,5 +7,5 @@ export default async function AdminLayout({ children }: {
     children: React.ReactNode;
 }) {
     await requirePage(true);
-    return <Container className="page-section admin-shell"><div className="admin-top"><p className="eyebrow">KULTURA / ADMINISTRATION</p><Link href="/account">YOUR ACCOUNT ↗</Link></div><nav className="account-nav"><Link href="/admin">OVERVIEW</Link><Link href="/admin/products">PRODUCTS</Link><Link href="/admin/categories">CATEGORIES</Link><Link href="/admin/inventory">INVENTORY</Link><Link href="/admin/orders">ORDERS</Link><Link href="/admin/promos">PROMOS</Link><Link href="/admin/shipping">SHIPPING</Link><Link href="/shop">VIEW STORE ↗</Link></nav>{children}</Container>;
+    return <Container className="page-section admin-shell"><div className="admin-top"><p className="eyebrow">KULTURA / ADMINISTRATION</p><Link href="/account">YOUR ACCOUNT ↗</Link></div><nav className="account-nav"><Link href="/admin">OVERVIEW</Link><Link href="/admin/products">PRODUCTS</Link><Link href="/admin/categories">CATEGORIES</Link><Link href="/admin/inventory">INVENTORY</Link><Link href="/admin/orders">ORDERS</Link><Link href="/admin/returns">RETURNS</Link><Link href="/admin/promos">PROMOS</Link><Link href="/admin/shipping">SHIPPING</Link><Link href="/shop">VIEW STORE ↗</Link></nav>{children}</Container>;
 }
