@@ -466,6 +466,24 @@ updated_at?: string;
 };
 Relationships: [];
 };
+wishlist_items: {
+Row: {
+profile_id: string;
+product_id: string;
+created_at: string;
+};
+Insert: {
+profile_id?: string;
+product_id: string;
+created_at?: string;
+};
+Update: {
+profile_id?: string;
+product_id?: string;
+created_at?: string;
+};
+Relationships: [{"foreignKeyName":"wishlist_items_product_id_fkey","columns":["product_id"],"isOneToOne":false,"referencedRelation":"products","referencedColumns":["id"]},{"foreignKeyName":"wishlist_items_profile_id_fkey","columns":["profile_id"],"isOneToOne":false,"referencedRelation":"profiles","referencedColumns":["id"]}];
+};
 }; Views: { [_ in never]: never }; Functions: {
 admin_advance_fulfillment: { Args: { p_order_id: string | null; p_expected_updated_at: string | null; p_next_status: string | null }; Returns: string };
 admin_attach_image: { Args: { p_product_id: string | null; p_storage_path: string | null; p_alt_text: string | null }; Returns: string };
