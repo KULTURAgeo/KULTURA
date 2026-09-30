@@ -47,6 +47,11 @@ create index if not exists orders_paid_unfulfilled_created_id_idx
   on public.orders(created_at desc, id)
   where payment_status = 'paid' and fulfillment_status = 'unfulfilled';
 
+-- Best-seller analytics now scans recent order items and filters through the
+-- order relation instead of shipping a large order-id list over PostgREST.
+create index if not exists order_items_created_order_idx
+  on public.order_items(created_at desc, order_id);
+
 -- Return requests can be filtered by request type alone or by status + type.
 create index if not exists return_requests_type_created_id_idx
   on public.return_requests(request_type, created_at desc, id);
