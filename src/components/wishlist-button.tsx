@@ -59,7 +59,7 @@ export function WishlistButton({
             { ok: false, message: "" },
             new FormData(form),
           );
-          setMessage(result.message);
+          setMessage(result.message ?? "");
           if (result.ok) setSaved(nextSaved);
         });
       }}
