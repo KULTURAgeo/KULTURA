@@ -1,10 +1,22 @@
-import { adminOverview } from "@/lib/admin/repository";
+import { Suspense } from "react";
+import { adminOverviewFast } from "@/lib/admin/overview";
 import { OrderList } from "@/components/order-list";
+import { AdminBestSellers } from "@/components/admin-best-sellers";
 import { money } from "@/lib/catalog";
 import styles from "./admin-dashboard.module.css";
 
+function BestSellersFallback() {
+  return (
+    <section className={styles.panel}>
+      <p className="eyebrow">SALES</p>
+      <h2>BEST SELLERS</h2>
+      <p className="muted">Loading sales analytics…</p>
+    </section>
+  );
+}
+
 export default async function Admin() {
-  const data = await adminOverview();
+  const data = await adminOverviewFast();
   const metrics = [
     ["ORDERS TODAY", data.todayOrders, "NON-TEST ORDERS"],
     ["REVENUE TODAY", money(data.todayRevenue), "PAID · TBILISI DAY"],
@@ -46,26 +58,9 @@ export default async function Admin() {
       </div>
 
       <div className={styles.split}>
-        <section className={styles.panel}>
-          <p className="eyebrow">SALES</p>
-          <h2>BEST SELLERS</h2>
-          {data.bestSellers.length ? (
-            <div className={styles.sellers}>
-              {data.bestSellers.map((seller, index) => (
-                <div className={styles.seller} key={seller.name}>
-                  <span className={styles.rank}>{String(index + 1).padStart(2, "0")}</span>
-                  <div>
-                    <strong>{seller.name}</strong>
-                    <span className="muted">{seller.units} UNITS</span>
-                  </div>
-                  <span>{money(seller.sales)}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="muted">Best sellers will appear after paid non-test orders.</p>
-          )}
-        </section>
+        <Suspense fallback={<BestSellersFallback />}>
+          <AdminBestSellers />
+        </Suspense>
 
         <section className={styles.panel}>
           <p className="eyebrow">FULFILLMENT</p>
