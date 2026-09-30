@@ -27,7 +27,9 @@ export default async function CheckoutPage() {
   const [addressResult, shippingResult] = await Promise.all([
     client
       .from("addresses")
-      .select("*")
+      .select(
+        "id,profile_id,recipient_name,phone,country_code,city,address_line_1,address_line_2,postal_code,is_default,created_at,updated_at",
+      )
       .eq("profile_id", user.id)
       .order("is_default", { ascending: false })
       .order("created_at"),
