@@ -3,7 +3,7 @@ import Link from "next/link";
 import { pageMetadata, siteUrl } from "@/lib/site";
 import { isSearchIndexableProductSlug } from "@/lib/seo-indexing";
 import { notFound } from "next/navigation";
-import { getProductBySlug, getRelatedProducts } from "@/lib/catalog/repository";
+import { getCachedProductBySlug, getRelatedProducts } from "@/lib/catalog/repository";
 import { CatalogNotice } from "@/components/catalog-notice";
 import { Container, SectionHeading } from "@/components/ui";
 import { ProductDetail } from "@/components/product-detail";
@@ -18,7 +18,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { product: p } = await getProductBySlug(slug);
+  const { product: p } = await getCachedProductBySlug(slug);
   const metadata = pageMetadata(
     p?.seoTitle ?? p?.name ?? "Product unavailable",
     "/product/" + slug,
@@ -62,7 +62,7 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { product, status } = await getProductBySlug(slug);
+  const { product, status } = await getCachedProductBySlug(slug);
   if (status !== "ready")
     return (
       <Container className="page-section">
