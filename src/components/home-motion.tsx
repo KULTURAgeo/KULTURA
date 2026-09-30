@@ -26,6 +26,7 @@ export function HomeMotion({
     const revealTransitions = revealNodes.map((item) => item.style.transition);
     const marquee = node.querySelector<HTMLElement>("[data-home-marquee]");
     const marqueeAnimation = marquee?.style.animation ?? "";
+    const hasFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     let cancelled = false;
     let cleanup = () => {};
 
@@ -91,35 +92,37 @@ export function HomeMotion({
             });
           }
 
-          const orb = node.querySelector<HTMLElement>("[data-home-orb]");
-          const ring = node.querySelector<HTMLElement>("[data-home-ring]");
-          const orbMotion = orb
-            ? createAnimatable(orb, {
-                x: 360,
-                y: 360,
-                rotate: 420,
-                ease: "out(3)",
-              })
-            : null;
-          const ringMotion = ring
-            ? createAnimatable(ring, {
-                x: 520,
-                y: 520,
-                ease: "out(3)",
-              })
-            : null;
+          if (hasFinePointer) {
+            const orb = node.querySelector<HTMLElement>("[data-home-orb]");
+            const ring = node.querySelector<HTMLElement>("[data-home-ring]");
+            const orbMotion = orb
+              ? createAnimatable(orb, {
+                  x: 360,
+                  y: 360,
+                  rotate: 420,
+                  ease: "out(3)",
+                })
+              : null;
+            const ringMotion = ring
+              ? createAnimatable(ring, {
+                  x: 520,
+                  y: 520,
+                  ease: "out(3)",
+                })
+              : null;
 
-          if (orbMotion || ringMotion) {
-            pointerHandler = (event: PointerEvent) => {
-              const rect = node.getBoundingClientRect();
-              const x =
-                ((event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5) * 2;
-              const y =
-                ((event.clientY - rect.top) / Math.max(rect.height, 1) - 0.5) * 2;
-              orbMotion?.x(x * 10).y(y * 10).rotate(x * 4);
-              ringMotion?.x(x * -10).y(y * -10);
-            };
-            node.addEventListener("pointermove", pointerHandler, { passive: true });
+            if (orbMotion || ringMotion) {
+              pointerHandler = (event: PointerEvent) => {
+                const rect = node.getBoundingClientRect();
+                const x =
+                  ((event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5) * 2;
+                const y =
+                  ((event.clientY - rect.top) / Math.max(rect.height, 1) - 0.5) * 2;
+                orbMotion?.x(x * 10).y(y * 10).rotate(x * 4);
+                ringMotion?.x(x * -10).y(y * -10);
+              };
+              node.addEventListener("pointermove", pointerHandler, { passive: true });
+            }
           }
         });
 
