@@ -1,5 +1,5 @@
 import "server-only";
-import { unstable_cache } from "next/cache";
+import { unstable_cache } from "next/cache.js";
 import { cache } from "react";
 import { createCatalogClient } from "../supabase/server";
 import { mapProduct } from "./mapper";
