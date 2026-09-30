@@ -52,7 +52,7 @@ export function OrderList({ orders, admin = false }: {
                         <tr key={order.id}>
                             <td>
                                 <div className="order-number-cell">
-                                    <Link href={admin ? `/admin/orders/${order.id}` : `/order-confirmation/${order.id}`}>
+                                    <Link href={admin ? `/admin/orders/${order.id}` : `/account/orders/${order.id}`}>
                                         {order.order_number} ↗
                                     </Link>
                                     {order.is_test ? <span className="test-order-badge">TEST</span> : null}
