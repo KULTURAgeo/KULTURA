@@ -31,18 +31,16 @@ type DraftAddress = {
   postal_code: string;
 };
 
-// This mirrors the current private.checkout_settings test configuration.
-// The database remains authoritative when an order is persisted.
-const FREE_DELIVERY_THRESHOLD = 0;
-const TBILISI_DELIVERY = 0;
-const REGIONAL_DELIVERY = 0;
+const FREE_DELIVERY_THRESHOLD = 19900;
+const TBILISI_DELIVERY = 1000;
+const REGIONAL_DELIVERY = 2000;
 
 function isTbilisi(city: string) {
   const value = city.trim().toLocaleLowerCase();
   return value === "tbilisi" || value === "თბილისი";
 }
 
-function deliveryPrice(subtotal: number, city: string) {
+function legacyTestDeliveryPrice(subtotal: number, city: string) {
   if (subtotal >= FREE_DELIVERY_THRESHOLD) return 0;
   return isTbilisi(city) ? TBILISI_DELIVERY : REGIONAL_DELIVERY;
 }
@@ -92,9 +90,11 @@ export function Checkout({
   const shipping = useMemo(
     () =>
       cart.quote.lines.length
-        ? deliveryPrice(cart.quote.subtotal, deliveryCity)
+        ? testCheckoutEnabled
+          ? legacyTestDeliveryPrice(cart.quote.subtotal, deliveryCity)
+          : 0
         : 0,
-    [cart.quote.lines.length, cart.quote.subtotal, deliveryCity],
+    [cart.quote.lines.length, cart.quote.subtotal, deliveryCity, testCheckoutEnabled],
   );
 
   const promoIsCurrent =
@@ -433,7 +433,15 @@ export function Checkout({
           </div>
 
           <p className="muted checkout-free-shipping-note">
-            Standard delivery is currently free while checkout is being tested.
+            {testCheckoutEnabled ? (
+              <>
+                Standard delivery is free from {money(FREE_DELIVERY_THRESHOLD)}.
+                Tbilisi delivery is {money(TBILISI_DELIVERY)}; other regions of
+                Georgia are {money(REGIONAL_DELIVERY)}.
+              </>
+            ) : (
+              <>Standard delivery is currently free while checkout is being tested.</>
+            )}
           </p>
         </section>
 
