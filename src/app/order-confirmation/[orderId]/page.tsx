@@ -94,27 +94,30 @@ export default async function OrderConfirmation({
 
   const { client, user } = await requirePage();
 
-  const { data: order, error: orderError } = await client
-    .from("orders")
-    .select(
-      "id,order_number,customer_id,customer_email,currency,subtotal,shipping_total,discount_total,final_total,payment_status,fulfillment_status,delivery_name,delivery_phone,delivery_country_code,delivery_city,delivery_address_line_1,delivery_address_line_2,delivery_postal_code,promo_code_snapshot,created_at,is_test",
-    )
-    .eq("id", orderId)
-    .eq("customer_id", user.id)
-    .maybeSingle();
+  const [orderResult, itemResult] = await Promise.all([
+    client
+      .from("orders")
+      .select(
+        "id,order_number,customer_id,customer_email,currency,subtotal,shipping_total,discount_total,final_total,payment_status,fulfillment_status,delivery_name,delivery_phone,delivery_country_code,delivery_city,delivery_address_line_1,delivery_address_line_2,delivery_postal_code,promo_code_snapshot,created_at,is_test",
+      )
+      .eq("id", orderId)
+      .eq("customer_id", user.id)
+      .maybeSingle(),
+    client
+      .from("order_items")
+      .select(
+        "id,product_name,product_slug,sku,size,color,image_url,unit_price,quantity,discount_total,line_total",
+      )
+      .eq("order_id", orderId)
+      .order("created_at")
+      .order("id"),
+  ]);
+
+  const { data: order, error: orderError } = orderResult;
+  const { data: items, error: itemError } = itemResult;
 
   if (orderError) throw new Error("Order confirmation is temporarily unavailable.");
   if (!order) notFound();
-
-  const { data: items, error: itemError } = await client
-    .from("order_items")
-    .select(
-      "id,product_name,product_slug,sku,size,color,image_url,unit_price,quantity,discount_total,line_total",
-    )
-    .eq("order_id", order.id)
-    .order("created_at")
-    .order("id");
-
   if (itemError) throw new Error("Order items are temporarily unavailable.");
 
   const amount = (value: number) =>
