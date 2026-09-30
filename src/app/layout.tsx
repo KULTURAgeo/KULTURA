@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 import { siteUrl, isIndexable } from "@/lib/site";
 import { Header } from "@/components/header";
 import { CartProvider } from "@/components/cart-provider";
-import { CartDrawer } from "@/components/cart-view";
+import { LazyCartDrawer } from "@/components/lazy-cart-drawer";
 import { Footer } from "@/components/footer";
 import "./globals.css";
 import "./phase3.css";
@@ -96,7 +96,7 @@ export default function RootLayout({
         <CartProvider>
           <Header />
           <main id="main">{children}</main>
-          <CartDrawer />
+          <LazyCartDrawer />
           <Footer />
         </CartProvider>
       </body>
