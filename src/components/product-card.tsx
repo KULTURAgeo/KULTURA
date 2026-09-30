@@ -1,9 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { money, type Product } from "@/lib/catalog";
-import { Badge } from "./ui";
+import { ProductBadges } from "./product-badges";
 export function ProductCard({ product }: { product: Product }) {
-  const soldOut = product.variants.every((v) => v.stock === 0);
   return (
     <article className="product-card">
       <Link href={`/product/${product.slug}`}>
@@ -15,11 +14,7 @@ export function ProductCard({ product }: { product: Product }) {
             sizes="(max-width: 767px) 50vw, 25vw"
           />
           <div className="product-badge">
-            {soldOut ? (
-              <Badge>Sold out</Badge>
-            ) : product.drop ? (
-              <Badge>Drop 001</Badge>
-            ) : null}
+            <ProductBadges product={product} />
           </div>
           <span className="product-arrow" aria-hidden="true">
             ↗

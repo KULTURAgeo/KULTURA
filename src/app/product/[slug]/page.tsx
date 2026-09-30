@@ -9,6 +9,8 @@ import { Container, SectionHeading } from "@/components/ui";
 import { ProductDetail } from "@/components/product-detail";
 import { ProductCard } from "@/components/product-card";
 import { StructuredData } from "@/components/structured-data";
+import { RecentlyViewed } from "@/components/recently-viewed";
+import { createSessionClient } from "@/lib/supabase/session";
 
 export async function generateMetadata({
   params,
@@ -33,6 +35,25 @@ export async function generateMetadata({
   }
 
   return metadata;
+}
+
+async function isWishlisted(productId: string) {
+  try {
+    const client = await createSessionClient();
+    if (!client) return false;
+    const { data: auth } = await client.auth.getUser();
+    if (!auth.user) return false;
+    const { data, error } = await client
+      .from("wishlist_items")
+      .select("product_id")
+      .eq("profile_id", auth.user.id)
+      .eq("product_id", productId)
+      .maybeSingle();
+    if (error) return false;
+    return Boolean(data);
+  } catch {
+    return false;
+  }
 }
 
 export default async function ProductPage({
@@ -107,7 +128,18 @@ export default async function ProductPage({
     },
   ];
 
-  const { products } = await getCatalog();
+  const [{ products }, wishlistSaved] = await Promise.all([
+    getCatalog(),
+    isWishlisted(product.id),
+  ]);
+  const sameCategory = products.filter(
+    (candidate) => candidate.slug !== product.slug && candidate.category === product.category,
+  );
+  const otherProducts = products.filter(
+    (candidate) => candidate.slug !== product.slug && candidate.category !== product.category,
+  );
+  const related = [...sameCategory, ...otherProducts].slice(0, 4);
+
   return (
     <>
       {isSearchIndexableProductSlug(product.slug) ? (
@@ -117,23 +149,25 @@ export default async function ProductPage({
         <nav className="breadcrumb" aria-label="Breadcrumb">
           <Link href="/shop">SHOP</Link>
           <span>/</span>
+          <Link href={`/shop/${product.categorySlug}`}>{product.category.toUpperCase()}</Link>
+          <span>/</span>
           <span>{product.name.replace("KULTURA ", "")}</span>
         </nav>
-        <ProductDetail key={product.slug} product={product} />
-        <section className="section">
-          <SectionHeading
-            eyebrow="COMPLETE THE ROTATION"
-            title="GOES WITH YOUR ENERGY"
-          />
-          <div className="product-grid">
-            {products
-              .filter((p) => p.slug !== slug)
-              .slice(0, 4)
-              .map((p) => (
-                <ProductCard key={p.slug} product={p} />
+        <ProductDetail key={product.slug} product={product} wishlistSaved={wishlistSaved} />
+        {related.length ? (
+          <section className="section">
+            <SectionHeading
+              eyebrow="RELATED PIECES"
+              title="YOU MAY ALSO LIKE"
+            />
+            <div className="product-grid">
+              {related.map((item) => (
+                <ProductCard key={item.slug} product={item} />
               ))}
-          </div>
-        </section>
+            </div>
+          </section>
+        ) : null}
+        <RecentlyViewed product={product} />
       </Container>
     </>
   );

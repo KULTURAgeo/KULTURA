@@ -14,6 +14,7 @@ export type Product = {
   price: number;
   compareAt?: number;
   category: string;
+  categorySlug: string;
   image: string;
   images: ProductImage[];
   description: string;
