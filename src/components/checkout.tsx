@@ -19,6 +19,10 @@ type CheckoutProps = {
     phone: string;
     email: string;
   };
+  shippingSettings: {
+    shippingTotal: number;
+    freeShippingThreshold: number | null;
+  };
   testCheckoutEnabled: boolean;
 };
 
@@ -48,6 +52,7 @@ function legacyTestDeliveryPrice(subtotal: number, city: string) {
 export function Checkout({
   addresses,
   profile,
+  shippingSettings,
   testCheckoutEnabled,
 }: CheckoutProps) {
   const cart = useCart();
@@ -87,15 +92,26 @@ export function Checkout({
   const deliveryCity =
     addressMode === "saved" ? selectedAddress?.city ?? "" : draft.city;
 
-  const shipping = useMemo(
-    () =>
-      cart.quote.lines.length
-        ? testCheckoutEnabled
-          ? legacyTestDeliveryPrice(cart.quote.subtotal, deliveryCity)
-          : 0
-        : 0,
-    [cart.quote.lines.length, cart.quote.subtotal, deliveryCity, testCheckoutEnabled],
-  );
+  const shipping = useMemo(() => {
+    if (!cart.quote.lines.length) return 0;
+    if (testCheckoutEnabled) {
+      return legacyTestDeliveryPrice(cart.quote.subtotal, deliveryCity);
+    }
+    if (
+      shippingSettings.freeShippingThreshold !== null &&
+      cart.quote.subtotal >= shippingSettings.freeShippingThreshold
+    ) {
+      return 0;
+    }
+    return shippingSettings.shippingTotal;
+  }, [
+    cart.quote.lines.length,
+    cart.quote.subtotal,
+    deliveryCity,
+    shippingSettings.freeShippingThreshold,
+    shippingSettings.shippingTotal,
+    testCheckoutEnabled,
+  ]);
 
   const promoIsCurrent =
     appliedPromo !== null && appliedPromo.subtotal === cart.quote.subtotal;
@@ -439,8 +455,15 @@ export function Checkout({
                 Tbilisi delivery is {money(TBILISI_DELIVERY)}; other regions of
                 Georgia are {money(REGIONAL_DELIVERY)}.
               </>
+            ) : shippingSettings.freeShippingThreshold !== null ? (
+              <>
+                Standard delivery is {money(shippingSettings.shippingTotal)} and
+                becomes free from {money(shippingSettings.freeShippingThreshold)}.
+              </>
+            ) : shippingSettings.shippingTotal === 0 ? (
+              <>Standard delivery is currently free.</>
             ) : (
-              <>Standard delivery is currently free while checkout is being tested.</>
+              <>Standard delivery is {money(shippingSettings.shippingTotal)}.</>
             )}
           </p>
         </section>
