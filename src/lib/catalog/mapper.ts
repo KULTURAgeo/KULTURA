@@ -12,6 +12,7 @@ export type CatalogRow = Pick<
   | "description"
   | "featured"
   | "is_drop"
+  | "created_at"
   | "seo_title"
   | "seo_description"
 > & {
@@ -67,6 +68,7 @@ export function mapProduct(row: CatalogRow, supabaseUrl?: string): Product {
     description: row.description,
     featured: row.featured,
     drop: row.is_drop,
+    createdAt: row.created_at,
     seoTitle: row.seo_title ?? undefined,
     seoDescription: row.seo_description ?? undefined,
     variants: [...row.variants]

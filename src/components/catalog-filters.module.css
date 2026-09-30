@@ -1,0 +1,181 @@
+.toolbar {
+  margin-block: 38px 22px;
+  display: grid;
+  gap: 14px;
+}
+
+.searchRow {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 240px);
+  gap: 12px;
+}
+
+.searchRow input,
+.searchRow select,
+.filterBody input,
+.filterBody select {
+  width: 100%;
+}
+
+.filterPanel {
+  border: 1px solid var(--line);
+  background: #0d0d0d;
+}
+
+.filterSummary {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px 16px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.filterSummary::-webkit-details-marker {
+  display: none;
+}
+
+.filterCount {
+  min-width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #555;
+  color: #ddd;
+}
+
+.filterBody {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+  gap: 12px;
+  align-items: end;
+  padding: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+}
+
+.field label,
+.stockToggle {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.priceFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.stockToggle {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid #444;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.stockToggle input {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  padding: 0;
+  accent-color: #eee;
+}
+
+.clearButton {
+  min-height: 50px;
+  padding: 0 16px;
+  border: 1px solid #555;
+  background: transparent;
+  color: #ddd;
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  white-space: nowrap;
+}
+
+.clearButton:hover:not(:disabled) {
+  background: #222;
+}
+
+.clearButton:disabled {
+  opacity: 0.35;
+}
+
+.resultMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 20px;
+}
+
+.resultMeta p {
+  margin: 0;
+}
+
+.activeSummary {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 1050px) {
+  .filterBody {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .filterPanel:not([open]) > .filterBody {
+    display: grid;
+  }
+}
+
+@media (max-width: 767px) {
+  .toolbar {
+    margin-block: 28px 18px;
+  }
+
+  .searchRow {
+    grid-template-columns: 1fr;
+  }
+
+  .filterSummary {
+    display: flex;
+  }
+
+  .filterBody {
+    grid-template-columns: 1fr;
+    padding-top: 2px;
+  }
+
+  .filterPanel:not([open]) > .filterBody {
+    display: none;
+  }
+
+  .priceFields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .clearButton {
+    width: 100%;
+  }
+
+  .resultMeta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
