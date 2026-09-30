@@ -97,7 +97,7 @@ export async function adminReturnRequest(requestId: string) {
   const safeId = id(requestId, "return request");
   const { data: request, error } = await client
     .from("return_requests")
-    .select("*")
+    .select("id,order_id,request_type,reason,details,status,admin_note,created_at,updated_at")
     .eq("id", safeId)
     .maybeSingle();
 
