@@ -68,8 +68,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     async (lines: CartLine[]) => {
       if (lock.current) return false;
 
-      // An empty bag needs no server validation. This removes a request from
-      // every first-time/empty-cart page visit and from focus/storage events.
       if (!lines.length) {
         persist([]);
         setQuote(EMPTY_QUOTE);
@@ -113,37 +111,38 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [persist],
   );
 
+  const refresh = useCallback(() => resolve(stored.current), [resolve]);
+
   useEffect(() => {
     try {
       stored.current = readStoredCart(localStorage.getItem(CART_KEY));
     } catch {
       stored.current = [];
     }
+
     setCount(stored.current.reduce((sum, line) => sum + line.quantity, 0));
-    void resolve(stored.current);
+    if (stored.current.length) {
+      // Keep the global shell fast. Product/stock validation is deferred until
+      // the user opens the bag or mounts a cart UI that actually needs a quote.
+      setReady(false);
+      setQuote(EMPTY_QUOTE);
+    } else {
+      setReady(true);
+      setQuote(EMPTY_QUOTE);
+    }
 
     const sync = (event: StorageEvent) => {
       if (event.key !== CART_KEY || lock.current) return;
       stored.current = readStoredCart(event.newValue);
-      void resolve(stored.current);
-    };
-    const focus = () => {
-      if (
-        lock.current ||
-        !stored.current.length ||
-        Date.now() - lastServerRefresh.current < FOCUS_REFRESH_INTERVAL
-      )
-        return;
-      void resolve(stored.current);
+      setCount(stored.current.reduce((sum, line) => sum + line.quantity, 0));
+      setQuote(EMPTY_QUOTE);
+      setError("");
+      setReady(!stored.current.length);
     };
 
     window.addEventListener("storage", sync);
-    window.addEventListener("focus", focus);
-    return () => {
-      window.removeEventListener("storage", sync);
-      window.removeEventListener("focus", focus);
-    };
-  }, [resolve]);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
 
   const add = async (line: CartLine) => {
     if (lock.current) return false;
@@ -175,6 +174,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     persist([]);
     setQuote(EMPTY_QUOTE);
     setError("");
+    setReady(true);
     setDrawerOpen(false);
   };
 
@@ -182,7 +182,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setDrawerOpen(true);
     if (
       stored.current.length &&
-      Date.now() - lastServerRefresh.current >= FOCUS_REFRESH_INTERVAL
+      (!ready || Date.now() - lastServerRefresh.current >= FOCUS_REFRESH_INTERVAL)
     )
       void resolve(stored.current);
   };
@@ -201,7 +201,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         add,
         setQuantity: (id, n) => resolve(changeQuantity(stored.current, id, n)),
         remove,
-        refresh: () => resolve(stored.current),
+        refresh,
         clear,
       }}
     >
