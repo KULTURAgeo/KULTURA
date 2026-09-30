@@ -45,8 +45,11 @@ export function HomeMotion({ children, className = "" }: { children: ReactNode; 
       const rect = node.getBoundingClientRect();
       const x = ((event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5) * 2;
       const y = ((event.clientY - rect.top) / Math.max(rect.height, 1) - 0.5) * 2;
-      node.style.setProperty("--pointer-x", x.toFixed(3));
-      node.style.setProperty("--pointer-y", y.toFixed(3));
+      node.style.setProperty("--pointer-x-shift", `${(x * 10).toFixed(2)}px`);
+      node.style.setProperty("--pointer-y-shift", `${(y * 10).toFixed(2)}px`);
+      node.style.setProperty("--pointer-x-shift-inverse", `${(x * -10).toFixed(2)}px`);
+      node.style.setProperty("--pointer-y-shift-inverse", `${(y * -10).toFixed(2)}px`);
+      node.style.setProperty("--pointer-rotate", `${(x * 4).toFixed(2)}deg`);
     };
 
     updateScroll();
