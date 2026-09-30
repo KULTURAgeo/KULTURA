@@ -11,7 +11,12 @@ import styles from "./wishlist-button.module.css";
 
 const initialState = { ok: false, message: "" };
 
-export function WishlistButton({ product }: { product: Product }) {
+export function WishlistButton({
+  product,
+}: {
+  product: Product;
+  saved?: boolean;
+}) {
   const [state, action, pending] = useActionState(setWishlist, initialState);
   const [saved, setSaved] = useState<boolean | null>(null);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
