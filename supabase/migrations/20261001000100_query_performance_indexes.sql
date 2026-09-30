@@ -6,6 +6,13 @@ create index if not exists categories_active_sort_id_idx
   on public.categories(sort_position, id)
   where is_active;
 
+-- Admin category and product-option screens include inactive rows as well.
+create index if not exists categories_admin_sort_name_id_idx
+  on public.categories(sort_position, name, id);
+
+create index if not exists collections_name_id_idx
+  on public.collections(name, id);
+
 create index if not exists products_active_category_created_id_idx
   on public.products(category_id, created_at desc, id)
   where status = 'active';
@@ -16,6 +23,10 @@ create index if not exists products_admin_created_id_idx
 
 create index if not exists promo_codes_created_id_idx
   on public.promo_codes(created_at desc, id);
+
+-- Saved addresses are read per owner with the default address first.
+create index if not exists addresses_owner_default_created_idx
+  on public.addresses(profile_id, is_default desc, created_at, id);
 
 -- Inventory pages filter by active state / stock and order by stock then SKU.
 create index if not exists product_variants_active_stock_sku_idx
