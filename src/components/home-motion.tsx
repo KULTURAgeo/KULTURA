@@ -36,7 +36,7 @@ export function HomeMotion({
         reduceMotion: "(prefers-reduced-motion: reduce)",
       },
     }).add((self) => {
-      const reduceMotion = Boolean(self.matches.reduceMotion);
+      const reduceMotion = Boolean(self?.matches.reduceMotion);
 
       if (reduceMotion) {
         revealNodes.forEach((item) => item.setAttribute("data-visible", "true"));
