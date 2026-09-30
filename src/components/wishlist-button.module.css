@@ -13,6 +13,9 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-align: left;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
 }
 
 .button:hover {

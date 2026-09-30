@@ -1,16 +1,25 @@
-export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { pageMetadata, siteUrl } from "@/lib/site";
 import { isSearchIndexableProductSlug } from "@/lib/seo-indexing";
 import { notFound } from "next/navigation";
-import { getCachedProductBySlug, getRelatedProducts } from "@/lib/catalog/repository";
+import {
+  getCachedProductBySlug,
+  getRelatedProducts,
+} from "@/lib/catalog/repository";
+import { getActiveProductSlugs } from "@/lib/catalog/static-params";
 import { CatalogNotice } from "@/components/catalog-notice";
 import { Container, SectionHeading } from "@/components/ui";
 import { ProductDetail } from "@/components/product-detail";
 import { ProductCard } from "@/components/product-card";
 import { StructuredData } from "@/components/structured-data";
 import { RecentlyViewed } from "@/components/recently-viewed";
-import { createSessionClient } from "@/lib/supabase/session";
+
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const slugs = await getActiveProductSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
 
 export async function generateMetadata({
   params,
@@ -35,25 +44,6 @@ export async function generateMetadata({
   }
 
   return metadata;
-}
-
-async function isWishlisted(productId: string) {
-  try {
-    const client = await createSessionClient();
-    if (!client) return false;
-    const { data: auth } = await client.auth.getUser();
-    if (!auth.user) return false;
-    const { data, error } = await client
-      .from("wishlist_items")
-      .select("product_id")
-      .eq("profile_id", auth.user.id)
-      .eq("product_id", productId)
-      .maybeSingle();
-    if (error) return false;
-    return Boolean(data);
-  } catch {
-    return false;
-  }
 }
 
 export default async function ProductPage({
@@ -128,10 +118,11 @@ export default async function ProductPage({
     },
   ];
 
-  const [related, wishlistSaved] = await Promise.all([
-    getRelatedProducts(product.categorySlug, product.slug, 4),
-    isWishlisted(product.id),
-  ]);
+  const related = await getRelatedProducts(
+    product.categorySlug,
+    product.slug,
+    4,
+  );
 
   return (
     <>
@@ -142,11 +133,13 @@ export default async function ProductPage({
         <nav className="breadcrumb" aria-label="Breadcrumb">
           <Link href="/shop">SHOP</Link>
           <span>/</span>
-          <Link href={`/shop/${product.categorySlug}`}>{product.category.toUpperCase()}</Link>
+          <Link href={`/shop/${product.categorySlug}`}>
+            {product.category.toUpperCase()}
+          </Link>
           <span>/</span>
           <span>{product.name.replace("KULTURA ", "")}</span>
         </nav>
-        <ProductDetail key={product.slug} product={product} wishlistSaved={wishlistSaved} />
+        <ProductDetail key={product.slug} product={product} />
         {related.length ? (
           <section className="section">
             <SectionHeading eyebrow="RELATED PIECES" title="YOU MAY ALSO LIKE" />
