@@ -8,6 +8,7 @@ import { ButtonLink } from "@/components/ui";
 import { Newsletter } from "@/components/newsletter";
 import { HomeMotion } from "@/components/home-motion";
 import styles from "./home.module.css";
+import motionStyles from "./home-motion.module.css";
 
 export const metadata = pageMetadata("KULTURA — Step Into Kultura", "/");
 export const dynamic = "force-dynamic";
@@ -79,7 +80,7 @@ export default async function Home() {
         </div>
         <div className={styles.heroShade} />
         <div className={styles.heroGrain} />
-        <div className={styles.heroChromeOrb} aria-hidden="true">✳</div>
+        <div className={`${styles.heroChromeOrb} ${motionStyles.orbMotion}`} aria-hidden="true">✳</div>
 
         <div className={styles.heroMeta}>
           <span>KULTURA / INDEPENDENT STREETWEAR</span>
@@ -269,7 +270,7 @@ export default async function Home() {
       </section>
 
       <section className={styles.finale}>
-        <div className={styles.finaleRing} aria-hidden="true" />
+        <div className={`${styles.finaleRing} ${motionStyles.ringMotion}`} aria-hidden="true" />
         <div className={styles.finaleContent} data-reveal>
           <span className={styles.finaleMark} aria-hidden="true">✳</span>
           <p className="eyebrow">KULTURA / YOUR NEXT UNIFORM</p>
