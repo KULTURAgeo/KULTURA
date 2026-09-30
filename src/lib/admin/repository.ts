@@ -62,14 +62,20 @@ function isFulfillmentStatus(
 export async function adminProducts(page = 1) {
   const { client } = await requirePage(true);
   const safePage = Math.floor(Math.max(1, Math.min(10000, page)));
-  const { data, count, error } = await client
+  const offset = (safePage - 1) * 25;
+  const { data, error } = await client
     .from("products")
-    .select("id,name,slug,status,price,updated_at", { count: "exact" })
+    .select("id,name,slug,status,price,updated_at")
     .order("created_at", { ascending: false })
     .order("id")
-    .range((safePage - 1) * 25, safePage * 25 - 1);
+    .range(offset, offset + 25);
   if (error) throw new Error("Products unavailable.");
-  return { products: data ?? [], count: count ?? 0 };
+  const rows = data ?? [];
+  return {
+    products: rows.slice(0, 25),
+    hasNext: rows.length > 25,
+    page: safePage,
+  };
 }
 
 export async function adminOptions() {
@@ -202,17 +208,22 @@ export async function adminOrder(orderId: string) {
 export async function adminPromos(page = 1) {
   const { client } = await requirePage(true);
   const safePage = Math.floor(Math.max(1, Math.min(10000, page)));
-  const { data, count, error } = await client
+  const offset = (safePage - 1) * 25;
+  const { data, error } = await client
     .from("promo_codes")
     .select(
       "id,code,kind,amount,currency,minimum_subtotal,maximum_discount,starts_at,expires_at,max_uses,used_count,is_active,updated_at",
-      { count: "exact" },
     )
     .order("created_at", { ascending: false })
     .order("id")
-    .range((safePage - 1) * 25, safePage * 25 - 1);
+    .range(offset, offset + 25);
   if (error) throw new Error("Promo codes unavailable.");
-  return { promos: data ?? [], count: count ?? 0, page: safePage };
+  const rows = data ?? [];
+  return {
+    promos: rows.slice(0, 25),
+    hasNext: rows.length > 25,
+    page: safePage,
+  };
 }
 
 export async function adminPromo(promoId: string) {
