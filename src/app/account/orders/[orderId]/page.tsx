@@ -45,51 +45,50 @@ export default async function CustomerOrderDetail({
   if (!UUID.test(orderId)) notFound();
 
   const { client, user } = await requirePage();
-  const { data: order, error: orderError } = await client
-    .from("orders")
-    .select(
-      "id,order_number,customer_id,customer_email,currency,subtotal,shipping_total,discount_total,final_total,payment_status,fulfillment_status,delivery_name,delivery_phone,delivery_country_code,delivery_city,delivery_address_line_1,delivery_address_line_2,delivery_postal_code,promo_code_snapshot,created_at,updated_at,paid_at,is_test",
-    )
-    .eq("id", orderId)
-    .eq("customer_id", user.id)
-    .maybeSingle();
 
-  if (orderError) throw new Error("Order details are temporarily unavailable.");
-  if (!order) notFound();
-
-  const [{ data: items, error: itemError }, { data: returnRequests, error: returnError }] = await Promise.all([
+  // These reads are independent once the authenticated actor and order ID are
+  // known. RLS still protects the child tables, so running them concurrently
+  // removes serial network latency without weakening ownership checks.
+  const [orderResult, itemResult, returnResult] = await Promise.all([
+    client
+      .from("orders")
+      .select(
+        "id,order_number,customer_id,customer_email,currency,subtotal,shipping_total,discount_total,final_total,payment_status,fulfillment_status,delivery_name,delivery_phone,delivery_country_code,delivery_city,delivery_address_line_1,delivery_address_line_2,delivery_postal_code,promo_code_snapshot,created_at,updated_at,paid_at,is_test",
+      )
+      .eq("id", orderId)
+      .eq("customer_id", user.id)
+      .maybeSingle(),
     client
       .from("order_items")
       .select(
         "id,product_name,product_slug,sku,size,color,image_url,unit_price,quantity,discount_total,line_total,created_at",
       )
-      .eq("order_id", order.id)
+      .eq("order_id", orderId)
       .order("created_at")
       .order("id"),
     client
       .from("return_requests")
-      .select("id,order_id,request_type,reason,details,status,admin_note,created_at,updated_at")
-      .eq("order_id", order.id)
+      .select(
+        "id,order_id,request_type,reason,details,status,admin_note,created_at,updated_at,return_request_items(order_item_id,quantity)",
+      )
+      .eq("order_id", orderId)
       .order("created_at", { ascending: false })
       .limit(10),
   ]);
 
+  const { data: order, error: orderError } = orderResult;
+  const { data: items, error: itemError } = itemResult;
+  const { data: returnRequests, error: returnError } = returnResult;
+
+  if (orderError) throw new Error("Order details are temporarily unavailable.");
+  if (!order) notFound();
   if (itemError) throw new Error("Order items are temporarily unavailable.");
   if (returnError) throw new Error("Return requests are temporarily unavailable.");
 
   const requests = returnRequests ?? [];
   const activeRequest = requests.find((request) => ACTIVE_RETURN_STATUSES.has(request.status)) ?? null;
   const latestRequest = activeRequest ?? requests[0] ?? null;
-
-  let latestRequestItems: Array<{ order_item_id: string; quantity: number }> = [];
-  if (latestRequest) {
-    const { data, error } = await client
-      .from("return_request_items")
-      .select("order_item_id,quantity")
-      .eq("return_request_id", latestRequest.id);
-    if (error) throw new Error("Return request items are temporarily unavailable.");
-    latestRequestItems = data ?? [];
-  }
+  const latestRequestItems = latestRequest?.return_request_items ?? [];
 
   const amount = (value: number) =>
     new Intl.NumberFormat("en-GB", {
@@ -165,7 +164,7 @@ export default async function CustomerOrderDetail({
             <p className="eyebrow">PURCHASED ITEMS</p>
             <h2>{itemCount} ITEM{itemCount === 1 ? "" : "S"}</h2>
           </div>
-          <p className="muted">These details are saved from the order and do not change when the catalog is edited.</p>
+          <p className="muted">These details are saved from the order and do not change when the catalog is edited later.</p>
         </div>
 
         <div className={styles.items}>
