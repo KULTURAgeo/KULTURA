@@ -9,6 +9,11 @@ import { Button, Icon } from "./ui";
 
 export function CartContents({ compact = false }: { compact?: boolean }) {
   const cart = useCart();
+
+  useEffect(() => {
+    if (!cart.ready && !cart.busy) void cart.refresh();
+  }, [cart.ready, cart.busy, cart.refresh]);
+
   const canCheckout =
     cart.ready &&
     !cart.error &&
