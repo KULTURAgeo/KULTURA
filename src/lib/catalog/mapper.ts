@@ -56,6 +56,7 @@ export function mapProduct(row: CatalogRow, supabaseUrl?: string): Product {
     price: row.price,
     compareAt: row.compare_at_price ?? undefined,
     category: row.category?.name ?? "Uncategorized",
+    categorySlug: row.category?.slug ?? "uncategorized",
     image: images[0]?.src ?? "/images/product-placeholder.svg",
     images: images.length
       ? images
