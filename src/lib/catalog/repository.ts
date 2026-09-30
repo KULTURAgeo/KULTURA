@@ -97,6 +97,49 @@ async function loadCategories(client: CatalogClient) {
   return categories;
 }
 
+async function loadActiveProductCategoryCounts(client: CatalogClient) {
+  const counts = new Map<string, number>();
+  for (let offset = 0; ; offset += 500) {
+    const { data, error } = await client
+      .from("products")
+      .select("category_id")
+      .eq("status", "active")
+      .range(offset, offset + 499);
+    if (error) throw error;
+    for (const row of data) {
+      if (!row.category_id) continue;
+      counts.set(row.category_id, (counts.get(row.category_id) ?? 0) + 1);
+    }
+    if (data.length < 500) break;
+  }
+  return counts;
+}
+
+async function loadProductBySlug(
+  slug: string,
+): Promise<{ status: CatalogStatus; product: Product | null }> {
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug))
+    return { status: "ready", product: null };
+  try {
+    const client = createCatalogClient();
+    if (!client) return { status: "unconfigured", product: null };
+    const { data, error } = await client
+      .from("products")
+      .select(productSelect)
+      .eq("slug", slug)
+      .eq("status", "active")
+      .maybeSingle();
+    if (error) throw error;
+    return {
+      status: "ready",
+      product: data ? mapProduct(data, process.env.SUPABASE_URL) : null,
+    };
+  } catch {
+    reportFailure("Product detail");
+    return { status: "unavailable", product: null };
+  }
+}
+
 const loadHomepageCatalog = async (): Promise<CatalogResult> => {
   try {
     const client = createCatalogClient();
@@ -130,17 +173,10 @@ const loadShopCategories = async (): Promise<{
     const client = createCatalogClient();
     if (!client) return { status: "unconfigured", categories: [] };
 
-    const [categories, productRows] = await Promise.all([
+    const [categories, counts] = await Promise.all([
       loadCategories(client),
-      client.from("products").select("category_id").eq("status", "active"),
+      loadActiveProductCategoryCounts(client),
     ]);
-    if (productRows.error) throw productRows.error;
-
-    const counts = new Map<string, number>();
-    for (const row of productRows.data) {
-      if (!row.category_id) continue;
-      counts.set(row.category_id, (counts.get(row.category_id) ?? 0) + 1);
-    }
 
     return {
       status: "ready",
@@ -163,7 +199,10 @@ const loadDropProducts = async (): Promise<{
   try {
     const client = createCatalogClient();
     if (!client) return { status: "unconfigured", products: [] };
-    return { status: "ready", products: await loadProducts(client, { drop: true }) };
+    return {
+      status: "ready",
+      products: await loadProducts(client, { drop: true }),
+    };
   } catch {
     reportFailure("Drop listing");
     return { status: "unavailable", products: [] };
@@ -254,9 +293,13 @@ export const getCategoryCatalog = cache(
 export const getRelatedProducts = cache(
   unstable_cache(loadRelatedProducts, ["catalog-related-v1"], cacheOptions),
 );
+export const getCachedProductBySlug = cache(
+  unstable_cache(loadProductBySlug, ["catalog-product-v1"], cacheOptions),
+);
 
-// Full catalog remains available for internal/tests and fresh callers. Public pages
-// use the smaller cached functions above so we do not serialize or query unused data.
+// Full catalog and the raw product lookup remain available for tests/fresh callers.
+// Public pages use the smaller cached functions above so we do not repeatedly query
+// or serialize data that they do not need.
 export const getCatalog = cache(async (): Promise<CatalogResult> => {
   try {
     const client = createCatalogClient();
@@ -277,32 +320,7 @@ export const getCatalog = cache(async (): Promise<CatalogResult> => {
   }
 });
 
-export const getProductBySlug = cache(
-  async (
-    slug: string,
-  ): Promise<{ status: CatalogStatus; product: Product | null }> => {
-    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug))
-      return { status: "ready", product: null };
-    try {
-      const client = createCatalogClient();
-      if (!client) return { status: "unconfigured", product: null };
-      const { data, error } = await client
-        .from("products")
-        .select(productSelect)
-        .eq("slug", slug)
-        .eq("status", "active")
-        .maybeSingle();
-      if (error) throw error;
-      return {
-        status: "ready",
-        product: data ? mapProduct(data, process.env.SUPABASE_URL) : null,
-      };
-    } catch {
-      reportFailure("Product detail");
-      return { status: "unavailable", product: null };
-    }
-  },
-);
+export const getProductBySlug = cache(loadProductBySlug);
 
 // Cart validation intentionally bypasses the storefront cache: price and stock
 // must always be checked against current trusted values before checkout.
