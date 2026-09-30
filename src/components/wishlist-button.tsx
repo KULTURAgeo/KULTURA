@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import type { Product } from "@/lib/catalog";
 import {
   getWishlistState,
@@ -9,17 +9,16 @@ import {
 } from "@/app/account/wishlist/actions";
 import styles from "./wishlist-button.module.css";
 
-const initialState = { ok: false, message: "" };
-
 export function WishlistButton({
   product,
 }: {
   product: Product;
   saved?: boolean;
 }) {
-  const [state, action, pending] = useActionState(setWishlist, initialState);
   const [saved, setSaved] = useState<boolean | null>(null);
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [message, setMessage] = useState("");
+  const [pending, startTransition] = useTransition();
 
   useEffect(() => {
     let cancelled = false;
@@ -32,11 +31,6 @@ export function WishlistButton({
       cancelled = true;
     };
   }, [product.id]);
-
-  useEffect(() => {
-    if (!state.ok) return;
-    setSaved((current) => (current === null ? current : !current));
-  }, [state]);
 
   if (authenticated === false) {
     return (
@@ -53,7 +47,23 @@ export function WishlistButton({
   }
 
   return (
-    <form className={styles.form} action={action}>
+    <form
+      className={styles.form}
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (saved === null || authenticated !== true || pending) return;
+        const form = event.currentTarget;
+        const nextSaved = !saved;
+        startTransition(async () => {
+          const result = await setWishlist(
+            { ok: false, message: "" },
+            new FormData(form),
+          );
+          setMessage(result.message);
+          if (result.ok) setSaved(nextSaved);
+        });
+      }}
+    >
       <input type="hidden" name="product_id" value={product.id} />
       <input type="hidden" name="product_slug" value={product.slug} />
       <input type="hidden" name="mode" value={saved ? "remove" : "add"} />
@@ -71,7 +81,7 @@ export function WishlistButton({
               : "♡ SAVE TO WISHLIST"}
       </button>
       <p className={styles.message} role="status">
-        {state.message}
+        {message}
       </p>
     </form>
   );
