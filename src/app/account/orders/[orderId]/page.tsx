@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ActionForm } from "@/components/action-form";
 import { OrderStatusTimeline } from "@/components/order-status-timeline";
 import { requirePage } from "@/lib/auth/guards";
 import { UUID } from "@/lib/validation";
+import { createReturnRequest } from "./actions";
 import styles from "./order-detail.module.css";
 
 export const dynamic = "force-dynamic";
@@ -12,12 +14,26 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
+const ACTIVE_RETURN_STATUSES = new Set(["requested", "under_review", "approved"]);
+
 function statusLabel(value: string) {
   return value.replaceAll("_", " ").toUpperCase();
 }
 
 function statusClass(value: string) {
   return "status-badge status-" + value.replaceAll("_", "-");
+}
+
+function reasonLabel(value: string) {
+  const labels: Record<string, string> = {
+    wrong_size: "Wrong size / fit",
+    damaged: "Damaged item",
+    not_as_described: "Not as described",
+    changed_mind: "Changed my mind",
+    duplicate_order: "Duplicate order",
+    other: "Other",
+  };
+  return labels[value] ?? statusLabel(value);
 }
 
 export default async function CustomerOrderDetail({
@@ -41,16 +57,39 @@ export default async function CustomerOrderDetail({
   if (orderError) throw new Error("Order details are temporarily unavailable.");
   if (!order) notFound();
 
-  const { data: items, error: itemError } = await client
-    .from("order_items")
-    .select(
-      "id,product_name,product_slug,sku,size,color,image_url,unit_price,quantity,discount_total,line_total,created_at",
-    )
-    .eq("order_id", order.id)
-    .order("created_at")
-    .order("id");
+  const [{ data: items, error: itemError }, { data: returnRequests, error: returnError }] = await Promise.all([
+    client
+      .from("order_items")
+      .select(
+        "id,product_name,product_slug,sku,size,color,image_url,unit_price,quantity,discount_total,line_total,created_at",
+      )
+      .eq("order_id", order.id)
+      .order("created_at")
+      .order("id"),
+    client
+      .from("return_requests")
+      .select("id,order_id,request_type,reason,details,status,admin_note,created_at,updated_at")
+      .eq("order_id", order.id)
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
 
   if (itemError) throw new Error("Order items are temporarily unavailable.");
+  if (returnError) throw new Error("Return requests are temporarily unavailable.");
+
+  const requests = returnRequests ?? [];
+  const activeRequest = requests.find((request) => ACTIVE_RETURN_STATUSES.has(request.status)) ?? null;
+  const latestRequest = activeRequest ?? requests[0] ?? null;
+
+  let latestRequestItems: Array<{ order_item_id: string; quantity: number }> = [];
+  if (latestRequest) {
+    const { data, error } = await client
+      .from("return_request_items")
+      .select("order_item_id,quantity")
+      .eq("return_request_id", latestRequest.id);
+    if (error) throw new Error("Return request items are temporarily unavailable.");
+    latestRequestItems = data ?? [];
+  }
 
   const amount = (value: number) =>
     new Intl.NumberFormat("en-GB", {
@@ -58,12 +97,19 @@ export default async function CustomerOrderDetail({
       currency: order.currency,
     }).format(value / 100);
 
-  const itemCount = (items ?? []).reduce((sum, item) => sum + item.quantity, 0);
+  const orderItems = items ?? [];
+  const itemCount = orderItems.reduce((sum, item) => sum + item.quantity, 0);
   const placedAt = new Date(order.created_at).toLocaleString("en-GB", {
     timeZone: "UTC",
     dateStyle: "medium",
     timeStyle: "short",
   });
+  const canRequestReturn =
+    !order.is_test &&
+    (order.payment_status === "paid" || order.payment_status === "partially_refunded") &&
+    order.fulfillment_status !== "cancelled" &&
+    order.fulfillment_status !== "returned" &&
+    !activeRequest;
 
   return (
     <section className={styles.page}>
@@ -123,7 +169,7 @@ export default async function CustomerOrderDetail({
         </div>
 
         <div className={styles.items}>
-          {(items ?? []).map((item) => (
+          {orderItems.map((item) => (
             <article className={styles.item} key={item.id}>
               <div className={styles.imageWrap}>
                 {item.image_url ? (
@@ -206,6 +252,144 @@ export default async function CustomerOrderDetail({
           <p className="muted">Refresh this page anytime to see the latest order status.</p>
         </section>
       </div>
+
+      {latestRequest ? (
+        <section className={`panel ${styles.returnPanel}`}>
+          <div className={styles.returnHeading}>
+            <div>
+              <p className="eyebrow">{activeRequest ? "ACTIVE REQUEST" : "LATEST RETURN / REFUND REQUEST"}</p>
+              <h2>{statusLabel(latestRequest.request_type)} · {statusLabel(latestRequest.status)}</h2>
+            </div>
+            <span className="badge">{statusLabel(latestRequest.status)}</span>
+          </div>
+          <div className={styles.returnSummaryGrid}>
+            <div>
+              <span>TYPE</span>
+              <strong>{statusLabel(latestRequest.request_type)}</strong>
+            </div>
+            <div>
+              <span>REASON</span>
+              <strong>{reasonLabel(latestRequest.reason)}</strong>
+            </div>
+            <div>
+              <span>SUBMITTED</span>
+              <strong>{new Date(latestRequest.created_at).toLocaleDateString("en-GB", { timeZone: "UTC" })}</strong>
+            </div>
+          </div>
+          {latestRequestItems.length ? (
+            <div className={styles.requestedItems}>
+              <p className="eyebrow">REQUESTED ITEMS</p>
+              {latestRequestItems.map((requested) => {
+                const item = orderItems.find((entry) => entry.id === requested.order_item_id);
+                return item ? (
+                  <div key={requested.order_item_id}>
+                    <span>{item.product_name} · {item.color} / {item.size}</span>
+                    <strong>QTY {requested.quantity}</strong>
+                  </div>
+                ) : null;
+              })}
+            </div>
+          ) : null}
+          {latestRequest.details ? (
+            <div className={styles.returnNote}>
+              <span>YOUR NOTE</span>
+              <p>{latestRequest.details}</p>
+            </div>
+          ) : null}
+          {latestRequest.admin_note ? (
+            <div className={styles.returnNote}>
+              <span>KULTURA RESPONSE</span>
+              <p>{latestRequest.admin_note}</p>
+            </div>
+          ) : null}
+          <p className="muted">
+            Approval records the request workflow only. A refund is not sent automatically until the payment gateway supports verified refunds.
+          </p>
+        </section>
+      ) : null}
+
+      {canRequestReturn ? (
+        <section className={`panel ${styles.returnPanel}`}>
+          <div className={styles.returnHeading}>
+            <div>
+              <p className="eyebrow">RETURNS / REFUNDS</p>
+              <h2>REQUEST A RETURN OR REFUND</h2>
+            </div>
+            <span className="badge">CUSTOMER REQUEST</span>
+          </div>
+          <p className="muted">
+            Select the affected items and quantity. KULTURA will review the request before any refund or return is confirmed.
+          </p>
+          <ActionForm action={createReturnRequest} label="SUBMIT REQUEST" className={styles.returnForm}>
+            <input type="hidden" name="order_id" value={order.id} />
+            <div className={styles.returnFormGrid}>
+              <label className="k-field">
+                <span>REQUEST TYPE</span>
+                <select name="request_type" defaultValue="return" required>
+                  <option value="return">RETURN ITEMS</option>
+                  <option value="refund">REFUND REQUEST</option>
+                </select>
+              </label>
+              <label className="k-field">
+                <span>REASON</span>
+                <select name="reason" defaultValue="wrong_size" required>
+                  <option value="wrong_size">WRONG SIZE / FIT</option>
+                  <option value="damaged">DAMAGED ITEM</option>
+                  <option value="not_as_described">NOT AS DESCRIBED</option>
+                  <option value="changed_mind">CHANGED MY MIND</option>
+                  <option value="duplicate_order">DUPLICATE ORDER</option>
+                  <option value="other">OTHER</option>
+                </select>
+              </label>
+            </div>
+
+            <div className={styles.returnItems}>
+              <p className="eyebrow">SELECT ITEMS</p>
+              {orderItems.map((item) => (
+                <div className={styles.returnItemChoice} key={item.id}>
+                  <label>
+                    <input type="checkbox" name="return_item" value={item.id} />
+                    <span>
+                      <strong>{item.product_name}</strong>
+                      <small>{item.color} / {item.size} · {item.sku}</small>
+                    </span>
+                  </label>
+                  <label className={styles.quantityField}>
+                    <span>QTY</span>
+                    <select name={`return_quantity_${item.id}`} defaultValue="1">
+                      {Array.from({ length: item.quantity }, (_, index) => index + 1).map((quantity) => (
+                        <option key={quantity} value={quantity}>{quantity}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              ))}
+            </div>
+
+            <label className={`k-field ${styles.detailsField}`}>
+              <span>DETAILS · OPTIONAL</span>
+              <textarea
+                name="details"
+                maxLength={2000}
+                rows={5}
+                placeholder="Tell us what happened and what resolution you are requesting."
+              />
+            </label>
+          </ActionForm>
+        </section>
+      ) : !activeRequest ? (
+        <section className={`panel ${styles.returnPanel}`}>
+          <p className="eyebrow">RETURNS / REFUNDS</p>
+          <h2>REQUESTS NOT AVAILABLE YET</h2>
+          <p className="muted">
+            {order.is_test
+              ? "Return/refund requests are disabled for test orders."
+              : order.payment_status !== "paid" && order.payment_status !== "partially_refunded"
+                ? "A return/refund request becomes available after payment is confirmed."
+                : "This order is no longer eligible for a new return/refund request."}
+          </p>
+        </section>
+      ) : null}
 
       <div className={styles.actions}>
         <Link className="button secondary" href="/account/orders">← ALL ORDERS</Link>

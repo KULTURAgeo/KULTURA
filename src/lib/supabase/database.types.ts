@@ -520,6 +520,63 @@ updated_at?: string;
 };
 Relationships: [];
 };
+return_request_items: {
+Row: {
+return_request_id: string;
+order_item_id: string;
+quantity: number;
+};
+Insert: {
+return_request_id: string;
+order_item_id: string;
+quantity: number;
+};
+Update: {
+return_request_id?: string;
+order_item_id?: string;
+quantity?: number;
+};
+Relationships: [{"foreignKeyName":"return_request_items_order_item_id_fkey","columns":["order_item_id"],"isOneToOne":false,"referencedRelation":"order_items","referencedColumns":["id"]},{"foreignKeyName":"return_request_items_return_request_id_fkey","columns":["return_request_id"],"isOneToOne":false,"referencedRelation":"return_requests","referencedColumns":["id"]}];
+};
+return_requests: {
+Row: {
+id: string;
+order_id: string;
+customer_id: string;
+request_type: string;
+reason: string;
+details: string;
+status: string;
+admin_note: string;
+created_at: string;
+updated_at: string;
+};
+Insert: {
+id?: string;
+order_id: string;
+customer_id: string;
+request_type: string;
+reason: string;
+details?: string;
+status?: string;
+admin_note?: string;
+created_at?: string;
+updated_at?: string;
+};
+Update: {
+id?: string;
+order_id?: string;
+customer_id?: string;
+request_type?: string;
+reason?: string;
+details?: string;
+status?: string;
+admin_note?: string;
+created_at?: string;
+updated_at?: string;
+};
+Relationships: [{"foreignKeyName":"return_requests_customer_id_fkey","columns":["customer_id"],"isOneToOne":false,"referencedRelation":"profiles","referencedColumns":["id"]},{"foreignKeyName":"return_requests_order_id_fkey","columns":["order_id"],"isOneToOne":false,"referencedRelation":"orders","referencedColumns":["id"]}];
+};
 wishlist_items: {
 Row: {
 profile_id: string;
@@ -547,9 +604,11 @@ admin_reorder_images: { Args: { p_product_id: string | null; p_ids: string[] | n
 admin_save_checkout_settings: { Args: { p_shipping_total: string | null; p_free_shipping_threshold: string | null }; Returns: Json };
 admin_save_product: { Args: { p_id: string | null; p_expected_updated_at: string | null; p_product: Json | null; p_collection_ids: string[] | null }; Returns: string };
 admin_save_promo: { Args: { p_id: string | null; p_expected_updated_at: string | null; p_promo: Json | null }; Returns: string };
+admin_update_return_request: { Args: { p_request_id: string | null; p_expected_updated_at: string | null; p_status: string | null; p_admin_note: string | null }; Returns: string };
 checkout_create_unpaid_order: { Args: { p_cart: Json | null; p_address: Json | null; p_promo_code: string | null }; Returns: string };
 checkout_get_shipping_settings: { Args: { p_request: boolean | null }; Returns: Json };
 checkout_quote_promo: { Args: { p_code: string | null; p_subtotal: string | null }; Returns: Json };
+customer_create_return_request: { Args: { p_order_id: string | null; p_request_type: string | null; p_reason: string | null; p_details: string | null; p_items: Json | null }; Returns: string };
 customer_save_address: { Args: { p_id: string | null; p_address: Json | null }; Returns: string };
 notification_prepare: { Args: { p_order_id: string | null; p_event_type: string | null }; Returns: Json };
 notification_record_delivery: { Args: { p_notification_id: string | null; p_channel: string | null; p_status: string | null }; Returns: undefined };
