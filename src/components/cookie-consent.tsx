@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { Analytics } from "@/components/analytics";
 import {
   OPEN_COOKIE_SETTINGS_EVENT,
   readCookieConsent,
@@ -10,11 +10,15 @@ import {
   type CookieConsentPreferences,
 } from "@/lib/cookie-consent";
 
+const Analytics = dynamic(
+  () => import("@/components/analytics").then((module) => module.Analytics),
+  { ssr: false },
+);
+
 type CookieConsentProps = {
   googleAnalyticsId?: string;
   metaPixelId?: string;
 };
-
 
 function expireCookie(name: string) {
   const hostname = window.location.hostname;
@@ -31,13 +35,14 @@ function clearOptionalCookies(kind: "analytics" | "marketing") {
   for (const cookie of document.cookie.split(";")) {
     const name = cookie.split("=")[0]?.trim();
     if (!name) continue;
-    if (prefixes.some((prefix) => name.startsWith(prefix))) {
-      expireCookie(name);
-    }
+    if (prefixes.some((prefix) => name.startsWith(prefix))) expireCookie(name);
   }
 }
 
-function setGoogleDisabled(googleAnalyticsId: string | undefined, disabled: boolean) {
+function setGoogleDisabled(
+  googleAnalyticsId: string | undefined,
+  disabled: boolean,
+) {
   if (!googleAnalyticsId) return;
   const target = window as unknown as Record<string, unknown>;
   target[`ga-disable-${googleAnalyticsId}`] = disabled;
@@ -192,9 +197,7 @@ export function CookieConsent({
                 <button
                   className="button"
                   type="button"
-                  onClick={() =>
-                    save({ analytics: true, marketing: true })
-                  }
+                  onClick={() => save({ analytics: true, marketing: true })}
                 >
                   ACCEPT ALL
                 </button>
@@ -204,9 +207,7 @@ export function CookieConsent({
                 <button
                   className="button secondary"
                   type="button"
-                  onClick={() =>
-                    save({ analytics: false, marketing: false })
-                  }
+                  onClick={() => save({ analytics: false, marketing: false })}
                 >
                   REJECT OPTIONAL
                 </button>
@@ -220,9 +221,7 @@ export function CookieConsent({
                 <button
                   className="button"
                   type="button"
-                  onClick={() =>
-                    save({ analytics: true, marketing: true })
-                  }
+                  onClick={() => save({ analytics: true, marketing: true })}
                 >
                   ACCEPT ALL
                 </button>

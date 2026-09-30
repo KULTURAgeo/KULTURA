@@ -2,14 +2,13 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/site";
 import { Container } from "@/components/ui";
-import { getCatalog } from "@/lib/catalog/repository";
+import { getShopCategories } from "@/lib/catalog/repository";
 import { CatalogNotice } from "@/components/catalog-notice";
 
-export const dynamic = "force-dynamic";
 export const metadata: Metadata = pageMetadata("Shop", "/shop");
 
 export default async function Shop() {
-  const { products, categories, status } = await getCatalog();
+  const { categories, status } = await getShopCategories();
 
   return (
     <Container className="page-section">
@@ -21,9 +20,7 @@ export default async function Shop() {
           / {String(categories.length).padStart(2, "0")}
         </span>
       </h1>
-      <p className="muted">
-        Choose a category to explore the collection.
-      </p>
+      <p className="muted">Choose a category to explore the collection.</p>
 
       {status !== "ready" ? (
         <CatalogNotice status={status} />
@@ -34,24 +31,18 @@ export default async function Shop() {
         </div>
       ) : (
         <div className="category-grid">
-          {categories.map((category, index) => {
-            const count = products.filter(
-              (product) => product.category === category.name,
-            ).length;
-
-            return (
-              <Link href={"/shop/" + category.slug} key={category.slug}>
-                <span className="eyebrow">
-                  CATEGORY {String(index + 1).padStart(2, "0")}
-                </span>
-                <h3>{category.name}</h3>
-                <span className="muted">
-                  {count} {count === 1 ? "PIECE" : "PIECES"}
-                </span>
-                <span aria-hidden="true">↗</span>
-              </Link>
-            );
-          })}
+          {categories.map((category, index) => (
+            <Link href={"/shop/" + category.slug} key={category.slug}>
+              <span className="eyebrow">
+                CATEGORY {String(index + 1).padStart(2, "0")}
+              </span>
+              <h3>{category.name}</h3>
+              <span className="muted">
+                {category.count} {category.count === 1 ? "PIECE" : "PIECES"}
+              </span>
+              <span aria-hidden="true">↗</span>
+            </Link>
+          ))}
         </div>
       )}
     </Container>

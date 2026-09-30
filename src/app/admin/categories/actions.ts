@@ -4,13 +4,13 @@ import { revalidatePath } from "next/cache";
 import { requireActor } from "@/lib/auth/guards";
 import { id, integer, text, version, InputError } from "@/lib/validation";
 import { safeFailure, type ActionState } from "@/lib/actions";
+import { invalidateStorefrontCatalog } from "@/lib/catalog/invalidate";
 
 function refreshCategories() {
   revalidatePath("/admin/categories");
   revalidatePath("/admin/products/new");
   revalidatePath("/admin/products/[id]", "page");
-  revalidatePath("/shop");
-  revalidatePath("/shop/[category]", "page");
+  invalidateStorefrontCatalog();
 }
 
 export async function saveCategory(
@@ -33,7 +33,12 @@ export async function saveCategory(
       name: text(data, "name", 120),
       slug,
       description: text(data, "description", 10000, false),
-      sort_position: integer(data.get("sort_position"), "Sort position", 0, 1000000),
+      sort_position: integer(
+        data.get("sort_position"),
+        "Sort position",
+        0,
+        1000000,
+      ),
       is_active: data.get("is_active") === "on",
     };
 

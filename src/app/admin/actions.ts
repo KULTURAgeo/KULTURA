@@ -5,13 +5,12 @@ import { requireActor } from "@/lib/auth/guards";
 import { productInput, variantInput, promoInput, text, id, version, InputError } from "@/lib/validation";
 import { safeFailure, type ActionState } from "@/lib/actions";
 import { processProductImage } from "@/lib/admin/image";
+import { invalidateStorefrontCatalog } from "@/lib/catalog/invalidate";
 import { notifyFulfillmentStatus } from "@/lib/notifications/order-notifications";
-function refresh() { revalidatePath("/", "page");
-    revalidatePath("/shop", "page");
-    revalidatePath("/shop/[category]", "page");
-    revalidatePath("/product/[slug]", "page");
-    revalidatePath("/drops", "page");
-    revalidatePath("/admin", "layout"); }
+function refresh() {
+    invalidateStorefrontCatalog();
+    revalidatePath("/admin", "layout");
+}
 export async function saveProduct(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
         const { client } = await requireActor(true);

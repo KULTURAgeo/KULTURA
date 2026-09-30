@@ -1,11 +1,22 @@
-export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { pageMetadata } from "@/lib/site";
 import { isSearchIndexableCategorySlug } from "@/lib/seo-indexing";
 import { Container } from "@/components/ui";
 import { CatalogGrid } from "@/components/catalog-grid";
 import { CatalogNotice } from "@/components/catalog-notice";
-import { getCatalog } from "@/lib/catalog/repository";
+import {
+  getCategoryCatalog,
+  getShopCategories,
+} from "@/lib/catalog/repository";
+
+export const dynamic = "force-static";
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  const { categories, status } = await getShopCategories();
+  if (status !== "ready") return [];
+  return categories.map((category) => ({ category: category.slug }));
+}
 
 export async function generateMetadata({
   params,
@@ -13,9 +24,9 @@ export async function generateMetadata({
   params: Promise<{ category: string }>;
 }) {
   const { category } = await params;
-  const { categories } = await getCatalog();
+  const result = await getCategoryCatalog(category);
   const metadata = pageMetadata(
-    categories.find((c) => c.slug === category)?.name ?? "Category unavailable",
+    result.category?.name ?? "Category unavailable",
     "/shop/" + category,
   );
 
@@ -32,7 +43,8 @@ export default async function Category({
   params: Promise<{ category: string }>;
 }) {
   const { category } = await params;
-  const { products, categories, status } = await getCatalog();
+  const { products, category: selected, status } =
+    await getCategoryCatalog(category);
   if (status !== "ready")
     return (
       <Container className="page-section">
@@ -40,7 +52,6 @@ export default async function Category({
       </Container>
     );
 
-  const selected = categories.find((c) => c.slug === category);
   if (!selected) notFound();
 
   return (
@@ -49,7 +60,7 @@ export default async function Category({
       <h1 className="page-title">{selected.name}</h1>
       <CatalogGrid
         products={products}
-        categories={categories}
+        categories={[]}
         initialCategory={selected.name}
       />
     </Container>
