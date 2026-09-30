@@ -17,19 +17,25 @@ export async function getWishlistState(productId: string): Promise<WishlistState
     const client = await createSessionClient();
     if (!client) return { authenticated: false, saved: false };
 
-    const { data: auth, error: authError } = await client.auth.getUser();
+    // The wishlist query can run at the same time as the auth verification.
+    // RLS restricts wishlist_items to the current session owner.
+    const [authResult, wishlistResult] = await Promise.all([
+      client.auth.getUser(),
+      client
+        .from("wishlist_items")
+        .select("product_id")
+        .eq("product_id", safeProductId)
+        .maybeSingle(),
+    ]);
+
+    const { data: auth, error: authError } = authResult;
     if (authError || !auth.user)
       return { authenticated: false, saved: false };
 
-    const { data, error } = await client
-      .from("wishlist_items")
-      .select("product_id")
-      .eq("profile_id", auth.user.id)
-      .eq("product_id", safeProductId)
-      .maybeSingle();
-    if (error) return { authenticated: true, saved: false };
-
-    return { authenticated: true, saved: Boolean(data) };
+    return {
+      authenticated: true,
+      saved: !wishlistResult.error && Boolean(wishlistResult.data),
+    };
   } catch {
     return { authenticated: false, saved: false };
   }
@@ -57,23 +63,18 @@ export async function setWishlist(
         .eq("product_id", productId);
       if (error) throw error;
     } else {
-      const { data: existing, error: lookupError } = await client
+      // The composite primary key makes this idempotent, so one upsert replaces
+      // the old lookup-then-insert two-request sequence.
+      const { error } = await client
         .from("wishlist_items")
-        .select("product_id")
-        .eq("profile_id", user.id)
-        .eq("product_id", productId)
-        .maybeSingle();
-      if (lookupError) throw lookupError;
-      if (!existing) {
-        const { error } = await client.from("wishlist_items").insert({
-          profile_id: user.id,
-          product_id: productId,
-        });
-        if (error) throw error;
-      }
+        .upsert(
+          { profile_id: user.id, product_id: productId },
+          { onConflict: "profile_id,product_id", ignoreDuplicates: true },
+        );
+      if (error) throw error;
     }
 
-    // Wishlist state is now personalized client UI, so changing it should not
+    // Wishlist state is personalized client UI, so changing it should not
     // invalidate the shared static product page cache.
     revalidatePath("/account/wishlist");
     return {
