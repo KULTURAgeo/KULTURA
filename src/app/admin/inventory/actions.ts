@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireActor } from "@/lib/auth/guards";
 import { id, version, InputError } from "@/lib/validation";
 import { safeFailure, type ActionState } from "@/lib/actions";
+import { invalidateStorefrontCatalog } from "@/lib/catalog/invalidate";
 
 function stockQuantity(value: FormDataEntryValue | null) {
   if (typeof value !== "string" || !/^\d+$/.test(value.trim())) {
@@ -46,13 +47,14 @@ export async function saveInventoryStock(
 
     revalidatePath("/admin/inventory");
     revalidatePath("/admin/products/" + productId);
-    revalidatePath("/shop");
-    revalidatePath("/shop/[category]", "page");
-    revalidatePath("/product/[slug]", "page");
+    invalidateStorefrontCatalog();
 
     return {
       ok: true,
-      message: stock === 0 ? "Stock saved. This variant is now sold out." : `Stock saved: ${stock}.`,
+      message:
+        stock === 0
+          ? "Stock saved. This variant is now sold out."
+          : `Stock saved: ${stock}.`,
     };
   } catch (error) {
     return safeFailure(error);
