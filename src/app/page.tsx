@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { pageMetadata } from "@/lib/site";
 import { campaignImage, money } from "@/lib/catalog";
-import { getCatalog } from "@/lib/catalog/repository";
+import { getHomepageCatalog } from "@/lib/catalog/repository";
 import { CatalogNotice } from "@/components/catalog-notice";
 import { ButtonLink } from "@/components/ui";
 import { Newsletter } from "@/components/newsletter";
@@ -10,12 +10,9 @@ import { HomeMotion } from "@/components/home-motion";
 import styles from "./home.module.css";
 
 export const metadata = pageMetadata("KULTURA — Step Into Kultura", "/");
-export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const { products, categories, status } = await getCatalog();
-  const featured = products.filter((product) => product.featured);
-  const showcase = (featured.length ? featured : products).slice(0, 7);
+  const { products: showcase, categories, status } = await getHomepageCatalog();
 
   const storyCards = [
     {
