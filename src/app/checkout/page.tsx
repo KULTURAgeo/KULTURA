@@ -31,7 +31,7 @@ export default async function CheckoutPage() {
       .eq("profile_id", user.id)
       .order("is_default", { ascending: false })
       .order("created_at"),
-    client.rpc("checkout_get_shipping_settings"),
+    client.rpc("checkout_get_shipping_settings", { p_request: true }),
   ]);
 
   if (addressResult.error) {
