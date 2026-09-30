@@ -19,16 +19,26 @@ export async function verifyActor(
 ) {
   if (!client) throw new AccessError("unavailable");
 
-  // getClaims verifies the signed access token without requiring an Auth-server
-  // user lookup when the project uses asymmetric signing keys. The authenticated
-  // Supabase client still carries the same verified session for RLS-protected DB calls.
-  const { data, error } = await client.auth.getClaims();
-  if (error) throw new AccessError(authFailure(error));
+  let userId: string | undefined;
+  let email: string | undefined;
 
-  const claims = data?.claims;
-  const userId = claims?.sub;
-  if (typeof userId !== "string" || !userId)
-    throw new AccessError("unauthenticated");
+  // Current Supabase clients can verify the signed access token locally (or via
+  // cached JWKS) with getClaims, avoiding an Auth-server user lookup. Keep a
+  // getUser fallback for compatible test/legacy clients that do not expose it.
+  if (typeof client.auth.getClaims === "function") {
+    const { data, error } = await client.auth.getClaims();
+    if (error) throw new AccessError(authFailure(error));
+    const claims = data?.claims;
+    userId = typeof claims?.sub === "string" ? claims.sub : undefined;
+    email = typeof claims?.email === "string" ? claims.email : undefined;
+  } else {
+    const { data, error } = await client.auth.getUser();
+    if (error) throw new AccessError(authFailure(error));
+    userId = data.user?.id;
+    email = data.user?.email;
+  }
+
+  if (!userId) throw new AccessError("unauthenticated");
 
   const { data: profile, error: profileError } = await client
     .from("profiles")
@@ -38,7 +48,6 @@ export async function verifyActor(
   if (profileError || !profile) throw new AccessError("unavailable");
   if (admin && profile.role !== "admin") throw new AccessError("forbidden");
 
-  const email = typeof claims.email === "string" ? claims.email : undefined;
   return {
     client,
     user: { id: userId, email },
