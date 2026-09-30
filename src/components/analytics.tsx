@@ -151,14 +151,16 @@ export function trackAddToCart({
   category,
   variant,
   price,
+  quantity = 1,
 }: {
   id: string;
   name: string;
   category: string;
   variant: string;
   price: number;
+  quantity?: number;
 }) {
-  const value = price / 100;
+  const value = (price * quantity) / 100;
   const consent = readCookieConsent();
 
   if (consent?.analytics) window.gtag?.("event", "add_to_cart", {
@@ -171,8 +173,8 @@ export function trackAddToCart({
         item_brand: "KULTURA",
         item_category: category,
         item_variant: variant,
-        price: value,
-        quantity: 1,
+        price: price / 100,
+        quantity,
       } satisfies EcommerceItem,
     ],
   });
