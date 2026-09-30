@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui";
+import { OrderStatusTimeline } from "@/components/order-status-timeline";
 import { requirePage } from "@/lib/auth/guards";
 import { UUID } from "@/lib/validation";
 
@@ -16,6 +17,71 @@ function statusLabel(value: string) {
 
 function statusClass(value: string) {
   return "status-badge status-" + value.replaceAll("_", "-");
+}
+
+function confirmationMessage(paymentStatus: string) {
+  if (paymentStatus === "pending") {
+    return "Your order has been saved successfully. No payment has been taken yet.";
+  }
+  if (paymentStatus === "paid") {
+    return "Your order is saved and payment is marked as confirmed.";
+  }
+  return "Your order is saved. Check the latest payment and fulfillment status below.";
+}
+
+function nextStep(paymentStatus: string, fulfillmentStatus: string) {
+  if (fulfillmentStatus === "returned") {
+    return {
+      title: "ORDER RETURNED",
+      body: "This order is marked as returned. The payment status above shows the latest recorded payment outcome.",
+    };
+  }
+  if (fulfillmentStatus === "cancelled" || paymentStatus === "cancelled") {
+    return {
+      title: "ORDER CANCELLED",
+      body: "This order is marked as cancelled. No further fulfillment steps are expected unless the order record changes.",
+    };
+  }
+  if (paymentStatus === "failed") {
+    return {
+      title: "PAYMENT FAILED",
+      body: "The payment attempt is marked as failed. Fulfillment will not begin until a valid payment is confirmed.",
+    };
+  }
+  if (paymentStatus === "refunded" || paymentStatus === "partially_refunded") {
+    return {
+      title: paymentStatus === "refunded" ? "PAYMENT REFUNDED" : "PARTIAL REFUND",
+      body: "A refund is recorded on this order. The fulfillment status above shows the latest delivery state.",
+    };
+  }
+  if (paymentStatus !== "paid") {
+    return {
+      title: "PAYMENT PENDING",
+      body: "The order is stored in your account but has not been paid. Fulfillment begins only after payment is confirmed.",
+    };
+  }
+  if (fulfillmentStatus === "processing") {
+    return {
+      title: "BEING PREPARED",
+      body: "Your order is currently being prepared. The next fulfillment step is shipment.",
+    };
+  }
+  if (fulfillmentStatus === "shipped") {
+    return {
+      title: "ON THE WAY",
+      body: "Your order is marked as shipped. The next fulfillment step is delivery.",
+    };
+  }
+  if (fulfillmentStatus === "delivered") {
+    return {
+      title: "DELIVERED",
+      body: "Your order is marked as delivered. This is the final fulfillment stage.",
+    };
+  }
+  return {
+    title: "PAYMENT CONFIRMED",
+    body: "Payment is confirmed and your order is waiting to move into processing.",
+  };
 }
 
 export default async function OrderConfirmation({
@@ -58,17 +124,15 @@ export default async function OrderConfirmation({
     }).format(value / 100);
 
   const itemCount = (items ?? []).reduce((sum, item) => sum + item.quantity, 0);
+  const next = nextStep(order.payment_status, order.fulfillment_status);
 
   return (
     <Container className="page-section">
       <div className="admin-order-detail-top">
         <div>
-          <p className="eyebrow">KULTURA / ORDER CONFIRMATION</p>
-          <h1 className="page-title">ORDER SAVED</h1>
-          <p className="muted">
-            Thank you. Your order has been saved successfully. No payment was
-            taken because the payment gateway is not connected yet.
-          </p>
+          <p className="eyebrow">KULTURA / ORDER DETAILS</p>
+          <h1 className="page-title">{order.order_number}</h1>
+          <p className="muted">{confirmationMessage(order.payment_status)}</p>
         </div>
         <div className="admin-order-status-stack">
           <span className={statusClass(order.payment_status)}>
@@ -79,6 +143,11 @@ export default async function OrderConfirmation({
           </span>
         </div>
       </div>
+
+      <OrderStatusTimeline
+        paymentStatus={order.payment_status}
+        fulfillmentStatus={order.fulfillment_status}
+      />
 
       <div className="stat-grid order-detail-stats">
         <div className="panel">
@@ -149,12 +218,8 @@ export default async function OrderConfirmation({
 
         <section className="panel">
           <p className="eyebrow">WHAT HAPPENS NEXT</p>
-          <h2>PAYMENT PENDING</h2>
-          <p className="muted">
-            This order is stored in your account, but it has not been paid. Once
-            the bank payment gateway is connected, payment confirmation will be
-            handled by the verified provider before fulfillment can begin.
-          </p>
+          <h2>{next.title}</h2>
+          <p className="muted">{next.body}</p>
         </section>
       </div>
 
