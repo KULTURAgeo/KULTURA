@@ -25,11 +25,21 @@ export type Product = {
   seoTitle?: string;
   seoDescription?: string;
 };
+
+const wholeGel = new Intl.NumberFormat("en-GB", {
+  style: "currency",
+  currency: "GEL",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+const fractionalGel = new Intl.NumberFormat("en-GB", {
+  style: "currency",
+  currency: "GEL",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
 export const money = (amount: number) =>
-  new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: "GEL",
-    minimumFractionDigits: amount % 100 === 0 ? 0 : 2,
-    maximumFractionDigits: 2,
-  }).format(amount / 100);
+  (amount % 100 === 0 ? wholeGel : fractionalGel).format(amount / 100);
+
 export const campaignImage = "/images/campaign.jpg";
