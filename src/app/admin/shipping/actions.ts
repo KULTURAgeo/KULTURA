@@ -24,8 +24,9 @@ export async function saveShippingSettings(
     }
 
     const { error } = await client.rpc("admin_save_checkout_settings", {
-      p_shipping_total: shippingTotal,
-      p_free_shipping_threshold: freeShippingThreshold,
+      p_shipping_total: shippingTotal.toString(),
+      p_free_shipping_threshold:
+        freeShippingThreshold === null ? null : freeShippingThreshold.toString(),
     });
 
     if (error) throw error;
