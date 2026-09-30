@@ -7,7 +7,6 @@ import {
   getRelatedProducts,
 } from "@/lib/catalog/repository";
 import { getActiveProductSlugs } from "@/lib/catalog/static-params";
-import { CATALOG_REVALIDATE_SECONDS } from "@/lib/catalog/cache-config";
 import { CatalogNotice } from "@/components/catalog-notice";
 import { Container, SectionHeading } from "@/components/ui";
 import { ProductDetail } from "@/components/product-detail";
@@ -15,7 +14,7 @@ import { ProductCard } from "@/components/product-card";
 import { StructuredData } from "@/components/structured-data";
 import { RecentlyViewed } from "@/components/recently-viewed";
 
-export const revalidate = CATALOG_REVALIDATE_SECONDS;
+export const revalidate = 300;
 
 export async function generateStaticParams() {
   const slugs = await getActiveProductSlugs();
