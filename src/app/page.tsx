@@ -8,7 +8,6 @@ import { ButtonLink } from "@/components/ui";
 import { Newsletter } from "@/components/newsletter";
 import { HomeMotion } from "@/components/home-motion";
 import styles from "./home.module.css";
-import motionStyles from "./home-motion.module.css";
 
 export const metadata = pageMetadata("KULTURA — Step Into Kultura", "/");
 export const dynamic = "force-dynamic";
@@ -74,24 +73,24 @@ export default async function Home() {
 
   return (
     <HomeMotion className={styles.home}>
-      <section className={styles.hero}>
-        <div className={styles.heroMedia} aria-hidden="true">
+      <section className={styles.hero} data-home-hero>
+        <div className={styles.heroMedia} aria-hidden="true" data-home-media>
           <Image src={campaignImage} alt="" fill priority sizes="100vw" />
         </div>
         <div className={styles.heroShade} />
         <div className={styles.heroGrain} />
-        <div className={`${styles.heroChromeOrb} ${motionStyles.orbMotion}`} aria-hidden="true">✳</div>
+        <div className={styles.heroChromeOrb} aria-hidden="true" data-home-orb>✳</div>
 
-        <div className={styles.heroMeta}>
+        <div className={styles.heroMeta} data-home-intro>
           <span>KULTURA / INDEPENDENT STREETWEAR</span>
           <span>TBILISI — GEORGIA</span>
           <span>COLLECTION 001 / 2026</span>
         </div>
 
         <div className={styles.heroContent}>
-          <p className={styles.heroKicker}>STEP INTO KULTURA / NEW ERA</p>
-          <h1 className={styles.heroTitle}>KULTURA</h1>
-          <div className={styles.heroFooter}>
+          <p className={styles.heroKicker} data-home-intro>STEP INTO KULTURA / NEW ERA</p>
+          <h1 className={styles.heroTitle} data-home-intro>KULTURA</h1>
+          <div className={styles.heroFooter} data-home-intro>
             <p className={styles.heroLead}>
               Clothing with presence.<br />
               Built for movement, made to be yours.
@@ -104,7 +103,7 @@ export default async function Home() {
               A darker, sharper everyday uniform — designed outside the expected.
             </p>
           </div>
-          <div style={{ marginTop: 24 }}>
+          <div style={{ marginTop: 24 }} data-home-intro>
             <ButtonLink href="/shop">ENTER THE SHOP ↗</ButtonLink>
           </div>
         </div>
@@ -113,7 +112,7 @@ export default async function Home() {
       </section>
 
       <div className={styles.kineticStrip} aria-hidden="true">
-        <div className={styles.kineticTrack}>
+        <div className={styles.kineticTrack} data-home-marquee>
           <span>INDEPENDENT SPIRIT</span><span>✳</span>
           <span>FORM IN MOTION</span><span>✳</span>
           <span>NO UNIFORM THINKING</span><span>✳</span>
@@ -270,7 +269,7 @@ export default async function Home() {
       </section>
 
       <section className={styles.finale}>
-        <div className={`${styles.finaleRing} ${motionStyles.ringMotion}`} aria-hidden="true" />
+        <div className={styles.finaleRing} aria-hidden="true" data-home-ring />
         <div className={styles.finaleContent} data-reveal>
           <span className={styles.finaleMark} aria-hidden="true">✳</span>
           <p className="eyebrow">KULTURA / YOUR NEXT UNIFORM</p>
