@@ -1,7 +1,9 @@
 -- Admin-managed checkout shipping settings.
 begin;
 
-create or replace function public.checkout_get_shipping_settings()
+create or replace function public.checkout_get_shipping_settings(
+  p_request boolean
+)
 returns jsonb
 language plpgsql
 stable
@@ -14,6 +16,10 @@ declare
 begin
   if auth.uid() is null then
     raise exception 'Authentication required' using errcode='42501';
+  end if;
+
+  if p_request is not true then
+    raise exception 'Invalid request' using errcode='22023';
   end if;
 
   select shipping_total, free_shipping_threshold
@@ -32,9 +38,9 @@ begin
 end
 $$;
 
-revoke all on function public.checkout_get_shipping_settings()
+revoke all on function public.checkout_get_shipping_settings(boolean)
 from public, anon, authenticated;
-grant execute on function public.checkout_get_shipping_settings()
+grant execute on function public.checkout_get_shipping_settings(boolean)
 to authenticated;
 
 create or replace function public.admin_save_checkout_settings(
@@ -86,7 +92,7 @@ from public, anon, authenticated;
 grant execute on function public.admin_save_checkout_settings(integer,integer)
 to authenticated;
 
-comment on function public.checkout_get_shipping_settings() is
+comment on function public.checkout_get_shipping_settings(boolean) is
   'Returns checkout delivery pricing for authenticated checkout UI.';
 comment on function public.admin_save_checkout_settings(integer,integer) is
   'Admin-only update for checkout shipping price and optional free-shipping threshold.';
