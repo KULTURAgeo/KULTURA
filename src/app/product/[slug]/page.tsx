@@ -3,7 +3,7 @@ import Link from "next/link";
 import { pageMetadata, siteUrl } from "@/lib/site";
 import { isSearchIndexableProductSlug } from "@/lib/seo-indexing";
 import { notFound } from "next/navigation";
-import { getCatalog, getProductBySlug } from "@/lib/catalog/repository";
+import { getProductBySlug, getRelatedProducts } from "@/lib/catalog/repository";
 import { CatalogNotice } from "@/components/catalog-notice";
 import { Container, SectionHeading } from "@/components/ui";
 import { ProductDetail } from "@/components/product-detail";
@@ -128,17 +128,10 @@ export default async function ProductPage({
     },
   ];
 
-  const [{ products }, wishlistSaved] = await Promise.all([
-    getCatalog(),
+  const [related, wishlistSaved] = await Promise.all([
+    getRelatedProducts(product.categorySlug, product.slug, 4),
     isWishlisted(product.id),
   ]);
-  const sameCategory = products.filter(
-    (candidate) => candidate.slug !== product.slug && candidate.category === product.category,
-  );
-  const otherProducts = products.filter(
-    (candidate) => candidate.slug !== product.slug && candidate.category !== product.category,
-  );
-  const related = [...sameCategory, ...otherProducts].slice(0, 4);
 
   return (
     <>
@@ -156,10 +149,7 @@ export default async function ProductPage({
         <ProductDetail key={product.slug} product={product} wishlistSaved={wishlistSaved} />
         {related.length ? (
           <section className="section">
-            <SectionHeading
-              eyebrow="RELATED PIECES"
-              title="YOU MAY ALSO LIKE"
-            />
+            <SectionHeading eyebrow="RELATED PIECES" title="YOU MAY ALSO LIKE" />
             <div className="product-grid">
               {related.map((item) => (
                 <ProductCard key={item.slug} product={item} />
