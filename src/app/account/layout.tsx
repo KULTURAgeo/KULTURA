@@ -9,5 +9,5 @@ export default async function AccountLayout({ children }: {
     children: React.ReactNode;
 }) {
     const { profile } = await requirePage();
-    return <Container className="page-section account-shell"><p className="eyebrow">YOUR KULTURA</p><nav className="account-nav"><Link href="/account">PROFILE</Link><Link href="/account/orders">ORDERS</Link><Link href="/account/addresses">ADDRESSES</Link>{profile.role === "admin" && <Link href="/admin">ADMIN ↗</Link>}<ActionForm action={logout} label="SIGN OUT"/></nav>{children}</Container>;
+    return <Container className="page-section account-shell"><p className="eyebrow">YOUR KULTURA</p><nav className="account-nav"><Link href="/account">PROFILE</Link><Link href="/account/orders">ORDERS</Link><Link href="/account/wishlist">WISHLIST</Link><Link href="/account/addresses">ADDRESSES</Link>{profile.role === "admin" && <Link href="/admin">ADMIN ↗</Link>}<ActionForm action={logout} label="SIGN OUT"/></nav>{children}</Container>;
 }
