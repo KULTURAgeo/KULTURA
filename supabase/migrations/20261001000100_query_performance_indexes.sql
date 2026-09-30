@@ -17,6 +17,11 @@ create index if not exists products_active_category_created_id_idx
   on public.products(category_id, created_at desc, id)
   where status = 'active';
 
+-- generateStaticParams reads every active slug ordered by id.
+create index if not exists products_active_id_idx
+  on public.products(id)
+  where status = 'active';
+
 -- Admin product and promo lists are sorted newest-first regardless of status.
 create index if not exists products_admin_created_id_idx
   on public.products(created_at desc, id);
