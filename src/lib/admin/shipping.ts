@@ -32,7 +32,9 @@ function parseSettings(value: unknown): ShippingSettings {
 
 export async function adminShippingSettings(): Promise<ShippingSettings> {
   const { client } = await requirePage(true);
-  const { data, error } = await client.rpc("checkout_get_shipping_settings");
+  const { data, error } = await client.rpc("checkout_get_shipping_settings", {
+    p_request: true,
+  });
   if (error) throw new Error("Shipping settings unavailable.");
   return parseSettings(data);
 }
