@@ -82,23 +82,19 @@ export async function adminRecentOrders() {
 
 export async function adminBestSellers() {
   const { client } = await requirePage(true);
-  const { data: paidOrders, error: paidError } = await client
-    .from("orders")
-    .select("id")
-    .eq("is_test", false)
-    .eq("payment_status", "paid")
-    .order("paid_at", { ascending: false })
-    .limit(1000);
 
-  if (paidError) throw new Error("Sales analytics unavailable.");
-  const paidOrderIds = (paidOrders ?? []).map((order) => order.id);
-  if (!paidOrderIds.length) return [];
-
+  // Filter through the order relation in one PostgREST request instead of first
+  // downloading up to 1,000 order IDs and sending them back in a giant IN list.
   const { data: items, error } = await client
     .from("order_items")
-    .select("product_name,quantity,line_total")
-    .in("order_id", paidOrderIds)
+    .select(
+      "product_name,quantity,line_total,orders!inner(is_test,payment_status)",
+    )
+    .eq("orders.is_test", false)
+    .eq("orders.payment_status", "paid")
+    .order("created_at", { ascending: false })
     .limit(5000);
+
   if (error) throw new Error("Sales analytics unavailable.");
 
   const bestSellers = new Map<
