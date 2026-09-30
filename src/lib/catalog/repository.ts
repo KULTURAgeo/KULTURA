@@ -10,7 +10,7 @@ export type CatalogResult = {
   categories: Category[];
 };
 const productSelect = `
- id,slug,name,price,compare_at_price,description,featured,is_drop,seo_title,seo_description,
+ id,slug,name,price,compare_at_price,description,featured,is_drop,created_at,seo_title,seo_description,
  category:categories!inner(name,slug),
  variants:product_variants(id,sku,size,color,stock_quantity,is_active,sort_position),
  images:product_images(image_url,storage_path,alt_text,sort_position)
@@ -90,7 +90,7 @@ export const getProductBySlug = cache(
   },
 );
 
-export async function getProductsByIds(ids:string[]):Promise<{status:CatalogStatus;products:Product[]}>{
+export async function getProductsByIds(ids:string[]):Promise<{status:CatalogStatus;products:Product[]} >{
  try{
  const client=createCatalogClient();if(!client)return {status:"unconfigured",products:[]};
  if(!ids.length)return {status:"ready",products:[]};
