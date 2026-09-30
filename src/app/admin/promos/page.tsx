@@ -25,7 +25,7 @@ export default async function Promos({ searchParams }: {
   const requestedPage = Math.floor(
     Math.max(1, Math.min(10000, Number(query.page) || 1)),
   );
-  const { promos, count, page } = await adminPromos(requestedPage);
+  const { promos, hasNext, page } = await adminPromos(requestedPage);
 
   return (
     <>
@@ -102,9 +102,7 @@ export default async function Promos({ searchParams }: {
         {page > 1 ? (
           <Link href={"?page=" + (page - 1)}>Previous</Link>
         ) : null}
-        {page * 25 < count ? (
-          <Link href={"?page=" + (page + 1)}>Next</Link>
-        ) : null}
+        {hasNext ? <Link href={"?page=" + (page + 1)}>Next</Link> : null}
       </nav>
     </>
   );
