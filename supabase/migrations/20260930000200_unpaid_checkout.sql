@@ -2,6 +2,36 @@
 -- Orders created here remain PAYMENT=PENDING and FULFILLMENT=UNFULFILLED.
 begin;
 
+create schema if not exists private;
+
+-- Keep checkout delivery settings private and expose only a safe read function.
+create table if not exists private.checkout_settings (
+  singleton boolean primary key default true check (singleton),
+  shipping_total integer check (shipping_total between 0 and 1000000),
+  free_shipping_threshold integer check (free_shipping_threshold is null or free_shipping_threshold >= 0)
+);
+revoke all on private.checkout_settings from public, anon, authenticated;
+insert into private.checkout_settings (singleton, shipping_total, free_shipping_threshold)
+values (true, 0, null)
+on conflict (singleton) do nothing;
+
+create or replace function public.checkout_get_settings()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select jsonb_build_object(
+    'shipping_total', shipping_total,
+    'free_shipping_threshold', free_shipping_threshold
+  )
+  from private.checkout_settings
+  where singleton = true;
+$$;
+revoke all on function public.checkout_get_settings() from public, anon, authenticated;
+grant execute on function public.checkout_get_settings() to authenticated;
+
 create or replace function public.checkout_create_unpaid_order(
   p_cart jsonb,
   p_address jsonb,
@@ -41,6 +71,8 @@ declare
   v_address_2 text;
   v_postal text;
   v_seen_variants uuid[] := '{}'::uuid[];
+  v_shipping_total integer;
+  v_free_shipping_threshold integer;
 begin
   if v_customer_id is null then
     raise exception 'Authentication required' using errcode='42501';
@@ -137,11 +169,19 @@ begin
     end if;
   end loop;
 
-  -- Keep the current storefront delivery policy authoritative on the server.
+  select shipping_total, free_shipping_threshold
+  into v_shipping_total, v_free_shipping_threshold
+  from private.checkout_settings
+  where singleton = true;
+
+  if v_shipping_total is null then
+    raise exception 'Checkout delivery is not configured' using errcode='22023';
+  end if;
+
   v_shipping := case
-    when v_subtotal >= 19900 then 0
-    when lower(v_city) in ('tbilisi', 'თბილისი') then 1000
-    else 2000
+    when v_free_shipping_threshold is not null
+      and v_subtotal >= v_free_shipping_threshold then 0
+    else v_shipping_total
   end;
 
   if nullif(trim(coalesce(p_promo_code, '')), '') is not null then
@@ -208,10 +248,9 @@ begin
 
     select p.name, p.slug, p.price,
            v.sku, v.size, v.color,
-           (select pi.image_url
+           (select coalesce(pi.image_url, case when pi.storage_path is not null then '/storage/' || pi.storage_path else null end)
               from public.product_images pi
              where pi.product_id = p.id
-               and pi.image_url is not null
              order by pi.sort_position, pi.id
              limit 1)
     into v_name, v_slug, v_price,
