@@ -5,6 +5,7 @@ import { requireActor } from "@/lib/auth/guards";
 import { productInput, variantInput, promoInput, text, id, version, InputError } from "@/lib/validation";
 import { safeFailure, type ActionState } from "@/lib/actions";
 import { processProductImage } from "@/lib/admin/image";
+import { notifyFulfillmentStatus } from "@/lib/notifications/order-notifications";
 function refresh() { revalidatePath("/", "page");
     revalidatePath("/shop", "page");
     revalidatePath("/shop/[category]", "page");
@@ -170,6 +171,7 @@ export async function advanceFulfillment(_state: ActionState, data: FormData): P
         revalidatePath("/admin");
         revalidatePath("/admin/orders");
         revalidatePath("/admin/orders/" + orderId);
+        await notifyFulfillmentStatus(client, orderId, nextStatus);
         return { ok: true, message: "Fulfillment status updated." };
     }
     catch (error) {

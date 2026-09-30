@@ -5,6 +5,7 @@ import { requireActor } from "@/lib/auth/guards";
 import { normalizeLines } from "@/lib/cart/model";
 import { InputError } from "@/lib/validation";
 import { safeFailure } from "@/lib/actions";
+import { notifyOrderEvent } from "@/lib/notifications/order-notifications";
 
 type AddressInput = {
   recipient_name?: unknown;
@@ -99,6 +100,8 @@ export async function createUnpaidOrder(
 
     revalidatePath("/account/orders");
     revalidatePath("/admin/orders");
+
+    await notifyOrderEvent(client, data, "order_received");
 
     return {
       ok: true,
