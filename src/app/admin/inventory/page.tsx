@@ -137,7 +137,7 @@ export default async function InventoryPage({
 
       <nav className="inline-links" aria-label="Inventory pagination">
         {inventory.page > 1 ? <Link href={pageHref(inventory.page - 1)}>Previous</Link> : null}
-        {inventory.page * 50 < inventory.count ? <Link href={pageHref(inventory.page + 1)}>Next</Link> : null}
+        {inventory.hasNext ? <Link href={pageHref(inventory.page + 1)}>Next</Link> : null}
       </nav>
     </>
   );

@@ -97,6 +97,17 @@ async function loadCategories(client: CatalogClient) {
   return categories;
 }
 
+async function loadActiveCategoryBySlug(client: CatalogClient, slug: string) {
+  const { data, error } = await client
+    .from("categories")
+    .select("id,name,slug")
+    .eq("is_active", true)
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 async function loadActiveProductCategoryCounts(client: CatalogClient) {
   const counts = new Map<string, number>();
   for (let offset = 0; ; offset += 500) {
@@ -224,8 +235,7 @@ const loadCategoryCatalog = async (
     if (!client)
       return { status: "unconfigured", category: null, products: [] };
 
-    const categories = await loadCategories(client);
-    const selected = categories.find((category) => category.slug === slug);
+    const selected = await loadActiveCategoryBySlug(client, slug);
     if (!selected) return { status: "ready", category: null, products: [] };
 
     return {
@@ -247,8 +257,7 @@ const loadRelatedProducts = async (
   try {
     const client = createCatalogClient();
     if (!client) return [];
-    const categories = await loadCategories(client);
-    const selected = categories.find((category) => category.slug === categorySlug);
+    const selected = await loadActiveCategoryBySlug(client, categorySlug);
     const safeLimit = Math.max(1, Math.min(limit, 8));
 
     if (!selected)

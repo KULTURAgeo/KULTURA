@@ -46,12 +46,12 @@ export async function adminInventoryStats() {
 export async function adminInventory(filter: InventoryFilter, page = 1) {
   const { client } = await requirePage(true);
   const safePage = Math.floor(Math.max(1, Math.min(10000, page)));
+  const offset = (safePage - 1) * 50;
 
   let query = client
     .from("product_variants")
     .select(
       "id,product_id,sku,size,color,stock_quantity,is_active,updated_at,products!inner(id,name,slug,status)",
-      { count: "exact" },
     )
     .order("stock_quantity", { ascending: true })
     .order("sku", { ascending: true });
@@ -66,16 +66,13 @@ export async function adminInventory(filter: InventoryFilter, page = 1) {
     query = query.eq("is_active", false);
   }
 
-  const { data, count, error } = await query.range(
-    (safePage - 1) * 50,
-    safePage * 50 - 1,
-  );
-
+  const { data, error } = await query.range(offset, offset + 50);
   if (error) throw new Error("Inventory unavailable.");
 
+  const rows = data ?? [];
   return {
-    variants: data ?? [],
-    count: count ?? 0,
+    variants: rows.slice(0, 50),
+    hasNext: rows.length > 50,
     page: safePage,
   };
 }
