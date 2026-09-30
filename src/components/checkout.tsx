@@ -8,6 +8,7 @@ import { useCart } from "@/components/cart-provider";
 import { money } from "@/lib/catalog";
 import type { Database } from "@/lib/supabase/database.types";
 import { createTestOrder, quotePromo } from "@/app/checkout/actions";
+import { createUnpaidOrder } from "@/app/checkout/unpaid-actions";
 
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 
@@ -39,7 +40,7 @@ function isTbilisi(city: string) {
   return value === "tbilisi" || value === "თბილისი";
 }
 
-function deliveryPrice(subtotal: number, city: string) {
+function legacyTestDeliveryPrice(subtotal: number, city: string) {
   if (subtotal >= FREE_DELIVERY_THRESHOLD) return 0;
   return isTbilisi(city) ? TBILISI_DELIVERY : REGIONAL_DELIVERY;
 }
@@ -53,6 +54,8 @@ export function Checkout({
   const router = useRouter();
   const [testPending, startTestTransition] = useTransition();
   const [testMessage, setTestMessage] = useState("");
+  const [orderPending, startOrderTransition] = useTransition();
+  const [orderMessage, setOrderMessage] = useState("");
   const [promoPending, startPromoTransition] = useTransition();
   const [promoInput, setPromoInput] = useState("");
   const [promoMessage, setPromoMessage] = useState("");
@@ -87,9 +90,11 @@ export function Checkout({
   const shipping = useMemo(
     () =>
       cart.quote.lines.length
-        ? deliveryPrice(cart.quote.subtotal, deliveryCity)
+        ? testCheckoutEnabled
+          ? legacyTestDeliveryPrice(cart.quote.subtotal, deliveryCity)
+          : 0
         : 0,
-    [cart.quote.lines.length, cart.quote.subtotal, deliveryCity],
+    [cart.quote.lines.length, cart.quote.subtotal, deliveryCity, testCheckoutEnabled],
   );
 
   const promoIsCurrent =
@@ -140,6 +145,18 @@ export function Checkout({
     !missingDelivery &&
     !!activeAddress &&
     !testPending &&
+    !promoPending;
+
+  const canCreateUnpaidOrder =
+    !testCheckoutEnabled &&
+    cart.ready &&
+    !cart.busy &&
+    !cart.error &&
+    !!cart.quote.lines.length &&
+    !unavailable &&
+    !missingDelivery &&
+    !!activeAddress &&
+    !orderPending &&
     !promoPending;
 
   const checkoutLines = () =>
@@ -194,6 +211,27 @@ export function Checkout({
 
       cart.clear();
       router.push("/account/orders?test_order=created");
+      router.refresh();
+    });
+  };
+
+  const runUnpaidCheckout = () => {
+    if (!canCreateUnpaidOrder || !activeAddress) return;
+    setOrderMessage("");
+    startOrderTransition(async () => {
+      const result = await createUnpaidOrder({
+        lines: checkoutLines(),
+        address: activeAddress,
+        promoCode: activePromoCode,
+      });
+
+      if (!result.ok || !result.orderId) {
+        setOrderMessage(result.message || "The order could not be created.");
+        return;
+      }
+
+      cart.clear();
+      router.push(`/order-confirmation/${result.orderId}`);
       router.refresh();
     });
   };
@@ -388,29 +426,35 @@ export function Checkout({
             <strong>
               {!deliveryCity
                 ? "—"
-                : cart.quote.subtotal >= FREE_DELIVERY_THRESHOLD
+                : shipping === 0
                   ? "FREE"
                   : money(shipping)}
             </strong>
           </div>
 
           <p className="muted checkout-free-shipping-note">
-            Standard delivery is free from {money(FREE_DELIVERY_THRESHOLD)}.
-            Tbilisi delivery is {money(TBILISI_DELIVERY)}; other regions of
-            Georgia are {money(REGIONAL_DELIVERY)}.
+            {testCheckoutEnabled ? (
+              <>
+                Standard delivery is free from {money(FREE_DELIVERY_THRESHOLD)}.
+                Tbilisi delivery is {money(TBILISI_DELIVERY)}; other regions of
+                Georgia are {money(REGIONAL_DELIVERY)}.
+              </>
+            ) : (
+              <>Standard delivery is currently free while checkout is being tested.</>
+            )}
           </p>
         </section>
 
         <section className="checkout-section checkout-payment-preview">
           <p className="eyebrow">PAYMENT</p>
-          <h2>PAY SECURELY</h2>
+          <h2>PAYMENT PENDING</h2>
           <label className="checkout-payment-option">
             <input type="radio" checked readOnly />
             <span>
               <strong>ONLINE CARD PAYMENT</strong>
               <small>
-                Secure bank payment will open here when the payment gateway is
-                activated.
+                The bank payment gateway is not connected yet. You can save a
+                pending order without entering card details.
               </small>
             </span>
             <span>VISA · MC</span>
@@ -419,7 +463,7 @@ export function Checkout({
           <div className="checkout-promo">
             <div>
               <p className="eyebrow">PROMO CODE</p>
-              <span>Have a discount code? Apply it before payment.</span>
+              <span>Have a discount code? Apply it before placing the order.</span>
             </div>
             <div className="checkout-promo-row">
               <input
@@ -455,9 +499,8 @@ export function Checkout({
           </div>
 
           <p className="muted">
-            When payment goes live, card entry and payment confirmation will be
-            handled through the connected bank payment provider. This preview
-            does not collect card details.
+            No card details are collected and this action does not charge money.
+            Payment status will remain PENDING until a verified payment gateway is connected.
           </p>
         </section>
       </div>
@@ -575,18 +618,26 @@ export function Checkout({
                   </p>
                 </div>
               ) : (
-                <>
+                <div className="checkout-test-mode">
+                  <div className="checkout-test-mode-label">
+                    <span>PAYMENT GATEWAY PENDING</span>
+                    <small>Saves this order with payment status PENDING. No money is charged.</small>
+                  </div>
                   <button
                     type="button"
                     className="button checkout-pay-button"
-                    disabled
+                    disabled={!canCreateUnpaidOrder}
+                    onClick={runUnpaidCheckout}
                   >
-                    PAYMENT CONNECTION PENDING
+                    {orderPending ? "SAVING ORDER…" : "PLACE UNPAID ORDER"}
                   </button>
+                  {orderMessage ? (
+                    <p className="form-error" role="alert">{orderMessage}</p>
+                  ) : null}
                   <p className="checkout-secure-note">
-                    CHECKOUT PREVIEW · NO PAYMENT WILL BE TAKEN
+                    NO PAYMENT WILL BE TAKEN · PAYMENT STATUS WILL BE PENDING
                   </p>
-                </>
+                </div>
               )}
             </>
           ) : null}
