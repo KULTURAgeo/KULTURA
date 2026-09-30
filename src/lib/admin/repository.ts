@@ -1,217 +1,229 @@
 import "server-only";
 import { requirePage } from "../auth/guards";
 import { id } from "../validation";
-const orderColumns = "id,order_number,customer_email,delivery_name,created_at,currency,final_total,payment_status,fulfillment_status,is_test" as const;
+
+const orderColumns =
+  "id,order_number,customer_email,delivery_name,created_at,currency,final_total,payment_status,fulfillment_status,is_test" as const;
 
 export const ADMIN_PAYMENT_STATUSES = [
-    "pending",
-    "paid",
-    "failed",
-    "cancelled",
-    "partially_refunded",
-    "refunded",
+  "pending",
+  "paid",
+  "failed",
+  "cancelled",
+  "partially_refunded",
+  "refunded",
 ] as const;
 
 export const ADMIN_FULFILLMENT_STATUSES = [
-    "unfulfilled",
-    "processing",
-    "shipped",
-    "delivered",
-    "cancelled",
-    "returned",
+  "unfulfilled",
+  "processing",
+  "shipped",
+  "delivered",
+  "cancelled",
+  "returned",
 ] as const;
 
 export type AdminOrderFilters = {
-    page?: number;
-    search?: string;
-    payment?: string;
-    fulfillment?: string;
+  page?: number;
+  search?: string;
+  payment?: string;
+  fulfillment?: string;
 };
 
 function safeSearch(value: string | undefined) {
-    return (value ?? "")
-        .trim()
-        .slice(0, 80)
-        .replace(/[^a-zA-Z0-9@._+\- ]/g, "");
+  return (value ?? "")
+    .trim()
+    .slice(0, 80)
+    .replace(/[^a-zA-Z0-9@._+\- ]/g, "");
 }
 
-function isPaymentStatus(value: string | undefined): value is (typeof ADMIN_PAYMENT_STATUSES)[number] {
-    return !!value && ADMIN_PAYMENT_STATUSES.includes(value as (typeof ADMIN_PAYMENT_STATUSES)[number]);
+function isPaymentStatus(
+  value: string | undefined,
+): value is (typeof ADMIN_PAYMENT_STATUSES)[number] {
+  return (
+    !!value &&
+    ADMIN_PAYMENT_STATUSES.includes(
+      value as (typeof ADMIN_PAYMENT_STATUSES)[number],
+    )
+  );
 }
 
-function isFulfillmentStatus(value: string | undefined): value is (typeof ADMIN_FULFILLMENT_STATUSES)[number] {
-    return !!value && ADMIN_FULFILLMENT_STATUSES.includes(value as (typeof ADMIN_FULFILLMENT_STATUSES)[number]);
+function isFulfillmentStatus(
+  value: string | undefined,
+): value is (typeof ADMIN_FULFILLMENT_STATUSES)[number] {
+  return (
+    !!value &&
+    ADMIN_FULFILLMENT_STATUSES.includes(
+      value as (typeof ADMIN_FULFILLMENT_STATUSES)[number],
+    )
+  );
 }
 
-function tbilisiDayStartIso(now = new Date()) {
-    const local = new Date(now.getTime() + 4 * 60 * 60 * 1000);
-    const year = local.getUTCFullYear();
-    const month = String(local.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(local.getUTCDate()).padStart(2, "0");
-    return new Date(`${year}-${month}-${day}T00:00:00+04:00`).toISOString();
-}
-
-export async function adminOverview() {
-    const { client } = await requirePage(true);
-    const dayStart = tbilisiDayStartIso();
-    const results = await Promise.all([
-        client.from("products").select("id", { count: "exact", head: true }),
-        client.from("products").select("id", { count: "exact", head: true }).eq("status", "active"),
-        client.from("product_variants").select("id", { count: "exact", head: true }).eq("is_active", true).gt("stock_quantity", 0).lte("stock_quantity", 5),
-        client.from("product_variants").select("id", { count: "exact", head: true }).eq("is_active", true).eq("stock_quantity", 0),
-        client.from("orders").select(orderColumns).order("created_at", { ascending: false }).limit(5),
-        client.from("orders").select("id", { count: "exact", head: true }).eq("is_test", false).gte("created_at", dayStart),
-        client.from("orders").select("id", { count: "exact", head: true }).eq("is_test", false).eq("payment_status", "pending"),
-        client.from("orders").select("id,final_total,paid_at").eq("is_test", false).eq("payment_status", "paid").order("paid_at", { ascending: false }).limit(1000),
-    ]);
-    for (const result of results)
-        if (result.error)
-            throw new Error("Admin data unavailable.");
-
-    const paidOrders = results[7].data ?? [];
-    const todayRevenue = paidOrders.reduce((sum, order) =>
-        order.paid_at && order.paid_at >= dayStart ? sum + order.final_total : sum, 0);
-    const paidOrderIds = paidOrders.map((order) => order.id);
-    const bestSellers = new Map<string, { name: string; units: number; sales: number }>();
-    if (paidOrderIds.length) {
-        const { data: items, error } = await client
-            .from("order_items")
-            .select("product_name,quantity,line_total")
-            .in("order_id", paidOrderIds)
-            .limit(5000);
-        if (error) throw new Error("Sales analytics unavailable.");
-        for (const item of items ?? []) {
-            const current = bestSellers.get(item.product_name) ?? { name: item.product_name, units: 0, sales: 0 };
-            current.units += item.quantity;
-            current.sales += item.line_total;
-            bestSellers.set(item.product_name, current);
-        }
-    }
-
-    return {
-        total: results[0].count ?? 0,
-        active: results[1].count ?? 0,
-        low: results[2].count ?? 0,
-        empty: results[3].count ?? 0,
-        orders: results[4].data ?? [],
-        todayOrders: results[5].count ?? 0,
-        pendingPayment: results[6].count ?? 0,
-        todayRevenue,
-        bestSellers: [...bestSellers.values()].sort((a, b) => b.units - a.units || b.sales - a.sales).slice(0, 5),
-    };
-}
 export async function adminProducts(page = 1) {
-    const { client } = await requirePage(true);
-    const { data, count, error } = await client.from("products").select("id,name,slug,status,price,updated_at", { count: "exact" }).order("created_at", { ascending: false }).order("id").range((page - 1) * 25, page * 25 - 1);
-    if (error)
-        throw new Error("Products unavailable.");
-    return { products: data ?? [], count: count ?? 0 };
+  const { client } = await requirePage(true);
+  const safePage = Math.floor(Math.max(1, Math.min(10000, page)));
+  const { data, count, error } = await client
+    .from("products")
+    .select("id,name,slug,status,price,updated_at", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .order("id")
+    .range((safePage - 1) * 25, safePage * 25 - 1);
+  if (error) throw new Error("Products unavailable.");
+  return { products: data ?? [], count: count ?? 0 };
 }
+
 export async function adminOptions() {
-    const { client } = await requirePage(true);
-    const categories = [];
-    const collections = [];
-    for (let offset = 0;; offset += 100) {
-        const { data, error } = await client.from("categories").select("id,name,is_active").order("sort_position").order("id").range(offset, offset + 99);
-        if (error)
-            throw new Error("Categories unavailable.");
-        categories.push(...data);
-        if (data.length < 100)
-            break;
+  const { client } = await requirePage(true);
+
+  const loadCategories = async () => {
+    const rows = [];
+    for (let offset = 0; ; offset += 100) {
+      const { data, error } = await client
+        .from("categories")
+        .select("id,name,is_active")
+        .order("sort_position")
+        .order("id")
+        .range(offset, offset + 99);
+      if (error) throw new Error("Categories unavailable.");
+      rows.push(...data);
+      if (data.length < 100) break;
     }
-    for (let offset = 0;; offset += 100) {
-        const { data, error } = await client.from("collections").select("id,name,is_active").order("name").order("id").range(offset, offset + 99);
-        if (error)
-            throw new Error("Collections unavailable.");
-        collections.push(...data);
-        if (data.length < 100)
-            break;
+    return rows;
+  };
+
+  const loadCollections = async () => {
+    const rows = [];
+    for (let offset = 0; ; offset += 100) {
+      const { data, error } = await client
+        .from("collections")
+        .select("id,name,is_active")
+        .order("name")
+        .order("id")
+        .range(offset, offset + 99);
+      if (error) throw new Error("Collections unavailable.");
+      rows.push(...data);
+      if (data.length < 100) break;
     }
-    return { categories, collections };
+    return rows;
+  };
+
+  const [categories, collections] = await Promise.all([
+    loadCategories(),
+    loadCollections(),
+  ]);
+  return { categories, collections };
 }
+
 export async function adminProduct(productId: string) {
-    const { client } = await requirePage(true);
-    const { data, error } = await client.from("products").select("*,product_variants(*),product_images(*),product_collections(collection_id)").eq("id", id(productId)).maybeSingle();
-    if (error)
-        throw new Error("Product unavailable.");
-    if (data) {
-        data.product_variants.sort((a, b) => a.sort_position - b.sort_position);
-        data.product_images.sort((a, b) => a.sort_position - b.sort_position);
-    }
-    return data;
+  const { client } = await requirePage(true);
+  const { data, error } = await client
+    .from("products")
+    .select(
+      "id,category_id,slug,name,description,price,compare_at_price,status,featured,is_drop,seo_title,seo_description,created_at,updated_at,product_variants(id,sku,size,color,stock_quantity,is_active,sort_position,updated_at),product_images(id,image_url,storage_path,alt_text,sort_position,updated_at),product_collections(collection_id)",
+    )
+    .eq("id", id(productId))
+    .maybeSingle();
+  if (error) throw new Error("Product unavailable.");
+  if (data) {
+    data.product_variants.sort((a, b) => a.sort_position - b.sort_position);
+    data.product_images.sort((a, b) => a.sort_position - b.sort_position);
+  }
+  return data;
 }
+
 export async function adminOrderStats() {
-    const { client } = await requirePage(true);
-    const results = await Promise.all([
-        client.from("orders").select("id", { count: "exact", head: true }),
-        client.from("orders").select("id", { count: "exact", head: true }).eq("payment_status", "pending"),
-        client.from("orders").select("id", { count: "exact", head: true }).eq("payment_status", "paid").eq("fulfillment_status", "unfulfilled"),
-        client.from("orders").select("id", { count: "exact", head: true }).in("fulfillment_status", ["processing", "shipped"]),
-    ]);
-    for (const result of results)
-        if (result.error)
-            throw new Error("Order statistics unavailable.");
-    return {
-        total: results[0].count ?? 0,
-        pendingPayment: results[1].count ?? 0,
-        readyToFulfill: results[2].count ?? 0,
-        inProgress: results[3].count ?? 0,
-    };
+  const { client } = await requirePage(true);
+  const results = await Promise.all([
+    client.from("orders").select("id", { count: "exact", head: true }),
+    client
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("payment_status", "pending"),
+    client
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("payment_status", "paid")
+      .eq("fulfillment_status", "unfulfilled"),
+    client
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .in("fulfillment_status", ["processing", "shipped"]),
+  ]);
+  for (const result of results)
+    if (result.error) throw new Error("Order statistics unavailable.");
+  return {
+    total: results[0].count ?? 0,
+    pendingPayment: results[1].count ?? 0,
+    readyToFulfill: results[2].count ?? 0,
+    inProgress: results[3].count ?? 0,
+  };
 }
 
 export async function adminOrders(filters: AdminOrderFilters = {}) {
-    const { client } = await requirePage(true);
-    const page = Math.floor(Math.max(1, Math.min(10000, filters.page ?? 1)));
-    const search = safeSearch(filters.search);
-    let query = client
-        .from("orders")
-        .select(orderColumns, { count: "exact" })
-        .order("created_at", { ascending: false })
-        .order("id");
+  const { client } = await requirePage(true);
+  const page = Math.floor(Math.max(1, Math.min(10000, filters.page ?? 1)));
+  const search = safeSearch(filters.search);
+  let query = client
+    .from("orders")
+    .select(orderColumns, { count: "exact" })
+    .order("created_at", { ascending: false })
+    .order("id");
 
-    if (isPaymentStatus(filters.payment))
-        query = query.eq("payment_status", filters.payment);
-    if (isFulfillmentStatus(filters.fulfillment))
-        query = query.eq("fulfillment_status", filters.fulfillment);
-    if (search)
-        query = query.or(`order_number.ilike.%${search}%,customer_email.ilike.%${search}%,delivery_name.ilike.%${search}%`);
+  if (isPaymentStatus(filters.payment))
+    query = query.eq("payment_status", filters.payment);
+  if (isFulfillmentStatus(filters.fulfillment))
+    query = query.eq("fulfillment_status", filters.fulfillment);
+  if (search)
+    query = query.or(
+      `order_number.ilike.%${search}%,customer_email.ilike.%${search}%,delivery_name.ilike.%${search}%`,
+    );
 
-    const { data, count, error } = await query.range((page - 1) * 25, page * 25 - 1);
-    if (error)
-        throw new Error("Orders unavailable.");
-    return { orders: data ?? [], count: count ?? 0, page, search };
+  const { data, count, error } = await query.range(
+    (page - 1) * 25,
+    page * 25 - 1,
+  );
+  if (error) throw new Error("Orders unavailable.");
+  return { orders: data ?? [], count: count ?? 0, page, search };
 }
+
 export async function adminOrder(orderId: string) {
-    const { client } = await requirePage(true);
-    const { data, error } = await client.from("orders").select("*,order_items(*)").eq("id", id(orderId)).maybeSingle();
-    if (error)
-        throw new Error("Order unavailable.");
-    return data;
+  const { client } = await requirePage(true);
+  const { data, error } = await client
+    .from("orders")
+    .select(
+      "id,order_number,customer_id,customer_email,currency,subtotal,shipping_total,discount_total,final_total,payment_status,fulfillment_status,delivery_name,delivery_phone,delivery_country_code,delivery_city,delivery_address_line_1,delivery_address_line_2,delivery_postal_code,promo_code_snapshot,created_at,updated_at,paid_at,is_test,order_items(id,product_name,sku,size,color,unit_price,quantity,line_total)",
+    )
+    .eq("id", id(orderId))
+    .maybeSingle();
+  if (error) throw new Error("Order unavailable.");
+  return data;
 }
-
 
 export async function adminPromos(page = 1) {
-    const { client } = await requirePage(true);
-    const safePage = Math.floor(Math.max(1, Math.min(10000, page)));
-    const { data, count, error } = await client
-        .from("promo_codes")
-        .select("id,code,kind,amount,currency,minimum_subtotal,maximum_discount,starts_at,expires_at,max_uses,used_count,is_active,updated_at", { count: "exact" })
-        .order("created_at", { ascending: false })
-        .order("id")
-        .range((safePage - 1) * 25, safePage * 25 - 1);
-    if (error)
-        throw new Error("Promo codes unavailable.");
-    return { promos: data ?? [], count: count ?? 0, page: safePage };
+  const { client } = await requirePage(true);
+  const safePage = Math.floor(Math.max(1, Math.min(10000, page)));
+  const { data, count, error } = await client
+    .from("promo_codes")
+    .select(
+      "id,code,kind,amount,currency,minimum_subtotal,maximum_discount,starts_at,expires_at,max_uses,used_count,is_active,updated_at",
+      { count: "exact" },
+    )
+    .order("created_at", { ascending: false })
+    .order("id")
+    .range((safePage - 1) * 25, safePage * 25 - 1);
+  if (error) throw new Error("Promo codes unavailable.");
+  return { promos: data ?? [], count: count ?? 0, page: safePage };
 }
 
 export async function adminPromo(promoId: string) {
-    const { client } = await requirePage(true);
-    const { data, error } = await client
-        .from("promo_codes")
-        .select("*")
-        .eq("id", id(promoId, "promo"))
-        .maybeSingle();
-    if (error)
-        throw new Error("Promo code unavailable.");
-    return data;
+  const { client } = await requirePage(true);
+  const { data, error } = await client
+    .from("promo_codes")
+    .select(
+      "id,code,kind,amount,currency,minimum_subtotal,maximum_discount,starts_at,expires_at,max_uses,used_count,is_active,created_at,updated_at",
+    )
+    .eq("id", id(promoId, "promo"))
+    .maybeSingle();
+  if (error) throw new Error("Promo code unavailable.");
+  return data;
 }
