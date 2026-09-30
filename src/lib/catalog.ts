@@ -20,6 +20,7 @@ export type Product = {
   featured: boolean;
   drop: boolean;
   variants: Variant[];
+  createdAt: string;
   seoTitle?: string;
   seoDescription?: string;
 };
