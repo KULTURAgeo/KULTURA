@@ -149,7 +149,7 @@ export default async function ProductPage({
         <nav className="breadcrumb" aria-label="Breadcrumb">
           <Link href="/shop">SHOP</Link>
           <span>/</span>
-          <Link href={`/shop/${products.find((item) => item.category === product.category)?.category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || ""}`}>{product.category.toUpperCase()}</Link>
+          <Link href={`/shop/${product.categorySlug}`}>{product.category.toUpperCase()}</Link>
           <span>/</span>
           <span>{product.name.replace("KULTURA ", "")}</span>
         </nav>
