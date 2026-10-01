@@ -61,7 +61,7 @@ export function HomeMotion({
     const phoneSlides = Array.from(node.querySelectorAll<HTMLElement>("[data-phone-slide]"));
     const demoCaption = node.querySelector<HTMLElement>("[data-demo-caption]");
     const phoneTransition = node.querySelector<HTMLElement>("[data-phone-transition]");
-    const logoPattern = node.querySelector<HTMLElement>("[data-logo-pattern]");
+    const sceneLogo = node.querySelector<HTMLElement>("[data-scene-logo]");
     const transitionScene = node.querySelector<HTMLElement>("[data-transition-scene]");
     const transitionCenter = node.querySelector<HTMLElement>("[data-transition-center]");
     const transitionFloats = Array.from(node.querySelectorAll<HTMLElement>("[data-transition-float]"));
@@ -86,7 +86,6 @@ export function HomeMotion({
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
 
-      // Read geometry before mutating styles to avoid forced layouts while scrolling.
       const heroRect = hero?.getBoundingClientRect() ?? null;
       const demoRect = demoTrack?.getBoundingClientRect() ?? null;
       const logoRect = phoneLogo?.getBoundingClientRect() ?? null;
@@ -137,9 +136,9 @@ export function HomeMotion({
         if (phoneLogo) {
           const logoFocus = smooth(range(p, 0.62, 0.71));
           const logoTakeover = smooth(range(p, 0.70, 0.785));
-          const logoScale = mix(1, 1.34, logoFocus) * mix(1, 1.08, logoTakeover);
+          const logoScale = mix(1, 1.28, logoFocus) * mix(1, 1.06, logoTakeover);
           phoneLogo.style.transform = `scale(${logoScale})`;
-          phoneLogo.style.opacity = String(1 - logoTakeover * 0.92);
+          phoneLogo.style.opacity = String(1 - logoTakeover * 0.94);
           phoneLogo.style.zIndex = "20";
         }
 
@@ -148,7 +147,7 @@ export function HomeMotion({
           const expandPanel = smooth(range(p, 0.705, 0.845));
           const sceneIn = smooth(range(p, 0.79, 0.875));
 
-          const fallbackWidth = 48;
+          const fallbackWidth = 58;
           const fallbackHeight = 30;
           const fallbackLeft = viewportWidth / 2 - fallbackWidth / 2;
           const fallbackTop = viewportHeight * 0.72;
@@ -167,16 +166,16 @@ export function HomeMotion({
           const rightInset = mix(initialRight, 0, expandPanel);
           const topInset = mix(initialTop, 0, expandPanel);
           const bottomInset = mix(initialBottom, 0, expandPanel);
-          const borderRadius = mix(9, 0, expandPanel);
+          const borderRadius = mix(999, 0, expandPanel);
 
           phoneTransition.style.opacity = String(appear);
           phoneTransition.style.clipPath = `inset(${topInset}px ${rightInset}px ${bottomInset}px ${leftInset}px round ${borderRadius}px)`;
 
-          if (logoPattern) {
-            const patternIn = smooth(range(p, 0.715, 0.84));
-            const patternTravel = smooth(range(p, 0.76, 0.995));
-            logoPattern.style.opacity = String(mix(0, 0.20, patternIn));
-            logoPattern.style.transform = `translate3d(${mix(0, -22, patternTravel)}px, ${mix(0, -12, patternTravel)}px, 0) scale(${mix(1.22, 1, patternIn)})`;
+          if (sceneLogo) {
+            const logoIn = smooth(range(p, 0.72, 0.855));
+            const logoSettle = smooth(range(p, 0.78, 0.98));
+            sceneLogo.style.opacity = String(logoIn);
+            sceneLogo.style.transform = `translate(-50%, -50%) scale(${mix(.72, 1, logoSettle)})`;
           }
 
           if (transitionScene) {
