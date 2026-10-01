@@ -107,7 +107,25 @@ export default async function Home() {
 
               <div className={styles.phoneBottom}>
                 <span>HOME</span>
-                <span>SHOP</span>
+                <span
+                  data-phone-logo
+                  style={{
+                    position: "relative",
+                    width: 46,
+                    height: 28,
+                    display: "grid",
+                    placeItems: "center",
+                    borderRadius: 9,
+                    overflow: "hidden",
+                    background: "#070707",
+                    border: "1px solid rgba(0,0,0,.18)",
+                    boxShadow: "0 4px 14px rgba(0,0,0,.18)",
+                    transformOrigin: "center center",
+                    willChange: "transform,opacity",
+                  }}
+                >
+                  <Image src="/kultura-globe.svg" alt="" width={40} height={24} unoptimized />
+                </span>
                 <span>01</span>
               </div>
             </div>
@@ -119,15 +137,12 @@ export default async function Home() {
             style={{
               position: "absolute",
               left: "50%",
-              top: "66%",
-              width: "min(420px, 38vw)",
-              height: "116px",
-              transform: "translate(-50%, -50%) scale(.92)",
-              borderRadius: "24px",
+              top: "50%",
+              width: "100vw",
+              height: "100svh",
+              transform: "translate(-50%, -50%)",
               overflow: "hidden",
-              backgroundColor: "#101010",
-              backgroundImage: "radial-gradient(circle, rgba(255,255,255,.7) 1.1px, transparent 1.35px)",
-              backgroundSize: "44px 44px",
+              backgroundColor: "#080808",
               boxShadow: "0 26px 70px rgba(0,0,0,.4)",
               zIndex: 8,
               opacity: 0,
@@ -136,32 +151,35 @@ export default async function Home() {
             }}
           >
             <div
-              data-transition-cta
+              data-logo-pattern
               style={{
                 position: "absolute",
-                left: "50%",
-                top: "50%",
-                width: "min(330px, 72%)",
-                height: "48px",
-                transform: "translate(-50%, -50%)",
-                borderRadius: "12px",
-                display: "grid",
-                placeItems: "center",
-                background: "#d8f300",
-                color: "#111",
-                fontSize: "9px",
-                fontWeight: 900,
-                letterSpacing: ".11em",
+                inset: "-10%",
+                zIndex: 0,
+                opacity: 0,
+                backgroundImage: "url('/kultura-globe.svg')",
+                backgroundRepeat: "repeat",
+                backgroundSize: "112px 74px",
+                backgroundPosition: "center",
+                filter: "grayscale(1) brightness(1.55)",
+                willChange: "transform,opacity",
               }}
-            >
-              STEP INTO KULTURA
-            </div>
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 1,
+                background: "radial-gradient(circle at center, transparent 18%, rgba(0,0,0,.18) 62%, rgba(0,0,0,.58) 100%)",
+              }}
+            />
 
             <div
               data-transition-scene
               style={{
                 position: "absolute",
                 inset: 0,
+                zIndex: 2,
                 opacity: 0,
               }}
             >
