@@ -59,7 +59,7 @@ export function HomeMotion({
     const demoBackdrop = node.querySelector<HTMLElement>("[data-demo-backdrop]");
     const phone = node.querySelector<HTMLElement>("[data-phone]");
     const phoneSlides = Array.from(node.querySelectorAll<HTMLElement>("[data-phone-slide]"));
-    const demoCaption = node.querySelector<HTMLElement>("[data-demo-caption]"));
+    const demoCaption = node.querySelector<HTMLElement>("[data-demo-caption]");
     const phoneTransition = node.querySelector<HTMLElement>("[data-phone-transition]");
     const transitionCta = node.querySelector<HTMLElement>("[data-transition-cta]");
     const transitionScene = node.querySelector<HTMLElement>("[data-transition-scene]");
