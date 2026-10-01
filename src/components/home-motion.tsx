@@ -57,10 +57,11 @@ export function HomeMotion({
     const demoTrack = node.querySelector<HTMLElement>("[data-demo-track]");
     const demoBackdrop = node.querySelector<HTMLElement>("[data-demo-backdrop]");
     const phone = node.querySelector<HTMLElement>("[data-phone]");
+    const phoneLogo = node.querySelector<HTMLElement>("[data-phone-logo]");
     const phoneSlides = Array.from(node.querySelectorAll<HTMLElement>("[data-phone-slide]"));
     const demoCaption = node.querySelector<HTMLElement>("[data-demo-caption]");
     const phoneTransition = node.querySelector<HTMLElement>("[data-phone-transition]");
-    const transitionCta = node.querySelector<HTMLElement>("[data-transition-cta]");
+    const logoPattern = node.querySelector<HTMLElement>("[data-logo-pattern]");
     const transitionScene = node.querySelector<HTMLElement>("[data-transition-scene]");
     const transitionCenter = node.querySelector<HTMLElement>("[data-transition-center]");
     const transitionFloats = Array.from(node.querySelectorAll<HTMLElement>("[data-transition-float]"));
@@ -84,8 +85,11 @@ export function HomeMotion({
 
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
+
+      // Read geometry before mutating styles to avoid forced layouts while scrolling.
       const heroRect = hero?.getBoundingClientRect() ?? null;
       const demoRect = demoTrack?.getBoundingClientRect() ?? null;
+      const logoRect = phoneLogo?.getBoundingClientRect() ?? null;
 
       const heroP = heroRect
         ? clamp01(-heroRect.top / Math.max(viewportHeight * 0.72, 1))
@@ -110,19 +114,15 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
         const entry = smooth(range(p, 0.025, 0.13));
-        const focusZoom = smooth(range(p, 0.64, 0.72));
-        const handoff = smooth(range(p, 0.715, 0.815));
-        const phoneFade = smooth(range(p, 0.77, 0.835));
+        const handoff = smooth(range(p, 0.73, 0.835));
+        const phoneFade = smooth(range(p, 0.775, 0.845));
         const entryOffset = mix(viewportHeight * 0.82, 0, entry);
-        const focusLift = mix(0, -viewportHeight * 0.012, focusZoom);
-        const handoffOffset = mix(0, -viewportHeight * 0.035, handoff);
+        const handoffOffset = mix(0, -viewportHeight * 0.025, handoff);
         const entryScale = mix(0.73, 1, entry);
-        const zoomScale = mix(1, 1.105, focusZoom);
-        const handoffScale = mix(1, 0.992, handoff);
-        const scale = entryScale * zoomScale * handoffScale;
+        const scale = entryScale * mix(1, 0.992, handoff);
         const opacity = entry * (1 - phoneFade * 0.98);
 
-        phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + focusLift + handoffOffset}px), 0) scale(${scale})`;
+        phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + handoffOffset}px), 0) scale(${scale})`;
         phone.style.opacity = String(opacity);
 
         const slidePosition = range(p, 0.15, 0.61) * Math.max(phoneSlides.length - 1, 0);
@@ -134,45 +134,65 @@ export function HomeMotion({
           slide.style.zIndex = String(10 + Math.round(alpha * 10));
         });
 
-        if (phoneTransition) {
-          const appear = smooth(range(p, 0.71, 0.735));
-          const expandPanel = smooth(range(p, 0.735, 0.82));
-          const sceneIn = smooth(range(p, 0.765, 0.84));
+        if (phoneLogo) {
+          const logoFocus = smooth(range(p, 0.62, 0.71));
+          const logoTakeover = smooth(range(p, 0.70, 0.785));
+          const logoScale = mix(1, 1.34, logoFocus) * mix(1, 1.08, logoTakeover);
+          phoneLogo.style.transform = `scale(${logoScale})`;
+          phoneLogo.style.opacity = String(1 - logoTakeover * 0.92);
+          phoneLogo.style.zIndex = "20";
+        }
 
-          const initialWidth = Math.max(300, Math.min(500, viewportWidth * 0.36));
-          const initialHeight = Math.max(104, Math.min(148, viewportHeight * 0.19));
-          const initialCenterY = viewportHeight * 0.71;
-          const initialSide = Math.max((viewportWidth - initialWidth) / 2, 0);
-          const initialTop = Math.max(initialCenterY - initialHeight / 2, 0);
-          const initialBottom = Math.max(viewportHeight - (initialCenterY + initialHeight / 2), 0);
-          const side = mix(initialSide, 0, expandPanel);
+        if (phoneTransition) {
+          const appear = smooth(range(p, 0.685, 0.72));
+          const expandPanel = smooth(range(p, 0.705, 0.845));
+          const sceneIn = smooth(range(p, 0.79, 0.875));
+
+          const fallbackWidth = 48;
+          const fallbackHeight = 30;
+          const fallbackLeft = viewportWidth / 2 - fallbackWidth / 2;
+          const fallbackTop = viewportHeight * 0.72;
+
+          const rawLeft = logoRect?.left ?? fallbackLeft;
+          const rawTop = logoRect?.top ?? fallbackTop;
+          const rawRight = logoRect?.right ?? fallbackLeft + fallbackWidth;
+          const rawBottom = logoRect?.bottom ?? fallbackTop + fallbackHeight;
+
+          const initialLeft = Math.max(rawLeft, 0);
+          const initialRight = Math.max(viewportWidth - rawRight, 0);
+          const initialTop = Math.max(rawTop, 0);
+          const initialBottom = Math.max(viewportHeight - rawBottom, 0);
+
+          const leftInset = mix(initialLeft, 0, expandPanel);
+          const rightInset = mix(initialRight, 0, expandPanel);
           const topInset = mix(initialTop, 0, expandPanel);
           const bottomInset = mix(initialBottom, 0, expandPanel);
-          const borderRadius = mix(24, 0, expandPanel);
+          const borderRadius = mix(9, 0, expandPanel);
 
           phoneTransition.style.opacity = String(appear);
-          phoneTransition.style.clipPath = `inset(${topInset}px ${side}px ${bottomInset}px ${side}px round ${borderRadius}px)`;
+          phoneTransition.style.clipPath = `inset(${topInset}px ${rightInset}px ${bottomInset}px ${leftInset}px round ${borderRadius}px)`;
 
-          if (transitionCta) {
-            const ctaOut = 1 - smooth(range(p, 0.755, 0.79));
-            transitionCta.style.opacity = String(ctaOut);
-            transitionCta.style.transform = `translate(-50%, -50%) scale(${mix(1, .94, 1 - ctaOut)})`;
+          if (logoPattern) {
+            const patternIn = smooth(range(p, 0.715, 0.84));
+            const patternTravel = smooth(range(p, 0.76, 0.995));
+            logoPattern.style.opacity = String(mix(0, 0.20, patternIn));
+            logoPattern.style.transform = `translate3d(${mix(0, -22, patternTravel)}px, ${mix(0, -12, patternTravel)}px, 0) scale(${mix(1.22, 1, patternIn)})`;
           }
 
           if (transitionScene) {
-            const sceneTravel = smooth(range(p, 0.765, 0.995));
+            const sceneTravel = smooth(range(p, 0.79, 0.995));
             transitionScene.style.opacity = String(sceneIn);
             transitionScene.style.transform = `translate3d(0, ${mix(10, -10, sceneTravel)}px, 0) scale(${mix(.992, 1, sceneTravel)})`;
             transitionScene.style.willChange = "transform, opacity";
           }
 
           if (transitionCenter) {
-            const centerGrow = smooth(range(p, 0.765, 0.955));
-            transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.46, 1, centerGrow)})`;
+            const centerGrow = smooth(range(p, 0.80, 0.955));
+            transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.42, 1, centerGrow)})`;
           }
 
           transitionFloats.forEach((card, index) => {
-            const start = 0.78 + index * 0.012;
+            const start = 0.81 + index * 0.012;
             const end = 0.95 + index * 0.012;
             const local = smooth(range(p, start, Math.min(end, 0.995)));
 
@@ -187,8 +207,8 @@ export function HomeMotion({
             card.style.transformOrigin = "center center";
           });
 
-          const backdropOut = smooth(range(p, 0.74, 0.83));
-          demoBackdrop.style.opacity = String(1 - backdropOut * 0.95);
+          const backdropOut = smooth(range(p, 0.72, 0.85));
+          demoBackdrop.style.opacity = String(1 - backdropOut * 0.97);
         } else {
           demoBackdrop.style.opacity = "1";
         }
