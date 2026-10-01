@@ -113,6 +113,115 @@ export default async function Home() {
             </div>
           </div>
 
+          <div
+            data-phone-transition
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "66%",
+              width: "min(420px, 38vw)",
+              height: "116px",
+              transform: "translate(-50%, -50%) scale(.92)",
+              borderRadius: "24px",
+              overflow: "hidden",
+              backgroundColor: "#101010",
+              backgroundImage: "radial-gradient(circle, rgba(255,255,255,.7) 1.1px, transparent 1.35px)",
+              backgroundSize: "44px 44px",
+              boxShadow: "0 26px 70px rgba(0,0,0,.4)",
+              zIndex: 8,
+              opacity: 0,
+              pointerEvents: "none",
+              willChange: "transform,width,height,top,border-radius,opacity",
+            }}
+          >
+            <div
+              data-transition-cta
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                width: "min(330px, 72%)",
+                height: "48px",
+                transform: "translate(-50%, -50%)",
+                borderRadius: "12px",
+                display: "grid",
+                placeItems: "center",
+                background: "#d8f300",
+                color: "#111",
+                fontSize: "9px",
+                fontWeight: 900,
+                letterSpacing: ".11em",
+              }}
+            >
+              STEP INTO KULTURA
+            </div>
+
+            <div
+              data-transition-scene
+              style={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0,
+              }}
+            >
+              <div
+                data-transition-center
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: "52%",
+                  width: "min(410px, 28vw)",
+                  aspectRatio: ".69",
+                  transform: "translate(-50%, -50%) scale(.8)",
+                  borderRadius: "24px",
+                  overflow: "hidden",
+                  boxShadow: "0 24px 64px rgba(0,0,0,.34)",
+                }}
+              >
+                <Image
+                  src={heroProduct?.image ?? campaignImage}
+                  alt=""
+                  fill
+                  sizes="(max-width: 720px) 55vw, 28vw"
+                  style={{ objectFit: "cover" }}
+                />
+              </div>
+
+              {floatProducts.slice(0, 4).map((product, index) => (
+                <div
+                  data-transition-float
+                  data-index={index}
+                  key={`transition-${product?.id ?? index}`}
+                  style={{
+                    position: "absolute",
+                    width: index % 2 ? "13vw" : "15vw",
+                    maxWidth: index % 2 ? 190 : 230,
+                    minWidth: 100,
+                    aspectRatio: index % 2 ? "1 / 1" : ".78",
+                    left: index === 0 ? "7%" : index === 2 ? "8%" : undefined,
+                    right: index === 1 ? "9%" : index === 3 ? "7%" : undefined,
+                    top: index < 2 ? "18%" : undefined,
+                    bottom: index >= 2 ? "12%" : undefined,
+                    borderRadius: 17,
+                    overflow: "hidden",
+                    opacity: 0,
+                    transform: "scale(.74)",
+                    boxShadow: "0 20px 52px rgba(0,0,0,.3)",
+                  }}
+                >
+                  <Image
+                    src={product?.image ?? campaignImage}
+                    alt=""
+                    fill
+                    sizes="15vw"
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className={styles.demoCaption} data-demo-caption>
             <span>SCROLL TO EXPLORE</span>
             <span>PRODUCTS IN MOTION</span>
