@@ -194,20 +194,29 @@ export function HomeMotion({
       }
 
       if (orbitTrack && orbitCenter && orbitHeading) {
+        const rect = orbitTrack.getBoundingClientRect();
         const p = progressFor(orbitTrack);
-        const headingIn = smooth(range(p, 0.0, 0.06));
+
+        // Start revealing as soon as the dotted scene enters the viewport,
+        // instead of waiting for the sticky section's internal scroll progress.
+        const enter = clamp01(
+          (window.innerHeight - rect.top) / Math.max(window.innerHeight * 0.58, 1),
+        );
+        const enterEase = smooth(enter);
+
+        const headingIn = smooth(range(enterEase, 0.02, 0.42));
         const headingOut = 1 - smooth(range(p, 0.72, 0.92));
         orbitHeading.style.opacity = String(headingIn * headingOut);
-        orbitHeading.style.transform = `translate3d(0, ${mix(10, -18, smooth(range(p, 0, .86)))}px, 0)`;
+        orbitHeading.style.transform = `translate3d(0, ${mix(22, -18, smooth(range(enterEase, 0, 1)))}px, 0)`;
 
-        const centerIn = smooth(range(p, 0.0, 0.045));
+        const centerIn = smooth(range(enterEase, 0.0, 0.34));
         const centerOut = 1 - smooth(range(p, 0.82, 1));
         orbitCenter.style.opacity = String(centerIn * centerOut);
-        orbitCenter.style.transform = `translate(-50%, -50%) scale(${mix(.99, 1, centerIn) * mix(1, .9, 1 - centerOut)})`;
+        orbitCenter.style.transform = `translate(-50%, -50%) scale(${mix(.90, 1, centerIn) * mix(1, .9, 1 - centerOut)})`;
 
         floats.forEach((card, index) => {
-          const start = index * 0.008;
-          const inP = smooth(range(p, start, start + 0.065));
+          const start = 0.03 + index * 0.055;
+          const inP = smooth(range(enterEase, start, Math.min(start + 0.32, 1)));
           const outP = smooth(range(p, 0.82, 1));
           const [sx, sy, sr] = floatStarts[index] ?? [0, 0, 0];
           const driftX = sx * (1 - inP) + sx * -0.12 * inP;
