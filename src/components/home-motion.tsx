@@ -59,7 +59,7 @@ export function HomeMotion({
     const demoBackdrop = node.querySelector<HTMLElement>("[data-demo-backdrop]");
     const phone = node.querySelector<HTMLElement>("[data-phone]");
     const phoneSlides = Array.from(node.querySelectorAll<HTMLElement>("[data-phone-slide]"));
-    const demoCaption = node.querySelector<HTMLElement>("[data-demo-caption]");
+    const demoCaption = node.querySelector<HTMLElement>("[data-demo-caption]"));
     const phoneTransition = node.querySelector<HTMLElement>("[data-phone-transition]");
     const transitionCta = node.querySelector<HTMLElement>("[data-transition-cta]");
     const transitionScene = node.querySelector<HTMLElement>("[data-transition-scene]");
@@ -105,22 +105,22 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
         const entry = smooth(range(p, 0.05, 0.25));
-        const focusZoom = smooth(range(p, 0.40, 0.58));
-        const handoff = smooth(range(p, 0.58, 0.72));
-        const phoneFade = smooth(range(p, 0.64, 0.76));
+        const focusZoom = smooth(range(p, 0.43, 0.565));
+        const handoff = smooth(range(p, 0.56, 0.70));
+        const phoneFade = smooth(range(p, 0.625, 0.705));
         const entryOffset = mix(window.innerHeight * 0.82, 0, entry);
-        const zoomLift = mix(0, -window.innerHeight * 0.04, focusZoom);
-        const handoffOffset = mix(0, -window.innerHeight * 0.04, handoff);
+        const focusLift = mix(0, -window.innerHeight * 0.018, focusZoom);
+        const handoffOffset = mix(0, -window.innerHeight * 0.055, handoff);
         const entryScale = mix(0.73, 1, entry);
-        const focusScale = mix(1, 1.14, focusZoom);
-        const handoffScale = mix(1, 0.98, handoff);
-        const scale = entryScale * focusScale * handoffScale;
-        const opacity = entry * (1 - phoneFade * 0.92);
+        const zoomScale = mix(1, 1.095, focusZoom);
+        const handoffScale = mix(1, 0.985, handoff);
+        const scale = entryScale * zoomScale * handoffScale;
+        const opacity = entry * (1 - phoneFade * 0.98);
 
-        phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + zoomLift + handoffOffset}px), 0) scale(${scale})`;
+        phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + focusLift + handoffOffset}px), 0) scale(${scale})`;
         phone.style.opacity = String(opacity);
 
-        const slidePosition = range(p, 0.30, 0.54) * Math.max(phoneSlides.length - 1, 0);
+        const slidePosition = range(p, 0.30, 0.515) * Math.max(phoneSlides.length - 1, 0);
         phoneSlides.forEach((slide, index) => {
           const distance = index - slidePosition;
           const alpha = clamp01(1 - Math.abs(distance));
@@ -130,20 +130,20 @@ export function HomeMotion({
         });
 
         if (phoneTransition) {
-          const appear = smooth(range(p, 0.56, 0.61));
-          const expandPanel = smooth(range(p, 0.60, 0.75));
-          const sceneIn = smooth(range(p, 0.66, 0.78));
+          const appear = smooth(range(p, 0.545, 0.575));
+          const expandPanel = smooth(range(p, 0.565, 0.685));
+          const sceneIn = smooth(range(p, 0.605, 0.69));
 
           const phoneRect = phone.getBoundingClientRect();
           const stickyRect = demoTrack.getBoundingClientRect();
           const stickyTop = Math.max(0, -stickyRect.top);
           const initialTop = Math.min(
-            window.innerHeight * 0.72,
-            Math.max(window.innerHeight * 0.58, phoneRect.bottom - stickyTop - 20),
+            window.innerHeight * 0.735,
+            Math.max(window.innerHeight * 0.61, phoneRect.bottom - stickyTop - 18),
           );
 
-          const initialWidth = Math.max(310, Math.min(560, phoneRect.width * 1.55));
-          const initialHeight = Math.max(104, Math.min(164, phoneRect.height * 0.22));
+          const initialWidth = Math.max(300, Math.min(500, phoneRect.width * 1.42));
+          const initialHeight = Math.max(104, Math.min(148, phoneRect.height * 0.205));
           const width = mix(initialWidth, window.innerWidth, expandPanel);
           const height = mix(initialHeight, window.innerHeight, expandPanel);
           const top = mix(initialTop, window.innerHeight * 0.5, expandPanel);
@@ -154,12 +154,12 @@ export function HomeMotion({
           phoneTransition.style.height = `${height}px`;
           phoneTransition.style.top = `${top}px`;
           phoneTransition.style.borderRadius = `${borderRadius}px`;
-          phoneTransition.style.transform = `translate(-50%, -50%) scale(${mix(.92, 1, appear)})`;
+          phoneTransition.style.transform = `translate(-50%, -50%) scale(${mix(.94, 1, appear)})`;
 
           if (transitionCta) {
-            const ctaOut = 1 - smooth(range(p, 0.63, 0.70));
+            const ctaOut = 1 - smooth(range(p, 0.585, 0.635));
             transitionCta.style.opacity = String(ctaOut);
-            transitionCta.style.transform = `translate(-50%, -50%) scale(${mix(1, .92, 1 - ctaOut)})`;
+            transitionCta.style.transform = `translate(-50%, -50%) scale(${mix(1, .9, 1 - ctaOut)})`;
           }
 
           if (transitionScene) {
@@ -167,18 +167,20 @@ export function HomeMotion({
           }
 
           if (transitionCenter) {
-            transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.80, 1, sceneIn)})`;
+            const centerGrow = smooth(range(p, 0.605, 0.685));
+            transitionCenter.style.top = `${mix(60, 52, centerGrow)}%`;
+            transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.38, 1, centerGrow)})`;
           }
 
           transitionFloats.forEach((card, index) => {
-            const local = smooth(range(p, 0.67 + index * 0.01, 0.76 + index * 0.01));
+            const local = smooth(range(p, 0.625 + index * 0.008, 0.69 + index * 0.008));
             card.style.opacity = String(local);
-            card.style.transform = `scale(${mix(.74, 1, local)})`;
+            card.style.transform = `scale(${mix(.58, 1, local)})`;
           });
 
-          const backdropOut = smooth(range(p, 0.60, 0.74));
-          demoBackdrop.style.opacity = String(1 - backdropOut * 0.9);
-          demoBackdrop.style.filter = `brightness(${mix(1, .22, backdropOut)})`;
+          const backdropOut = smooth(range(p, 0.57, 0.68));
+          demoBackdrop.style.opacity = String(1 - backdropOut * 0.93);
+          demoBackdrop.style.filter = `brightness(${mix(1, .18, backdropOut)})`;
         } else {
           demoBackdrop.style.opacity = "1";
           demoBackdrop.style.filter = "none";
@@ -186,33 +188,33 @@ export function HomeMotion({
 
         if (demoCaption) {
           const enterCaption = smooth(range(p, 0.18, 0.3));
-          const leaveCaption = 1 - smooth(range(p, 0.44, 0.56));
+          const leaveCaption = 1 - smooth(range(p, 0.42, 0.53));
           demoCaption.style.opacity = String(enterCaption * leaveCaption);
         }
       }
 
       if (orbitTrack && orbitCenter && orbitHeading) {
         const p = progressFor(orbitTrack);
-        const headingIn = smooth(range(p, -0.05, 0.05));
+        const headingIn = smooth(range(p, 0.0, 0.06));
         const headingOut = 1 - smooth(range(p, 0.72, 0.92));
         orbitHeading.style.opacity = String(headingIn * headingOut);
-        orbitHeading.style.transform = `translate3d(0, ${mix(14, -18, smooth(range(p, 0, .86)))}px, 0)`;
+        orbitHeading.style.transform = `translate3d(0, ${mix(10, -18, smooth(range(p, 0, .86)))}px, 0)`;
 
-        const centerIn = smooth(range(p, -0.06, 0.04));
+        const centerIn = smooth(range(p, 0.0, 0.045));
         const centerOut = 1 - smooth(range(p, 0.82, 1));
         orbitCenter.style.opacity = String(centerIn * centerOut);
-        orbitCenter.style.transform = `translate(-50%, -50%) scale(${mix(.94, 1, centerIn) * mix(1, .9, 1 - centerOut)})`;
+        orbitCenter.style.transform = `translate(-50%, -50%) scale(${mix(.99, 1, centerIn) * mix(1, .9, 1 - centerOut)})`;
 
         floats.forEach((card, index) => {
-          const start = -0.07 + index * 0.012;
-          const inP = smooth(range(p, start, start + 0.12));
+          const start = index * 0.008;
+          const inP = smooth(range(p, start, start + 0.065));
           const outP = smooth(range(p, 0.82, 1));
           const [sx, sy, sr] = floatStarts[index] ?? [0, 0, 0];
           const driftX = sx * (1 - inP) + sx * -0.12 * inP;
           const driftY = sy * (1 - inP) + sy * -0.08 * inP;
           const rotate = sr * (1 - inP) + sr * -0.2 * inP;
           card.style.opacity = String(inP * (1 - outP * .7));
-          card.style.transform = `translate3d(${driftX}px, ${driftY}px, 0) scale(${mix(.82, 1, inP)}) rotate(${rotate}deg)`;
+          card.style.transform = `translate3d(${driftX}px, ${driftY}px, 0) scale(${mix(.78, 1, inP)}) rotate(${rotate}deg)`;
         });
       }
     };
