@@ -109,7 +109,7 @@ export default async function Home() {
                 className={styles.phoneBottom}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr auto 1fr",
+                  gridTemplateColumns: "1fr 58px 1fr",
                   alignItems: "center",
                   width: "100%",
                 }}
@@ -119,26 +119,27 @@ export default async function Home() {
                   data-phone-logo
                   style={{
                     position: "relative",
-                    width: 62,
-                    height: 30,
+                    width: 58,
+                    height: 20,
                     justifySelf: "center",
-                    display: "block",
+                    display: "grid",
+                    placeItems: "center",
                     borderRadius: 999,
                     overflow: "hidden",
                     background: "#000",
-                    border: "1px solid rgba(0,0,0,.32)",
-                    boxShadow: "0 4px 14px rgba(0,0,0,.24)",
+                    border: "1px solid rgba(0,0,0,.36)",
+                    boxShadow: "0 3px 10px rgba(0,0,0,.22)",
                     transformOrigin: "center center",
                     willChange: "transform,opacity",
                   }}
                 >
                   <Image
-                    src="/images/kultura-globe-original.jpeg"
+                    src="/kultura-globe.svg"
                     alt="KULTURA globe logo"
-                    fill
+                    width={50}
+                    height={18}
                     unoptimized
-                    sizes="62px"
-                    style={{ objectFit: "cover", objectPosition: "center" }}
+                    style={{ objectFit: "contain", display: "block" }}
                   />
                 </span>
                 <span style={{ justifySelf: "end" }}>01</span>
@@ -180,7 +181,7 @@ export default async function Home() {
               }}
             >
               <Image
-                src="/images/kultura-globe-original.jpeg"
+                src="/kultura-globe.svg"
                 alt=""
                 fill
                 unoptimized
