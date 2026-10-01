@@ -109,7 +109,7 @@ export default async function Home() {
                 className={styles.phoneBottom}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 58px 1fr",
+                  gridTemplateColumns: "1fr 64px 1fr",
                   alignItems: "center",
                   width: "100%",
                 }}
@@ -117,31 +117,26 @@ export default async function Home() {
                 <span style={{ justifySelf: "start" }}>HOME</span>
                 <span
                   data-phone-logo
+                  role="img"
+                  aria-label="KULTURA globe logo"
                   style={{
-                    position: "relative",
-                    width: 58,
-                    height: 20,
+                    width: 64,
+                    height: 26,
                     justifySelf: "center",
-                    display: "grid",
-                    placeItems: "center",
+                    display: "block",
                     borderRadius: 999,
                     overflow: "hidden",
-                    background: "#000",
+                    backgroundColor: "#000",
+                    backgroundImage: "url('/kultura-globe.svg?v=7')",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
+                    backgroundSize: "60px 24px",
                     border: "1px solid rgba(0,0,0,.36)",
                     boxShadow: "0 3px 10px rgba(0,0,0,.22)",
                     transformOrigin: "center center",
                     willChange: "transform,opacity",
                   }}
-                >
-                  <Image
-                    src="/kultura-globe.svg"
-                    alt="KULTURA globe logo"
-                    width={50}
-                    height={18}
-                    unoptimized
-                    style={{ objectFit: "contain", display: "block" }}
-                  />
-                </span>
+                />
                 <span style={{ justifySelf: "end" }}>01</span>
               </div>
             </div>
@@ -178,17 +173,12 @@ export default async function Home() {
                 zIndex: 0,
                 opacity: 0,
                 willChange: "transform,opacity",
+                backgroundImage: "url('/kultura-globe.svg?v=7')",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
+                backgroundSize: "contain",
               }}
-            >
-              <Image
-                src="/kultura-globe.svg"
-                alt=""
-                fill
-                unoptimized
-                sizes="74vw"
-                style={{ objectFit: "contain" }}
-              />
-            </div>
+            />
 
             <div
               data-transition-scene
