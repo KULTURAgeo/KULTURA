@@ -48,74 +48,113 @@ export function HomeMotion({
         });
 
         const introScene = node.querySelector<HTMLElement>("[data-intro-scene]");
-        const introTitle = node.querySelector<HTMLElement>("[data-intro-title]");
         const introCopy = node.querySelector<HTMLElement>("[data-intro-copy]");
-        if (introScene && introTitle) {
-          animate(introTitle, {
-            scale: [1, 0.86],
-            y: [0, -82],
-            letterSpacing: ["-0.075em", "-0.055em"],
-            ease: "linear",
-            autoplay: onScroll({
-              target: introScene,
-              enter: "top top",
-              leave: "bottom top",
-              sync: true,
-            }),
-          });
+        const deviceBackdrop = node.querySelector<HTMLElement>("[data-intro-device-backdrop]");
+        const devicePhone = node.querySelector<HTMLElement>("[data-intro-device-phone]");
+        const screenOne = node.querySelector<HTMLElement>('[data-device-screen="1"]');
+        const screenTwo = node.querySelector<HTMLElement>('[data-device-screen="2"]');
+        const screenThree = node.querySelector<HTMLElement>('[data-device-screen="3"]');
+
+        if (introScene) {
           if (introCopy) {
             animate(introCopy, {
-              opacity: [1, 0.15],
-              y: [0, -44],
+              opacity: [1, 0],
+              y: [0, -150],
+              scale: [1, 0.94],
               ease: "linear",
               autoplay: onScroll({
                 target: introScene,
-                enter: "35% top",
+                enter: "top top",
+                leave: "28% top",
+                sync: true,
+              }),
+            });
+          }
+
+          if (deviceBackdrop) {
+            animate(deviceBackdrop, {
+              left: [32, 0],
+              right: [32, 0],
+              height: ["22svh", "100svh"],
+              borderRadius: ["28px 28px 0px 0px", "0px"],
+              scale: [0.985, 1],
+              ease: "linear",
+              autoplay: onScroll({
+                target: introScene,
+                enter: "top top",
+                leave: "38% top",
+                sync: true,
+              }),
+            });
+          }
+
+          if (devicePhone) {
+            animate(devicePhone, {
+              y: ["47vh", "0vh"],
+              scale: [0.76, 1],
+              rotate: [-2.5, 0],
+              ease: "linear",
+              autoplay: onScroll({
+                target: introScene,
+                enter: "top top",
+                leave: "38% top",
+                sync: true,
+              }),
+            });
+
+            animate(devicePhone, {
+              y: ["0vh", "-7vh"],
+              scale: [1, 0.9],
+              opacity: [1, 0.15],
+              ease: "linear",
+              autoplay: onScroll({
+                target: introScene,
+                enter: "84% top",
                 leave: "bottom top",
                 sync: true,
               }),
             });
           }
-        }
 
-        const studioScene = node.querySelector<HTMLElement>("[data-studio-scene]");
-        const studioBackdrop = node.querySelector<HTMLElement>("[data-studio-backdrop]");
-        const generator = node.querySelector<HTMLElement>("[data-generator-card]");
-        const studioCaption = node.querySelector<HTMLElement>("[data-studio-caption]");
-        const slideKnob = node.querySelector<HTMLElement>("[data-slide-knob]");
-        if (studioScene) {
-          if (studioBackdrop) {
-            animate(studioBackdrop, {
-              scale: [1.12, 1.01],
-              y: [70, -24],
+          if (screenOne) {
+            animate(screenOne, {
+              opacity: [1, 0],
+              y: [0, -70],
               ease: "linear",
-              autoplay: onScroll({ target: studioScene, enter: "top top", leave: "bottom top", sync: true }),
+              autoplay: onScroll({
+                target: introScene,
+                enter: "38% top",
+                leave: "54% top",
+                sync: true,
+              }),
             });
           }
-          if (generator) {
-            animate(generator, {
-              y: [130, -26],
-              scale: [0.76, 1.02],
-              rotate: [-7, 0],
-              opacity: [0.15, 1],
+
+          if (screenTwo) {
+            animate(screenTwo, {
+              opacity: [0, 1, 1, 0],
+              y: [70, 0, 0, -70],
               ease: "linear",
-              autoplay: onScroll({ target: studioScene, enter: "top top", leave: "75% top", sync: true }),
+              autoplay: onScroll({
+                target: introScene,
+                enter: "43% top",
+                leave: "72% top",
+                sync: true,
+              }),
             });
           }
-          if (studioCaption) {
-            animate(studioCaption, {
+
+          if (screenThree) {
+            animate(screenThree, {
               opacity: [0, 1],
-              x: [-55, 0],
+              y: [70, 0],
               ease: "linear",
-              autoplay: onScroll({ target: studioScene, enter: "20% top", leave: "65% top", sync: true }),
-            });
-          }
-          if (slideKnob) {
-            animate(slideKnob, {
-              x: [0, 164],
-              rotate: [0, 360],
-              ease: "linear",
-              autoplay: onScroll({ target: studioScene, enter: "35% top", leave: "78% top", sync: true }),
+              autoplay: onScroll({
+                target: introScene,
+                enter: "67% top",
+                leave: "83% top",
+                sync: true,
+              }),
             });
           }
         }
