@@ -113,6 +113,75 @@ export default async function Home() {
             </div>
           </div>
 
+          <div
+            data-phone-bridge
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "65%",
+              width: "min(540px, 56vw)",
+              height: "156px",
+              transform: "translate(-50%, -50%) scale(.86)",
+              borderRadius: "28px",
+              overflow: "hidden",
+              backgroundColor: "#171717",
+              backgroundImage: "radial-gradient(circle, rgba(255,255,255,.62) 1.1px, transparent 1.3px)",
+              backgroundSize: "44px 44px",
+              boxShadow: "0 26px 70px rgba(0,0,0,.38)",
+              zIndex: 8,
+              opacity: 0,
+              pointerEvents: "none",
+              willChange: "transform,width,height,top,border-radius,opacity",
+            }}
+          >
+            <div
+              data-bridge-cta
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                width: "min(335px, 64%)",
+                height: "56px",
+                transform: "translate(-50%, -50%)",
+                borderRadius: "14px",
+                display: "grid",
+                placeItems: "center",
+                background: "#d8f300",
+                color: "#111",
+                fontSize: "10px",
+                fontWeight: 900,
+                letterSpacing: ".11em",
+              }}
+            >
+              STEP INTO KULTURA
+            </div>
+
+            <div
+              data-bridge-product
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "52%",
+                width: "min(410px, 28vw)",
+                aspectRatio: ".69",
+                transform: "translate(-50%, -50%) scale(.72)",
+                borderRadius: "24px",
+                overflow: "hidden",
+                opacity: 0,
+                boxShadow: "0 24px 64px rgba(0,0,0,.34)",
+              }}
+            >
+              <Image
+                src={heroProduct?.image ?? campaignImage}
+                alt=""
+                fill
+                sizes="(max-width: 720px) 55vw, 28vw"
+                style={{ objectFit: "cover" }}
+              />
+            </div>
+          </div>
+
           <div className={styles.demoCaption} data-demo-caption>
             <span>SCROLL TO EXPLORE</span>
             <span>PRODUCTS IN MOTION</span>
