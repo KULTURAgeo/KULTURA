@@ -99,16 +99,28 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-radius", `${radius}px`);
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
-        const entry = smooth(range(p, 0.05, 0.28));
+        const entry = smooth(range(p, 0.05, 0.25));
+        const zoom = smooth(range(p, 0.24, 0.52));
         const exit = smooth(range(p, 0.82, 1));
         const entryOffset = mix(window.innerHeight * 0.82, 0, entry);
+        const zoomLift = mix(0, -window.innerHeight * 0.035, zoom);
         const exitOffset = mix(0, -window.innerHeight * 0.22, exit);
-        const scale = mix(0.73, 1, entry) * mix(1, 0.88, exit);
+
+        const baseHeight = Math.max(phone.offsetHeight, 1);
+        const zoomTarget = Math.min(
+          1.62,
+          Math.max(1.3, (window.innerHeight * 0.86) / baseHeight),
+        );
+        const entryScale = mix(0.73, 1, entry);
+        const focusScale = mix(1, zoomTarget, zoom);
+        const exitScale = mix(1, 0.88 / zoomTarget, exit);
+        const scale = entryScale * focusScale * exitScale;
         const opacity = entry * (1 - exit * 0.55);
-        phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + exitOffset}px), 0) scale(${scale})`;
+
+        phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + zoomLift + exitOffset}px), 0) scale(${scale})`;
         phone.style.opacity = String(opacity);
 
-        const slidePosition = range(p, 0.28, 0.76) * Math.max(phoneSlides.length - 1, 0);
+        const slidePosition = range(p, 0.5, 0.78) * Math.max(phoneSlides.length - 1, 0);
         phoneSlides.forEach((slide, index) => {
           const distance = index - slidePosition;
           const alpha = clamp01(1 - Math.abs(distance));
@@ -118,8 +130,8 @@ export function HomeMotion({
         });
 
         if (demoCaption) {
-          const enterCaption = smooth(range(p, 0.18, 0.34));
-          const leaveCaption = 1 - smooth(range(p, 0.78, 0.94));
+          const enterCaption = smooth(range(p, 0.18, 0.3));
+          const leaveCaption = 1 - smooth(range(p, 0.44, 0.62));
           demoCaption.style.opacity = String(enterCaption * leaveCaption);
         }
       }
