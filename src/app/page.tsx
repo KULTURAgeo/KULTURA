@@ -133,7 +133,7 @@ export default async function Home() {
                   }}
                 >
                   <Image
-                    src="/images/kultura-globe-badge.png"
+                    src="/kultura-globe.svg"
                     alt="KULTURA globe logo"
                     fill
                     unoptimized
@@ -180,7 +180,7 @@ export default async function Home() {
               }}
             >
               <Image
-                src="/images/kultura-globe-badge.png"
+                src="/kultura-globe.svg"
                 alt=""
                 fill
                 unoptimized
