@@ -65,20 +65,6 @@ export function HomeMotion({
     const transitionCenter = node.querySelector<HTMLElement>("[data-transition-center]");
     const transitionFloats = Array.from(node.querySelectorAll<HTMLElement>("[data-transition-float]"));
 
-    const orbitTrack = node.querySelector<HTMLElement>("[data-orbit-track]");
-    const orbitHeading = node.querySelector<HTMLElement>("[data-orbit-heading]");
-    const orbitCenter = node.querySelector<HTMLElement>("[data-orbit-center]");
-    const floats = Array.from(node.querySelectorAll<HTMLElement>("[data-float]"));
-
-    const floatStarts = [
-      [-120, -90, -9],
-      [130, -70, 8],
-      [-140, 120, 7],
-      [135, 115, -8],
-      [-55, -105, 10],
-      [70, 120, -9],
-    ];
-
     if (demoTrack) {
       demoTrack.style.height = "380svh";
     }
@@ -98,19 +84,13 @@ export function HomeMotion({
 
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
-
       const heroRect = hero?.getBoundingClientRect() ?? null;
       const demoRect = demoTrack?.getBoundingClientRect() ?? null;
-      const orbitRect = orbitTrack?.getBoundingClientRect() ?? null;
 
       const heroP = heroRect
         ? clamp01(-heroRect.top / Math.max(viewportHeight * 0.72, 1))
         : 0;
       const demoP = demoRect ? progressFromRect(demoRect, viewportHeight) : 0;
-      const orbitP = orbitRect ? progressFromRect(orbitRect, viewportHeight) : 0;
-      const orbitEntryP = orbitRect
-        ? smooth(clamp01((viewportHeight - orbitRect.top) / Math.max(viewportHeight * 0.78, 1)))
-        : 0;
 
       if (hero && heroCopy) {
         heroCopy.style.opacity = String(1 - smooth(range(heroP, 0.18, 0.92)));
@@ -129,8 +109,6 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-radius", `${radius}px`);
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
-        // Reference pacing: phone comes in quickly, then remains almost static
-        // for most of the sticky scene. The zoom happens only near the end.
         const entry = smooth(range(p, 0.025, 0.13));
         const focusZoom = smooth(range(p, 0.64, 0.72));
         const handoff = smooth(range(p, 0.715, 0.815));
@@ -147,7 +125,6 @@ export function HomeMotion({
         phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + focusLift + handoffOffset}px), 0) scale(${scale})`;
         phone.style.opacity = String(opacity);
 
-        // Content changes slowly while the phone itself stays anchored.
         const slidePosition = range(p, 0.15, 0.61) * Math.max(phoneSlides.length - 1, 0);
         phoneSlides.forEach((slide, index) => {
           const distance = index - slidePosition;
@@ -158,8 +135,6 @@ export function HomeMotion({
         });
 
         if (phoneTransition) {
-          // In the reference the CTA/popup stays small until the very end, then
-          // expands to the dotted scene in one short, fluid handoff.
           const appear = smooth(range(p, 0.71, 0.735));
           const expandPanel = smooth(range(p, 0.735, 0.805));
           const sceneIn = smooth(range(p, 0.77, 0.825));
@@ -194,9 +169,21 @@ export function HomeMotion({
           }
 
           transitionFloats.forEach((card, index) => {
-            const local = smooth(range(p, 0.785 + index * 0.006, 0.83 + index * 0.006));
+            const local = smooth(range(p, 0.785 + index * 0.006, 0.835 + index * 0.006));
+
+            // Every side card begins stacked over the main center image and
+            // then fans outward to its final position. The signs are reversed
+            // because the cards are already positioned at their final corners:
+            // these offsets pull them back into the center at local=0.
+            const fromX = index % 2 === 0 ? viewportWidth * 0.34 : -viewportWidth * 0.34;
+            const fromY = index < 2 ? viewportHeight * 0.29 : -viewportHeight * 0.29;
+            const x = mix(fromX, 0, local);
+            const y = mix(fromY, 0, local);
+            const cardScale = mix(0.42, 1, local);
+
             card.style.opacity = String(local);
-            card.style.transform = `scale(${mix(.68, 1, local)})`;
+            card.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${cardScale})`;
+            card.style.transformOrigin = "center center";
           });
 
           const backdropOut = smooth(range(p, 0.74, 0.815));
@@ -210,33 +197,6 @@ export function HomeMotion({
           const leaveCaption = 1 - smooth(range(p, 0.58, 0.64));
           demoCaption.style.opacity = String(enterCaption * leaveCaption);
         }
-      }
-
-      if (orbitTrack && orbitCenter && orbitHeading) {
-        const p = orbitP;
-        const entryP = orbitEntryP;
-
-        const headingIn = smooth(range(entryP, 0.08, 0.36));
-        const headingOut = 1 - smooth(range(p, 0.72, 0.92));
-        orbitHeading.style.opacity = String(headingIn * headingOut);
-        orbitHeading.style.transform = `translate3d(0, ${mix(22, -18, smooth(Math.max(entryP, range(p, 0, .86))))}px, 0)`;
-
-        const centerIn = smooth(range(entryP, 0.02, 0.28));
-        const centerOut = 1 - smooth(range(p, 0.82, 1));
-        orbitCenter.style.opacity = String(centerIn * centerOut);
-        orbitCenter.style.transform = `translate(-50%, -50%) scale(${mix(.86, 1, centerIn) * mix(1, .9, 1 - centerOut)})`;
-
-        floats.forEach((card, index) => {
-          const start = 0.02 + index * 0.035;
-          const inP = smooth(range(entryP, start, start + 0.30));
-          const outP = smooth(range(p, 0.82, 1));
-          const [sx, sy, sr] = floatStarts[index] ?? [0, 0, 0];
-          const driftX = sx * (1 - inP) + sx * -0.12 * inP;
-          const driftY = sy * (1 - inP) + sy * -0.08 * inP;
-          const rotate = sr * (1 - inP) + sr * -0.2 * inP;
-          card.style.opacity = String(inP * (1 - outP * .7));
-          card.style.transform = `translate3d(${driftX}px, ${driftY}px, 0) scale(${mix(.72, 1, inP)}) rotate(${rotate}deg)`;
-        });
       }
     };
 
