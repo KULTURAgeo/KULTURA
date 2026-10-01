@@ -86,6 +86,7 @@ export function HomeMotion({
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
 
+      // Read geometry before mutating styles to avoid forced layouts while scrolling.
       const heroRect = hero?.getBoundingClientRect() ?? null;
       const demoRect = demoTrack?.getBoundingClientRect() ?? null;
       const logoRect = phoneLogo?.getBoundingClientRect() ?? null;
@@ -113,18 +114,18 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
         const entry = smooth(range(p, 0.025, 0.13));
-        const handoff = smooth(range(p, 0.73, 0.835));
-        const phoneFade = smooth(range(p, 0.775, 0.845));
+        const handoff = smooth(range(p, 0.755, 0.865));
+        const phoneFade = smooth(range(p, 0.805, 0.885));
         const entryOffset = mix(viewportHeight * 0.82, 0, entry);
-        const handoffOffset = mix(0, -viewportHeight * 0.025, handoff);
+        const handoffOffset = mix(0, -viewportHeight * 0.022, handoff);
         const entryScale = mix(0.73, 1, entry);
-        const scale = entryScale * mix(1, 0.992, handoff);
+        const scale = entryScale * mix(1, 0.994, handoff);
         const opacity = entry * (1 - phoneFade * 0.98);
 
         phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + handoffOffset}px), 0) scale(${scale})`;
         phone.style.opacity = String(opacity);
 
-        const slidePosition = range(p, 0.15, 0.61) * Math.max(phoneSlides.length - 1, 0);
+        const slidePosition = range(p, 0.15, 0.63) * Math.max(phoneSlides.length - 1, 0);
         phoneSlides.forEach((slide, index) => {
           const distance = index - slidePosition;
           const alpha = clamp01(1 - Math.abs(distance));
@@ -134,18 +135,18 @@ export function HomeMotion({
         });
 
         if (phoneLogo) {
-          const logoFocus = smooth(range(p, 0.62, 0.71));
-          const logoTakeover = smooth(range(p, 0.70, 0.785));
-          const logoScale = mix(1, 1.28, logoFocus) * mix(1, 1.06, logoTakeover);
+          const logoFocus = smooth(range(p, 0.66, 0.745));
+          const logoTakeover = smooth(range(p, 0.74, 0.84));
+          const logoScale = mix(1, 1.22, logoFocus) * mix(1, 1.045, logoTakeover);
           phoneLogo.style.transform = `scale(${logoScale})`;
           phoneLogo.style.opacity = String(1 - logoTakeover * 0.94);
           phoneLogo.style.zIndex = "20";
         }
 
         if (phoneTransition) {
-          const appear = smooth(range(p, 0.685, 0.72));
-          const expandPanel = smooth(range(p, 0.705, 0.845));
-          const sceneIn = smooth(range(p, 0.79, 0.875));
+          const appear = smooth(range(p, 0.72, 0.755));
+          const expandPanel = smooth(range(p, 0.74, 0.885));
+          const sceneIn = smooth(range(p, 0.825, 0.91));
 
           const fallbackWidth = 58;
           const fallbackHeight = 30;
@@ -166,47 +167,50 @@ export function HomeMotion({
           const rightInset = mix(initialRight, 0, expandPanel);
           const topInset = mix(initialTop, 0, expandPanel);
           const bottomInset = mix(initialBottom, 0, expandPanel);
-          const borderRadius = mix(999, 0, expandPanel);
+          const initialRadius = Math.max((logoRect?.height ?? fallbackHeight) / 2, 15);
+          const borderRadius = mix(initialRadius, 0, expandPanel);
 
           phoneTransition.style.opacity = String(appear);
           phoneTransition.style.clipPath = `inset(${topInset}px ${rightInset}px ${bottomInset}px ${leftInset}px round ${borderRadius}px)`;
 
           if (sceneLogo) {
-            const logoIn = smooth(range(p, 0.72, 0.855));
-            const logoSettle = smooth(range(p, 0.78, 0.98));
+            const logoIn = smooth(range(p, 0.745, 0.875));
+            const logoSettle = smooth(range(p, 0.755, 0.925));
+            const logoY = mix(viewportHeight * 0.035, 0, logoSettle);
             sceneLogo.style.opacity = String(logoIn);
-            sceneLogo.style.transform = `translate(-50%, -50%) scale(${mix(.72, 1, logoSettle)})`;
+            sceneLogo.style.transform = `translate(-50%, calc(-50% + ${logoY}px)) scale(${mix(.18, 1, logoSettle)})`;
           }
 
           if (transitionScene) {
-            const sceneTravel = smooth(range(p, 0.79, 0.995));
+            const sceneTravel = smooth(range(p, 0.825, 0.995));
             transitionScene.style.opacity = String(sceneIn);
-            transitionScene.style.transform = `translate3d(0, ${mix(10, -10, sceneTravel)}px, 0) scale(${mix(.992, 1, sceneTravel)})`;
+            transitionScene.style.transform = `translate3d(0, ${mix(12, -8, sceneTravel)}px, 0) scale(${mix(.99, 1, sceneTravel)})`;
             transitionScene.style.willChange = "transform, opacity";
           }
 
           if (transitionCenter) {
-            const centerGrow = smooth(range(p, 0.80, 0.955));
-            transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.42, 1, centerGrow)})`;
+            const centerGrow = smooth(range(p, 0.835, 0.965));
+            transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.36, 1, centerGrow)})`;
           }
 
           transitionFloats.forEach((card, index) => {
-            const start = 0.81 + index * 0.012;
-            const end = 0.95 + index * 0.012;
+            const start = 0.845 + index * 0.016;
+            const end = 0.965 + index * 0.007;
             const local = smooth(range(p, start, Math.min(end, 0.995)));
 
+            // Each card begins over the central product and fans out to its final slot.
             const fromX = index % 2 === 0 ? viewportWidth * 0.34 : -viewportWidth * 0.34;
             const fromY = index < 2 ? viewportHeight * 0.29 : -viewportHeight * 0.29;
             const x = mix(fromX, 0, local);
             const y = mix(fromY, 0, local);
-            const cardScale = mix(0.42, 1, local);
+            const cardScale = mix(0.34, 1, local);
 
             card.style.opacity = String(local);
             card.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${cardScale})`;
             card.style.transformOrigin = "center center";
           });
 
-          const backdropOut = smooth(range(p, 0.72, 0.85));
+          const backdropOut = smooth(range(p, 0.76, 0.89));
           demoBackdrop.style.opacity = String(1 - backdropOut * 0.97);
         } else {
           demoBackdrop.style.opacity = "1";
