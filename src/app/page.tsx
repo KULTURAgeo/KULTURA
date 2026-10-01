@@ -132,7 +132,7 @@ export default async function Home() {
               zIndex: 8,
               opacity: 0,
               pointerEvents: "none",
-              willChange: "transform,width,height,top,border-radius,opacity",
+              willChange: "transform,clip-path,opacity",
             }}
           >
             <div
@@ -226,48 +226,6 @@ export default async function Home() {
             <span>SCROLL TO EXPLORE</span>
             <span>PRODUCTS IN MOTION</span>
           </div>
-        </div>
-      </section>
-
-      <section className={styles.orbitTrack} data-orbit-track>
-        <div className={styles.orbitSticky}>
-          <div className={styles.dotField} aria-hidden="true" />
-
-          <div className={styles.orbitHeading} data-orbit-heading>
-            <span>KULTURA / SELECTED PIECES</span>
-            <h2>ONE LANGUAGE.<br />DIFFERENT PIECES.</h2>
-          </div>
-
-          <Link
-            href={heroProduct ? `/product/${heroProduct.slug}` : "/shop"}
-            className={styles.orbitCenter}
-            data-orbit-center
-          >
-            <Image
-              src={heroProduct?.image ?? campaignImage}
-              alt={heroProduct?.images[0]?.alt ?? "KULTURA featured product"}
-              fill
-              sizes="(max-width: 720px) 55vw, 28vw"
-            />
-            <span>{heroProduct?.name?.replace("KULTURA ", "") ?? "KULTURA"}</span>
-          </Link>
-
-          {floatProducts.map((product, index) => (
-            <Link
-              href={product ? `/product/${product.slug}` : "/shop"}
-              className={`${styles.floatCard} ${styles[`float${index + 1}`]}`}
-              data-float
-              data-index={index}
-              key={`${product?.id ?? "float"}-${index}`}
-            >
-              <Image
-                src={product?.image ?? campaignImage}
-                alt={product?.images[0]?.alt ?? "KULTURA product"}
-                fill
-                sizes="(max-width: 720px) 30vw, 15vw"
-              />
-            </Link>
-          ))}
         </div>
       </section>
 
