@@ -60,6 +60,11 @@ export function HomeMotion({
     const phone = node.querySelector<HTMLElement>("[data-phone]");
     const phoneSlides = Array.from(node.querySelectorAll<HTMLElement>("[data-phone-slide]"));
     const demoCaption = node.querySelector<HTMLElement>("[data-demo-caption]");
+    const phoneTransition = node.querySelector<HTMLElement>("[data-phone-transition]");
+    const transitionCta = node.querySelector<HTMLElement>("[data-transition-cta]");
+    const transitionScene = node.querySelector<HTMLElement>("[data-transition-scene]");
+    const transitionCenter = node.querySelector<HTMLElement>("[data-transition-center]");
+    const transitionFloats = Array.from(node.querySelectorAll<HTMLElement>("[data-transition-float]"));
 
     const orbitTrack = node.querySelector<HTMLElement>("[data-orbit-track]");
     const orbitHeading = node.querySelector<HTMLElement>("[data-orbit-heading]");
@@ -100,27 +105,16 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
         const entry = smooth(range(p, 0.05, 0.25));
-        const zoom = smooth(range(p, 0.24, 0.52));
-        const exit = smooth(range(p, 0.72, 1));
+        const handoff = smooth(range(p, 0.58, 0.72));
         const entryOffset = mix(window.innerHeight * 0.82, 0, entry);
-        const zoomLift = mix(0, -window.innerHeight * 0.035, zoom);
-        const exitOffset = mix(0, -window.innerHeight * 0.58, exit);
+        const handoffOffset = mix(0, -window.innerHeight * 0.04, handoff);
+        const scale = mix(0.73, 1, entry) * mix(1, 0.98, handoff);
+        const opacity = entry * (1 - handoff * 0.92);
 
-        const baseHeight = Math.max(phone.offsetHeight, 1);
-        const zoomTarget = Math.min(
-          1.62,
-          Math.max(1.3, (window.innerHeight * 0.86) / baseHeight),
-        );
-        const entryScale = mix(0.73, 1, entry);
-        const focusScale = mix(1, zoomTarget, zoom);
-        const exitScale = mix(1, 0.68, exit);
-        const scale = entryScale * focusScale * exitScale;
-        const opacity = entry * (1 - exit);
-
-        phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + zoomLift + exitOffset}px), 0) scale(${scale})`;
+        phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + handoffOffset}px), 0) scale(${scale})`;
         phone.style.opacity = String(opacity);
 
-        const slidePosition = range(p, 0.5, 0.7) * Math.max(phoneSlides.length - 1, 0);
+        const slidePosition = range(p, 0.30, 0.56) * Math.max(phoneSlides.length - 1, 0);
         phoneSlides.forEach((slide, index) => {
           const distance = index - slidePosition;
           const alpha = clamp01(1 - Math.abs(distance));
@@ -129,32 +123,83 @@ export function HomeMotion({
           slide.style.zIndex = String(10 + Math.round(alpha * 10));
         });
 
-        const darken = smooth(range(p, 0.74, 1));
-        demoBackdrop.style.filter = `brightness(${mix(1, 0.16, darken)})`;
-        demoBackdrop.style.opacity = String(mix(1, 0.2, darken));
+        if (phoneTransition) {
+          const appear = smooth(range(p, 0.56, 0.61));
+          const expandPanel = smooth(range(p, 0.60, 0.75));
+          const sceneIn = smooth(range(p, 0.68, 0.79));
+
+          const phoneRect = phone.getBoundingClientRect();
+          const stickyRect = demoTrack.getBoundingClientRect();
+          const stickyTop = Math.max(0, -stickyRect.top);
+          const initialTop = Math.min(
+            window.innerHeight * 0.72,
+            Math.max(window.innerHeight * 0.58, phoneRect.bottom - stickyTop - 20),
+          );
+
+          const initialWidth = Math.max(310, Math.min(560, phoneRect.width * 1.55));
+          const initialHeight = Math.max(104, Math.min(164, phoneRect.height * 0.22));
+          const width = mix(initialWidth, window.innerWidth, expandPanel);
+          const height = mix(initialHeight, window.innerHeight, expandPanel);
+          const top = mix(initialTop, window.innerHeight * 0.5, expandPanel);
+          const borderRadius = mix(24, 0, expandPanel);
+
+          phoneTransition.style.opacity = String(appear);
+          phoneTransition.style.width = `${width}px`;
+          phoneTransition.style.height = `${height}px`;
+          phoneTransition.style.top = `${top}px`;
+          phoneTransition.style.borderRadius = `${borderRadius}px`;
+          phoneTransition.style.transform = `translate(-50%, -50%) scale(${mix(.92, 1, appear)})`;
+
+          if (transitionCta) {
+            const ctaOut = 1 - smooth(range(p, 0.63, 0.70));
+            transitionCta.style.opacity = String(ctaOut);
+            transitionCta.style.transform = `translate(-50%, -50%) scale(${mix(1, .92, 1 - ctaOut)})`;
+          }
+
+          if (transitionScene) {
+            transitionScene.style.opacity = String(sceneIn);
+          }
+
+          if (transitionCenter) {
+            transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.80, 1, sceneIn)})`;
+          }
+
+          transitionFloats.forEach((card, index) => {
+            const local = smooth(range(p, 0.70 + index * 0.012, 0.79 + index * 0.012));
+            card.style.opacity = String(local);
+            card.style.transform = `scale(${mix(.74, 1, local)})`;
+          });
+
+          const backdropOut = smooth(range(p, 0.60, 0.74));
+          demoBackdrop.style.opacity = String(1 - backdropOut * 0.9);
+          demoBackdrop.style.filter = `brightness(${mix(1, .22, backdropOut)})`;
+        } else {
+          demoBackdrop.style.opacity = "1";
+          demoBackdrop.style.filter = "none";
+        }
 
         if (demoCaption) {
           const enterCaption = smooth(range(p, 0.18, 0.3));
-          const leaveCaption = 1 - smooth(range(p, 0.44, 0.62));
+          const leaveCaption = 1 - smooth(range(p, 0.44, 0.56));
           demoCaption.style.opacity = String(enterCaption * leaveCaption);
         }
       }
 
       if (orbitTrack && orbitCenter && orbitHeading) {
         const p = progressFor(orbitTrack);
-        const headingIn = smooth(range(p, 0.0, 0.12));
+        const headingIn = smooth(range(p, 0.0, 0.08));
         const headingOut = 1 - smooth(range(p, 0.72, 0.92));
         orbitHeading.style.opacity = String(headingIn * headingOut);
-        orbitHeading.style.transform = `translate3d(0, ${mix(18, -18, smooth(range(p, 0, .86)))}px, 0)`;
+        orbitHeading.style.transform = `translate3d(0, ${mix(14, -18, smooth(range(p, 0, .86)))}px, 0)`;
 
-        const centerIn = smooth(range(p, 0.0, 0.1));
+        const centerIn = smooth(range(p, 0.0, 0.06));
         const centerOut = 1 - smooth(range(p, 0.82, 1));
         orbitCenter.style.opacity = String(centerIn * centerOut);
-        orbitCenter.style.transform = `translate(-50%, -50%) scale(${mix(.97, 1, centerIn) * mix(1, .9, 1 - centerOut)})`;
+        orbitCenter.style.transform = `translate(-50%, -50%) scale(${mix(.985, 1, centerIn) * mix(1, .9, 1 - centerOut)})`;
 
         floats.forEach((card, index) => {
-          const start = index * 0.022;
-          const inP = smooth(range(p, start, start + 0.14));
+          const start = index * 0.012;
+          const inP = smooth(range(p, start, start + 0.09));
           const outP = smooth(range(p, 0.82, 1));
           const [sx, sy, sr] = floatStarts[index] ?? [0, 0, 0];
           const driftX = sx * (1 - inP) + sx * -0.12 * inP;
