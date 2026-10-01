@@ -133,7 +133,7 @@ export default async function Home() {
                   }}
                 >
                   <Image
-                    src="/kultura-globe.svg"
+                    src="/images/kultura-phone-badge.png"
                     alt="KULTURA globe logo"
                     fill
                     unoptimized
@@ -172,7 +172,7 @@ export default async function Home() {
                 left: "50%",
                 top: "50%",
                 width: "min(980px, 74vw)",
-                aspectRatio: "426 / 225",
+                aspectRatio: "1091 / 630",
                 transform: "translate(-50%, -50%) scale(.72)",
                 zIndex: 0,
                 opacity: 0,
@@ -180,12 +180,12 @@ export default async function Home() {
               }}
             >
               <Image
-                src="/kultura-globe.svg"
+                src="/images/kultura-scene-logo.jpg"
                 alt=""
                 fill
                 unoptimized
                 sizes="74vw"
-                style={{ objectFit: "contain" }}
+                style={{ objectFit: "contain", objectPosition: "center" }}
               />
             </div>
 
