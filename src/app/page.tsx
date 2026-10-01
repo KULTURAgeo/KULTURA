@@ -6,6 +6,7 @@ import { getHomepageCatalog } from "@/lib/catalog/repository";
 import { CatalogNotice } from "@/components/catalog-notice";
 import { Newsletter } from "@/components/newsletter";
 import { HomeMotion } from "@/components/home-motion";
+import { IntroDeviceShowcase } from "@/components/intro-device-showcase";
 import styles from "./home.module.css";
 
 export const metadata = pageMetadata("KULTURA — Step Into Kultura", "/");
@@ -75,6 +76,12 @@ export default async function Home() {
             </a>
           </div>
         </div>
+
+        <IntroDeviceShowcase
+          productImage={heroProduct?.image ?? "/images/hoodie.jpg"}
+          productName={heroProduct?.name ?? "KULTURA HOODIE"}
+          productHref={heroProduct ? `/product/${heroProduct.slug}` : "/shop"}
+        />
 
         <div className={styles.introFooter}>
           <span>SCROLL TO ENTER</span>
