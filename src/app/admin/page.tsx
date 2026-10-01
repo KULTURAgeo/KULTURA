@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { AdminDashboardMetrics } from "@/components/admin-dashboard-metrics";
 import { AdminRecentOrders } from "@/components/admin-recent-orders";
 import { AdminBestSellers } from "@/components/admin-best-sellers";
+import { AdminSalesTrend } from "@/components/admin-sales-trend";
 import styles from "./admin-dashboard.module.css";
 
 function MetricsFallback() {
@@ -50,6 +51,10 @@ export default function Admin() {
 
       <Suspense fallback={<MetricsFallback />}>
         <AdminDashboardMetrics />
+      </Suspense>
+
+      <Suspense fallback={<PanelFallback title="SALES TREND" />}>
+        <AdminSalesTrend />
       </Suspense>
 
       <div className={styles.split}>

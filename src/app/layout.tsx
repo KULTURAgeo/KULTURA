@@ -10,6 +10,7 @@ import { LazyCartDrawer } from "@/components/lazy-cart-drawer";
 import { Footer } from "@/components/footer";
 import "./globals.css";
 import "./phase3.css";
+import "./commerce-polish.css";
 
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 const googleAnalyticsId = /^G-[A-Z0-9]+$/.test(

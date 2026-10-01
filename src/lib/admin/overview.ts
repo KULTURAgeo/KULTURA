@@ -12,6 +12,20 @@ function tbilisiDayStartIso(now = new Date()) {
   return new Date(`${year}-${month}-${day}T00:00:00+04:00`).toISOString();
 }
 
+function tbilisiDateKey(value: string | Date) {
+  const date = typeof value === "string" ? new Date(value) : value;
+  return new Date(date.getTime() + 4 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+}
+
+function tbilisiRollingStartIso(days: number, now = new Date()) {
+  const local = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+  local.setUTCHours(0, 0, 0, 0);
+  local.setUTCDate(local.getUTCDate() - Math.max(0, days - 1));
+  return new Date(local.getTime() - 4 * 60 * 60 * 1000).toISOString();
+}
+
 export async function adminDashboardMetrics() {
   const { client } = await requirePage(true);
   const dayStart = tbilisiDayStartIso();
@@ -68,6 +82,59 @@ export async function adminDashboardMetrics() {
   };
 }
 
+export async function adminSalesTrend(days = 7) {
+  const safeDays = Math.max(2, Math.min(31, Math.floor(days)));
+  const { client } = await requirePage(true);
+  const start = tbilisiRollingStartIso(safeDays);
+  const { data, error } = await client
+    .from("orders")
+    .select("paid_at,final_total")
+    .eq("is_test", false)
+    .eq("payment_status", "paid")
+    .gte("paid_at", start)
+    .order("paid_at", { ascending: true })
+    .limit(10000);
+
+  if (error) throw new Error("Sales trend unavailable.");
+
+  const now = new Date();
+  const slots = Array.from({ length: safeDays }, (_, index) => {
+    const local = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+    local.setUTCHours(0, 0, 0, 0);
+    local.setUTCDate(local.getUTCDate() - (safeDays - 1 - index));
+    const key = local.toISOString().slice(0, 10);
+    return {
+      key,
+      label: local.toLocaleDateString("en-GB", {
+        weekday: "short",
+        day: "2-digit",
+        timeZone: "UTC",
+      }),
+      orders: 0,
+      revenue: 0,
+    };
+  });
+  const byKey = new Map(slots.map((slot) => [slot.key, slot]));
+
+  for (const order of data ?? []) {
+    if (!order.paid_at) continue;
+    const slot = byKey.get(tbilisiDateKey(order.paid_at));
+    if (!slot) continue;
+    slot.orders += 1;
+    slot.revenue += order.final_total;
+  }
+
+  const totalOrders = slots.reduce((sum, slot) => sum + slot.orders, 0);
+  const totalRevenue = slots.reduce((sum, slot) => sum + slot.revenue, 0);
+
+  return {
+    days: slots,
+    totalOrders,
+    totalRevenue,
+    averageOrderValue: totalOrders ? Math.round(totalRevenue / totalOrders) : 0,
+  };
+}
+
 export async function adminRecentOrders() {
   const { client } = await requirePage(true);
   const { data, error } = await client
@@ -83,8 +150,6 @@ export async function adminRecentOrders() {
 export async function adminBestSellers() {
   const { client } = await requirePage(true);
 
-  // Filter through the order relation in one PostgREST request instead of first
-  // downloading up to 1,000 order IDs and sending them back in a giant IN list.
   const { data: items, error } = await client
     .from("order_items")
     .select(

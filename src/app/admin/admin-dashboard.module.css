@@ -94,13 +94,95 @@
   font-size: 26px;
 }
 
+.trendPanel {
+  margin-bottom: 18px;
+}
+
+.trendHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.trendTotals {
+  display: flex;
+  gap: 22px;
+  text-align: right;
+}
+
+.trendTotals span,
+.trendTotals small,
+.trendTotals strong {
+  display: block;
+}
+
+.trendTotals small {
+  color: #777;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+.trendTotals strong {
+  margin-top: 4px;
+  font-size: 16px;
+}
+
+.trendChart {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+  min-height: 270px;
+  padding-top: 24px;
+  border-top: 1px solid #2d2d2d;
+}
+
+.trendDay {
+  display: grid;
+  gap: 6px;
+  text-align: center;
+  min-width: 0;
+}
+
+.trendBarTrack {
+  height: 150px;
+  display: flex;
+  align-items: end;
+  background: #151515;
+  border: 1px solid #292929;
+}
+
+.trendBar {
+  width: 100%;
+  min-height: 3px;
+  background: #f2f2f2;
+}
+
+.trendDay strong {
+  font-size: 11px;
+}
+
+.trendDay small,
+.trendDay span {
+  color: #858585;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @media (max-width: 980px) {
   .heroStats { grid-template-columns: repeat(2, 1fr); }
   .split { grid-template-columns: 1fr; }
+  .trendHeader { display: grid; }
+  .trendTotals { text-align: left; flex-wrap: wrap; }
 }
 
 @media (max-width: 560px) {
   .heroStats { grid-template-columns: 1fr 1fr; gap: 8px; }
   .metric { min-height: 120px; padding: 16px; }
   .inventory { grid-template-columns: repeat(2, 1fr); }
+  .trendChart { gap: 4px; }
+  .trendBarTrack { height: 110px; }
+  .trendDay span { display: none; }
 }
