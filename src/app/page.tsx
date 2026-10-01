@@ -105,35 +105,43 @@ export default async function Home() {
                 ))}
               </div>
 
-              <div className={styles.phoneBottom}>
-                <span>HOME</span>
+              <div
+                className={styles.phoneBottom}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto 1fr",
+                  alignItems: "center",
+                  width: "100%",
+                }}
+              >
+                <span style={{ justifySelf: "start" }}>HOME</span>
                 <span
                   data-phone-logo
                   style={{
                     position: "relative",
-                    width: 58,
+                    width: 62,
                     height: 30,
-                    display: "grid",
-                    placeItems: "center",
+                    justifySelf: "center",
+                    display: "block",
                     borderRadius: 999,
                     overflow: "hidden",
-                    background: "#030303",
-                    border: "1px solid rgba(255,255,255,.34)",
-                    boxShadow: "0 4px 14px rgba(0,0,0,.24), inset 0 0 0 1px rgba(255,255,255,.05)",
+                    background: "#000",
+                    border: "1px solid rgba(0,0,0,.32)",
+                    boxShadow: "0 4px 14px rgba(0,0,0,.24)",
                     transformOrigin: "center center",
                     willChange: "transform,opacity",
                   }}
                 >
                   <Image
-                    src="/kultura-globe.svg"
-                    alt=""
-                    width={52}
-                    height={29}
+                    src="/images/kultura-globe-original.jpeg"
+                    alt="KULTURA globe logo"
+                    fill
                     unoptimized
-                    style={{ objectFit: "contain" }}
+                    sizes="62px"
+                    style={{ objectFit: "cover", objectPosition: "center" }}
                   />
                 </span>
-                <span>01</span>
+                <span style={{ justifySelf: "end" }}>01</span>
               </div>
             </div>
           </div>
@@ -172,7 +180,7 @@ export default async function Home() {
               }}
             >
               <Image
-                src="/kultura-globe.svg"
+                src="/images/kultura-globe-original.jpeg"
                 alt=""
                 fill
                 unoptimized
