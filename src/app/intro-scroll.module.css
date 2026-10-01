@@ -1,0 +1,56 @@
+.journey {
+  min-height: 245svh !important;
+  display: block !important;
+  position: relative;
+  overflow: clip;
+  background: #efede5;
+}
+
+.copySticky {
+  position: sticky !important;
+  top: 0;
+  z-index: 2;
+  height: 100svh;
+  width: min(1320px, calc(100% - 2 * var(--space)));
+  margin: 0 auto;
+  display: grid !important;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  gap: 18px;
+  padding-top: 2svh !important;
+  pointer-events: none;
+}
+
+.copySticky a {
+  pointer-events: auto;
+}
+
+.footer {
+  display: none !important;
+}
+
+.skipStudio {
+  display: none !important;
+}
+
+@media (max-width: 700px) {
+  .journey {
+    min-height: 225svh !important;
+  }
+
+  .copySticky {
+    width: calc(100% - 28px);
+    gap: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey {
+    min-height: 100svh !important;
+  }
+
+  .copySticky {
+    position: relative !important;
+  }
+}
