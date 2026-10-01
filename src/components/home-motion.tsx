@@ -1,6 +1,19 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { FloatingHomeNav } from "./floating-home-nav";
+
+const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
+const range = (value: number, from: number, to: number) =>
+  clamp01((value - from) / Math.max(to - from, 0.0001));
+const smooth = (value: number) => value * value * (3 - 2 * value);
+const mix = (from: number, to: number, value: number) => from + (to - from) * value;
+
+function progressFor(element: HTMLElement) {
+  const rect = element.getBoundingClientRect();
+  const scrollable = Math.max(rect.height - window.innerHeight, 1);
+  return clamp01(-rect.top / scrollable);
+}
 
 export function HomeMotion({
   children,
@@ -15,137 +28,148 @@ export function HomeMotion({
     const node = root.current;
     if (!node) return;
 
-    const revealNodes = Array.from(
-      node.querySelectorAll<HTMLElement>("[data-reveal]"),
-    );
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      revealNodes.forEach((item) => item.setAttribute("data-visible", "true"));
-      return;
-    }
+    document.body.classList.add("kultura-motion-home");
 
-    const revealTransitions = revealNodes.map((item) => item.style.transition);
-    const marquee = node.querySelector<HTMLElement>("[data-home-marquee]");
-    const marqueeAnimation = marquee?.style.animation ?? "";
-    const hasFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    let cancelled = false;
-    let cleanup = () => {};
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const revealNodes = Array.from(node.querySelectorAll<HTMLElement>("[data-reveal]"));
 
-    void import("animejs").then(
-      ({ animate, createAnimatable, createScope, onScroll, stagger }) => {
-        if (cancelled) return;
-        let pointerHandler: ((event: PointerEvent) => void) | null = null;
-
-        const scope = createScope({ root: node }).add(() => {
-          revealNodes.forEach((item, index) => {
-            item.style.transition = "none";
-            animate(item, {
-              opacity: [0, 1],
-              y: [34, 0],
-              duration: 760,
-              delay: Math.min((index % 3) * 70, 140),
-              ease: "out(4)",
-              autoplay: onScroll({
-                target: item,
-                enter: "top bottom",
-                leave: "bottom top",
-                repeat: false,
-              }),
-            });
-          });
-
-          const hero = node.querySelector<HTMLElement>("[data-home-hero]");
-          const heroMedia = node.querySelector<HTMLElement>("[data-home-media]");
-          if (hero && heroMedia) {
-            animate(heroMedia, {
-              y: [0, 110],
-              scale: [1, 1.072],
-              ease: "linear",
-              autoplay: onScroll({
-                target: hero,
-                enter: "top top",
-                leave: "bottom top",
-                sync: true,
-              }),
-            });
-          }
-
-          const intro = Array.from(
-            node.querySelectorAll<HTMLElement>("[data-home-intro]"),
-          );
-          if (intro.length) {
-            animate(intro, {
-              opacity: [0, 1],
-              y: [24, 0],
-              duration: 820,
-              delay: stagger(95, { start: 80 }),
-              ease: "out(4)",
-            });
-          }
-
-          if (marquee) {
-            marquee.style.animation = "none";
-            animate(marquee, {
-              x: ["0%", "-50%"],
-              duration: 24000,
-              ease: "linear",
-              loop: true,
-            });
-          }
-
-          if (hasFinePointer) {
-            const orb = node.querySelector<HTMLElement>("[data-home-orb]");
-            const ring = node.querySelector<HTMLElement>("[data-home-ring]");
-            const orbMotion = orb
-              ? createAnimatable(orb, {
-                  x: 360,
-                  y: 360,
-                  rotate: 420,
-                  ease: "out(3)",
-                })
-              : null;
-            const ringMotion = ring
-              ? createAnimatable(ring, {
-                  x: 520,
-                  y: 520,
-                  ease: "out(3)",
-                })
-              : null;
-
-            if (orbMotion || ringMotion) {
-              pointerHandler = (event: PointerEvent) => {
-                const rect = node.getBoundingClientRect();
-                const x =
-                  ((event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5) * 2;
-                const y =
-                  ((event.clientY - rect.top) / Math.max(rect.height, 1) - 0.5) * 2;
-                orbMotion?.x(x * 10).y(y * 10).rotate(x * 4);
-                ringMotion?.x(x * -10).y(y * -10);
-              };
-              node.addEventListener("pointermove", pointerHandler, { passive: true });
-            }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            (entry.target as HTMLElement).setAttribute("data-visible", "true");
           }
         });
-
-        cleanup = () => {
-          if (pointerHandler)
-            node.removeEventListener("pointermove", pointerHandler);
-          revealNodes.forEach((item, index) => {
-            item.style.transition = revealTransitions[index] ?? "";
-          });
-          if (marquee) marquee.style.animation = marqueeAnimation;
-          scope.revert();
-        };
       },
+      { threshold: 0.12, rootMargin: "0px 0px -5% 0px" },
     );
+    revealNodes.forEach((item) => observer.observe(item));
+
+    if (reduced) {
+      revealNodes.forEach((item) => item.setAttribute("data-visible", "true"));
+      return () => {
+        observer.disconnect();
+        document.body.classList.remove("kultura-motion-home");
+      };
+    }
+
+    const hero = node.querySelector<HTMLElement>("[data-hero]");
+    const heroCopy = node.querySelector<HTMLElement>("[data-hero-copy]");
+    const demoTrack = node.querySelector<HTMLElement>("[data-demo-track]");
+    const demoBackdrop = node.querySelector<HTMLElement>("[data-demo-backdrop]");
+    const phone = node.querySelector<HTMLElement>("[data-phone]");
+    const phoneSlides = Array.from(node.querySelectorAll<HTMLElement>("[data-phone-slide]"));
+    const demoCaption = node.querySelector<HTMLElement>("[data-demo-caption]");
+
+    const orbitTrack = node.querySelector<HTMLElement>("[data-orbit-track]");
+    const orbitHeading = node.querySelector<HTMLElement>("[data-orbit-heading]");
+    const orbitCenter = node.querySelector<HTMLElement>("[data-orbit-center]");
+    const floats = Array.from(node.querySelectorAll<HTMLElement>("[data-float]"));
+
+    const floatStarts = [
+      [-120, -90, -9],
+      [130, -70, 8],
+      [-140, 120, 7],
+      [135, 115, -8],
+      [-55, -105, 10],
+      [70, 120, -9],
+    ];
+
+    let frame = 0;
+
+    const render = () => {
+      frame = 0;
+
+      if (hero && heroCopy) {
+        const rect = hero.getBoundingClientRect();
+        const p = clamp01(-rect.top / Math.max(window.innerHeight * 0.72, 1));
+        heroCopy.style.opacity = String(1 - smooth(range(p, 0.18, 0.92)));
+        heroCopy.style.transform = `translate3d(0, ${mix(0, -54, smooth(p))}px, 0)`;
+      }
+
+      if (demoTrack && demoBackdrop && phone) {
+        const p = progressFor(demoTrack);
+
+        const expand = smooth(range(p, 0.0, 0.18));
+        const desktopInset = mix(24, 0, expand);
+        const mobileInset = mix(12, 0, expand);
+        const radius = mix(30, 0, expand);
+        demoBackdrop.style.setProperty("--demo-inset", `${desktopInset}px`);
+        demoBackdrop.style.setProperty("--demo-inset-mobile", `${mobileInset}px`);
+        demoBackdrop.style.setProperty("--demo-radius", `${radius}px`);
+        demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
+
+        const entry = smooth(range(p, 0.05, 0.28));
+        const exit = smooth(range(p, 0.82, 1));
+        const entryOffset = mix(window.innerHeight * 0.82, 0, entry);
+        const exitOffset = mix(0, -window.innerHeight * 0.22, exit);
+        const scale = mix(0.73, 1, entry) * mix(1, 0.88, exit);
+        const opacity = entry * (1 - exit * 0.55);
+        phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + exitOffset}px), 0) scale(${scale})`;
+        phone.style.opacity = String(opacity);
+
+        const slidePosition = range(p, 0.28, 0.76) * Math.max(phoneSlides.length - 1, 0);
+        phoneSlides.forEach((slide, index) => {
+          const distance = index - slidePosition;
+          const alpha = clamp01(1 - Math.abs(distance));
+          slide.style.opacity = String(alpha);
+          slide.style.transform = `translate3d(0, ${distance * 18}%, 0) scale(${mix(.965, 1, alpha)})`;
+          slide.style.zIndex = String(10 + Math.round(alpha * 10));
+        });
+
+        if (demoCaption) {
+          const enterCaption = smooth(range(p, 0.18, 0.34));
+          const leaveCaption = 1 - smooth(range(p, 0.78, 0.94));
+          demoCaption.style.opacity = String(enterCaption * leaveCaption);
+        }
+      }
+
+      if (orbitTrack && orbitCenter && orbitHeading) {
+        const p = progressFor(orbitTrack);
+        const headingIn = smooth(range(p, 0.0, 0.18));
+        const headingOut = 1 - smooth(range(p, 0.72, 0.92));
+        orbitHeading.style.opacity = String(headingIn * headingOut);
+        orbitHeading.style.transform = `translate3d(0, ${mix(34, -18, smooth(range(p, 0, .86)))}px, 0)`;
+
+        const centerIn = smooth(range(p, 0.06, 0.28));
+        const centerOut = 1 - smooth(range(p, 0.82, 1));
+        orbitCenter.style.opacity = String(centerIn * centerOut);
+        orbitCenter.style.transform = `translate(-50%, -50%) scale(${mix(.68, 1, centerIn) * mix(1, .9, 1 - centerOut)})`;
+
+        floats.forEach((card, index) => {
+          const start = 0.14 + index * 0.035;
+          const inP = smooth(range(p, start, start + 0.28));
+          const outP = smooth(range(p, 0.82, 1));
+          const [sx, sy, sr] = floatStarts[index] ?? [0, 0, 0];
+          const driftX = sx * (1 - inP) + sx * -0.12 * inP;
+          const driftY = sy * (1 - inP) + sy * -0.08 * inP;
+          const rotate = sr * (1 - inP) + sr * -0.2 * inP;
+          card.style.opacity = String(inP * (1 - outP * .7));
+          card.style.transform = `translate3d(${driftX}px, ${driftY}px, 0) scale(${mix(.72, 1, inP)}) rotate(${rotate}deg)`;
+        });
+      }
+    };
+
+    const requestRender = () => {
+      if (!frame) frame = requestAnimationFrame(render);
+    };
+
+    render();
+    window.addEventListener("scroll", requestRender, { passive: true });
+    window.addEventListener("resize", requestRender);
 
     return () => {
-      cancelled = true;
-      cleanup();
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", requestRender);
+      window.removeEventListener("resize", requestRender);
+      observer.disconnect();
+      document.body.classList.remove("kultura-motion-home");
     };
   }, []);
 
   return (
     <div ref={root} className={className}>
+      <FloatingHomeNav />
       {children}
     </div>
   );
