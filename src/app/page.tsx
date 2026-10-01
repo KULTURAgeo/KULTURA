@@ -117,26 +117,30 @@ export default async function Home() {
                 <span style={{ justifySelf: "start" }}>HOME</span>
                 <span
                   data-phone-logo
-                  role="img"
-                  aria-label="KULTURA globe logo"
                   style={{
+                    position: "relative",
                     width: 64,
                     height: 26,
                     justifySelf: "center",
                     display: "block",
                     borderRadius: 999,
                     overflow: "hidden",
-                    backgroundColor: "#000",
-                    backgroundImage: "url('/kultura-globe.svg?v=7')",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                    backgroundSize: "60px 24px",
+                    background: "#000",
                     border: "1px solid rgba(0,0,0,.36)",
                     boxShadow: "0 3px 10px rgba(0,0,0,.22)",
                     transformOrigin: "center center",
                     willChange: "transform,opacity",
                   }}
-                />
+                >
+                  <Image
+                    src="/images/kultura-globe-badge.png"
+                    alt="KULTURA globe logo"
+                    fill
+                    unoptimized
+                    sizes="64px"
+                    style={{ objectFit: "contain", objectPosition: "center", padding: "1px 3px" }}
+                  />
+                </span>
                 <span style={{ justifySelf: "end" }}>01</span>
               </div>
             </div>
@@ -168,17 +172,22 @@ export default async function Home() {
                 left: "50%",
                 top: "50%",
                 width: "min(980px, 74vw)",
-                aspectRatio: "1005 / 565",
+                aspectRatio: "426 / 225",
                 transform: "translate(-50%, -50%) scale(.72)",
                 zIndex: 0,
                 opacity: 0,
                 willChange: "transform,opacity",
-                backgroundImage: "url('/kultura-globe.svg?v=7')",
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "center",
-                backgroundSize: "contain",
               }}
-            />
+            >
+              <Image
+                src="/images/kultura-globe-badge.png"
+                alt=""
+                fill
+                unoptimized
+                sizes="74vw"
+                style={{ objectFit: "contain" }}
+              />
+            </div>
 
             <div
               data-transition-scene
