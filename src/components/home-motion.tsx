@@ -79,17 +79,11 @@ export function HomeMotion({
       [70, 120, -9],
     ];
 
-    // Tinker keeps the phone scene alive for much longer than our first pass.
-    // Increasing the sticky track gives the phone several extra scroll beats
-    // before the handoff begins without changing the rest of the page.
     if (demoTrack) {
-      demoTrack.style.height = "330svh";
+      demoTrack.style.height = "380svh";
     }
 
     if (phoneTransition) {
-      // Keep the transition layer full-screen at all times and reveal it with
-      // clip-path. This avoids changing width/height/top on every scroll frame,
-      // which was forcing layout and causing the post-phone stutter.
       phoneTransition.style.width = "100vw";
       phoneTransition.style.height = "100svh";
       phoneTransition.style.top = "50%";
@@ -105,8 +99,6 @@ export function HomeMotion({
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
 
-      // Read all geometry first. Keeping reads before writes prevents forced
-      // synchronous layouts while the user is scrolling.
       const heroRect = hero?.getBoundingClientRect() ?? null;
       const demoRect = demoTrack?.getBoundingClientRect() ?? null;
       const orbitRect = orbitTrack?.getBoundingClientRect() ?? null;
@@ -128,7 +120,7 @@ export function HomeMotion({
       if (demoTrack && demoBackdrop && phone) {
         const p = demoP;
 
-        const expand = smooth(range(p, 0.0, 0.14));
+        const expand = smooth(range(p, 0.0, 0.12));
         const desktopInset = mix(24, 0, expand);
         const mobileInset = mix(12, 0, expand);
         const radius = mix(30, 0, expand);
@@ -137,35 +129,40 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-radius", `${radius}px`);
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
-        const entry = smooth(range(p, 0.035, 0.17));
-        const focusZoom = smooth(range(p, 0.56, 0.67));
-        const handoff = smooth(range(p, 0.665, 0.79));
-        const phoneFade = smooth(range(p, 0.735, 0.82));
+        // Reference pacing: phone comes in quickly, then remains almost static
+        // for most of the sticky scene. The zoom happens only near the end.
+        const entry = smooth(range(p, 0.025, 0.13));
+        const focusZoom = smooth(range(p, 0.64, 0.72));
+        const handoff = smooth(range(p, 0.715, 0.815));
+        const phoneFade = smooth(range(p, 0.77, 0.835));
         const entryOffset = mix(viewportHeight * 0.82, 0, entry);
-        const focusLift = mix(0, -viewportHeight * 0.018, focusZoom);
-        const handoffOffset = mix(0, -viewportHeight * 0.045, handoff);
+        const focusLift = mix(0, -viewportHeight * 0.012, focusZoom);
+        const handoffOffset = mix(0, -viewportHeight * 0.035, handoff);
         const entryScale = mix(0.73, 1, entry);
-        const zoomScale = mix(1, 1.095, focusZoom);
-        const handoffScale = mix(1, 0.99, handoff);
+        const zoomScale = mix(1, 1.105, focusZoom);
+        const handoffScale = mix(1, 0.992, handoff);
         const scale = entryScale * zoomScale * handoffScale;
         const opacity = entry * (1 - phoneFade * 0.98);
 
         phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + focusLift + handoffOffset}px), 0) scale(${scale})`;
         phone.style.opacity = String(opacity);
 
-        const slidePosition = range(p, 0.22, 0.56) * Math.max(phoneSlides.length - 1, 0);
+        // Content changes slowly while the phone itself stays anchored.
+        const slidePosition = range(p, 0.15, 0.61) * Math.max(phoneSlides.length - 1, 0);
         phoneSlides.forEach((slide, index) => {
           const distance = index - slidePosition;
           const alpha = clamp01(1 - Math.abs(distance));
           slide.style.opacity = String(alpha);
-          slide.style.transform = `translate3d(0, ${distance * 18}%, 0) scale(${mix(.965, 1, alpha)})`;
+          slide.style.transform = `translate3d(0, ${distance * 14}%, 0) scale(${mix(.975, 1, alpha)})`;
           slide.style.zIndex = String(10 + Math.round(alpha * 10));
         });
 
         if (phoneTransition) {
-          const appear = smooth(range(p, 0.655, 0.69));
-          const expandPanel = smooth(range(p, 0.68, 0.805));
-          const sceneIn = smooth(range(p, 0.715, 0.81));
+          // In the reference the CTA/popup stays small until the very end, then
+          // expands to the dotted scene in one short, fluid handoff.
+          const appear = smooth(range(p, 0.71, 0.735));
+          const expandPanel = smooth(range(p, 0.735, 0.805));
+          const sceneIn = smooth(range(p, 0.77, 0.825));
 
           const initialWidth = Math.max(300, Math.min(500, viewportWidth * 0.36));
           const initialHeight = Math.max(104, Math.min(148, viewportHeight * 0.19));
@@ -182,9 +179,9 @@ export function HomeMotion({
           phoneTransition.style.clipPath = `inset(${topInset}px ${side}px ${bottomInset}px ${side}px round ${borderRadius}px)`;
 
           if (transitionCta) {
-            const ctaOut = 1 - smooth(range(p, 0.70, 0.755));
+            const ctaOut = 1 - smooth(range(p, 0.755, 0.79));
             transitionCta.style.opacity = String(ctaOut);
-            transitionCta.style.transform = `translate(-50%, -50%) scale(${mix(1, .9, 1 - ctaOut)})`;
+            transitionCta.style.transform = `translate(-50%, -50%) scale(${mix(1, .94, 1 - ctaOut)})`;
           }
 
           if (transitionScene) {
@@ -192,25 +189,25 @@ export function HomeMotion({
           }
 
           if (transitionCenter) {
-            const centerGrow = smooth(range(p, 0.715, 0.805));
-            transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.38, 1, centerGrow)})`;
+            const centerGrow = smooth(range(p, 0.77, 0.825));
+            transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.46, 1, centerGrow)})`;
           }
 
           transitionFloats.forEach((card, index) => {
-            const local = smooth(range(p, 0.735 + index * 0.008, 0.81 + index * 0.008));
+            const local = smooth(range(p, 0.785 + index * 0.006, 0.83 + index * 0.006));
             card.style.opacity = String(local);
-            card.style.transform = `scale(${mix(.58, 1, local)})`;
+            card.style.transform = `scale(${mix(.68, 1, local)})`;
           });
 
-          const backdropOut = smooth(range(p, 0.68, 0.80));
+          const backdropOut = smooth(range(p, 0.74, 0.815));
           demoBackdrop.style.opacity = String(1 - backdropOut * 0.95);
         } else {
           demoBackdrop.style.opacity = "1";
         }
 
         if (demoCaption) {
-          const enterCaption = smooth(range(p, 0.14, 0.22));
-          const leaveCaption = 1 - smooth(range(p, 0.52, 0.60));
+          const enterCaption = smooth(range(p, 0.10, 0.18));
+          const leaveCaption = 1 - smooth(range(p, 0.58, 0.64));
           demoCaption.style.opacity = String(enterCaption * leaveCaption);
         }
       }
