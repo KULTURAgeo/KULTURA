@@ -57,7 +57,7 @@ export default async function Home() {
 
         <div className={styles.introGlow} aria-hidden="true" />
         <div className={styles.introCenter} data-intro-copy>
-          <p className={styles.introEyebrow}>INDEPENDENT STREETWEAR / TBILISI</p>
+          <p className={styles.introEyebrow}>STREETWEAR / GEORGIA</p>
           <h1 className={styles.introTitle} data-intro-title>
             <span>STEP INTO</span>
             <span>KULTURA</span>
