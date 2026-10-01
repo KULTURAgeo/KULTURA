@@ -66,7 +66,7 @@ export function HomeMotion({
     const transitionFloats = Array.from(node.querySelectorAll<HTMLElement>("[data-transition-float]"));
 
     if (demoTrack) {
-      demoTrack.style.height = "380svh";
+      demoTrack.style.height = "365svh";
     }
 
     if (phoneTransition) {
@@ -136,8 +136,8 @@ export function HomeMotion({
 
         if (phoneTransition) {
           const appear = smooth(range(p, 0.71, 0.735));
-          const expandPanel = smooth(range(p, 0.735, 0.805));
-          const sceneIn = smooth(range(p, 0.77, 0.825));
+          const expandPanel = smooth(range(p, 0.735, 0.82));
+          const sceneIn = smooth(range(p, 0.765, 0.84));
 
           const initialWidth = Math.max(300, Math.min(500, viewportWidth * 0.36));
           const initialHeight = Math.max(104, Math.min(148, viewportHeight * 0.19));
@@ -160,21 +160,22 @@ export function HomeMotion({
           }
 
           if (transitionScene) {
+            const sceneTravel = smooth(range(p, 0.765, 0.995));
             transitionScene.style.opacity = String(sceneIn);
+            transitionScene.style.transform = `translate3d(0, ${mix(10, -10, sceneTravel)}px, 0) scale(${mix(.992, 1, sceneTravel)})`;
+            transitionScene.style.willChange = "transform, opacity";
           }
 
           if (transitionCenter) {
-            const centerGrow = smooth(range(p, 0.77, 0.825));
+            const centerGrow = smooth(range(p, 0.765, 0.955));
             transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.46, 1, centerGrow)})`;
           }
 
           transitionFloats.forEach((card, index) => {
-            const local = smooth(range(p, 0.785 + index * 0.006, 0.835 + index * 0.006));
+            const start = 0.78 + index * 0.012;
+            const end = 0.95 + index * 0.012;
+            const local = smooth(range(p, start, Math.min(end, 0.995)));
 
-            // Every side card begins stacked over the main center image and
-            // then fans outward to its final position. The signs are reversed
-            // because the cards are already positioned at their final corners:
-            // these offsets pull them back into the center at local=0.
             const fromX = index % 2 === 0 ? viewportWidth * 0.34 : -viewportWidth * 0.34;
             const fromY = index < 2 ? viewportHeight * 0.29 : -viewportHeight * 0.29;
             const x = mix(fromX, 0, local);
@@ -186,7 +187,7 @@ export function HomeMotion({
             card.style.transformOrigin = "center center";
           });
 
-          const backdropOut = smooth(range(p, 0.74, 0.815));
+          const backdropOut = smooth(range(p, 0.74, 0.83));
           demoBackdrop.style.opacity = String(1 - backdropOut * 0.95);
         } else {
           demoBackdrop.style.opacity = "1";
