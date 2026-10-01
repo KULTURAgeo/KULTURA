@@ -12,14 +12,12 @@ export function FloatingHomeNav() {
   const navRef = useRef<HTMLElement>(null);
   const brandRef = useRef<HTMLAnchorElement>(null);
   const shopRef = useRef<HTMLAnchorElement>(null);
-  const shellRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const nav = navRef.current;
     const brand = brandRef.current;
     const shop = shopRef.current;
-    const shell = shellRef.current;
-    if (!nav || !brand || !shop || !shell) return;
+    if (!nav || !brand || !shop) return;
 
     document.body.classList.add("kultura-tinker-home");
 
@@ -47,9 +45,6 @@ export function FloatingHomeNav() {
       nav.style.setProperty("--nav-progress", progress.toFixed(4));
       brand.style.transform = `translate3d(${brandLeft}px, 0, 0)`;
       shop.style.transform = `translate3d(${shopLeft}px, 0, 0)`;
-      shell.style.width = `${initialWidth + 14}px`;
-      shell.style.opacity = `${1 - progress}`;
-      shell.style.transform = `translate3d(-50%, 0, 0) scaleX(${1 + progress * 0.035})`;
     };
 
     const requestUpdate = () => {
@@ -76,7 +71,6 @@ export function FloatingHomeNav() {
       aria-label="KULTURA quick navigation"
       data-kultura-floating-nav
     >
-      <div ref={shellRef} className={styles.shell} aria-hidden="true" />
       <Link ref={brandRef} href="/" className={styles.brand} aria-label="KULTURA home">
         <span aria-hidden="true">✳</span>
         KULTURA
