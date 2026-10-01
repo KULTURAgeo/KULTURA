@@ -9,9 +9,8 @@ const range = (value: number, from: number, to: number) =>
 const smooth = (value: number) => value * value * (3 - 2 * value);
 const mix = (from: number, to: number, value: number) => from + (to - from) * value;
 
-function progressFor(element: HTMLElement) {
-  const rect = element.getBoundingClientRect();
-  const scrollable = Math.max(rect.height - window.innerHeight, 1);
+function progressFromRect(rect: DOMRect, viewportHeight: number) {
+  const scrollable = Math.max(rect.height - viewportHeight, 1);
   return clamp01(-rect.top / scrollable);
 }
 
@@ -80,22 +79,49 @@ export function HomeMotion({
       [70, 120, -9],
     ];
 
+    if (phoneTransition) {
+      // Keep the transition layer full-screen at all times and reveal it with
+      // clip-path. This avoids changing width/height/top on every scroll frame,
+      // which was forcing layout and causing the post-phone stutter.
+      phoneTransition.style.width = "100vw";
+      phoneTransition.style.height = "100svh";
+      phoneTransition.style.top = "50%";
+      phoneTransition.style.transform = "translate(-50%, -50%)";
+      phoneTransition.style.willChange = "clip-path, opacity, transform";
+    }
+
     let frame = 0;
 
     const render = () => {
       frame = 0;
 
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+
+      // Read all geometry first. Keeping reads before writes prevents forced
+      // synchronous layouts while the user is scrolling.
+      const heroRect = hero?.getBoundingClientRect() ?? null;
+      const demoRect = demoTrack?.getBoundingClientRect() ?? null;
+      const orbitRect = orbitTrack?.getBoundingClientRect() ?? null;
+
+      const heroP = heroRect
+        ? clamp01(-heroRect.top / Math.max(viewportHeight * 0.72, 1))
+        : 0;
+      const demoP = demoRect ? progressFromRect(demoRect, viewportHeight) : 0;
+      const orbitP = orbitRect ? progressFromRect(orbitRect, viewportHeight) : 0;
+      const orbitEntryP = orbitRect
+        ? smooth(clamp01((viewportHeight - orbitRect.top) / Math.max(viewportHeight * 0.78, 1)))
+        : 0;
+
       if (hero && heroCopy) {
-        const rect = hero.getBoundingClientRect();
-        const p = clamp01(-rect.top / Math.max(window.innerHeight * 0.72, 1));
-        heroCopy.style.opacity = String(1 - smooth(range(p, 0.18, 0.92)));
-        heroCopy.style.transform = `translate3d(0, ${mix(0, -54, smooth(p))}px, 0)`;
+        heroCopy.style.opacity = String(1 - smooth(range(heroP, 0.18, 0.92)));
+        heroCopy.style.transform = `translate3d(0, ${mix(0, -54, smooth(heroP))}px, 0)`;
       }
 
       if (demoTrack && demoBackdrop && phone) {
-        const p = progressFor(demoTrack);
+        const p = demoP;
 
-        const expand = smooth(range(p, 0.0, 0.18));
+        const expand = smooth(range(p, 0.0, 0.14));
         const desktopInset = mix(24, 0, expand);
         const mobileInset = mix(12, 0, expand);
         const radius = mix(30, 0, expand);
@@ -104,23 +130,25 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-radius", `${radius}px`);
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
-        const entry = smooth(range(p, 0.05, 0.25));
-        const focusZoom = smooth(range(p, 0.43, 0.565));
-        const handoff = smooth(range(p, 0.56, 0.70));
-        const phoneFade = smooth(range(p, 0.625, 0.705));
-        const entryOffset = mix(window.innerHeight * 0.82, 0, entry);
-        const focusLift = mix(0, -window.innerHeight * 0.018, focusZoom);
-        const handoffOffset = mix(0, -window.innerHeight * 0.055, handoff);
+        // Slower, Tinker-like phone pacing: enter early, stay on screen for a
+        // noticeably longer hold, then focus-zoom just before the handoff.
+        const entry = smooth(range(p, 0.035, 0.17));
+        const focusZoom = smooth(range(p, 0.56, 0.67));
+        const handoff = smooth(range(p, 0.665, 0.79));
+        const phoneFade = smooth(range(p, 0.735, 0.82));
+        const entryOffset = mix(viewportHeight * 0.82, 0, entry);
+        const focusLift = mix(0, -viewportHeight * 0.018, focusZoom);
+        const handoffOffset = mix(0, -viewportHeight * 0.045, handoff);
         const entryScale = mix(0.73, 1, entry);
         const zoomScale = mix(1, 1.095, focusZoom);
-        const handoffScale = mix(1, 0.985, handoff);
+        const handoffScale = mix(1, 0.99, handoff);
         const scale = entryScale * zoomScale * handoffScale;
         const opacity = entry * (1 - phoneFade * 0.98);
 
         phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + focusLift + handoffOffset}px), 0) scale(${scale})`;
         phone.style.opacity = String(opacity);
 
-        const slidePosition = range(p, 0.30, 0.515) * Math.max(phoneSlides.length - 1, 0);
+        const slidePosition = range(p, 0.22, 0.56) * Math.max(phoneSlides.length - 1, 0);
         phoneSlides.forEach((slide, index) => {
           const distance = index - slidePosition;
           const alpha = clamp01(1 - Math.abs(distance));
@@ -130,34 +158,28 @@ export function HomeMotion({
         });
 
         if (phoneTransition) {
-          const appear = smooth(range(p, 0.545, 0.575));
-          const expandPanel = smooth(range(p, 0.565, 0.685));
-          const sceneIn = smooth(range(p, 0.605, 0.69));
+          const appear = smooth(range(p, 0.655, 0.69));
+          const expandPanel = smooth(range(p, 0.68, 0.805));
+          const sceneIn = smooth(range(p, 0.715, 0.81));
 
-          const phoneRect = phone.getBoundingClientRect();
-          const stickyRect = demoTrack.getBoundingClientRect();
-          const stickyTop = Math.max(0, -stickyRect.top);
-          const initialTop = Math.min(
-            window.innerHeight * 0.735,
-            Math.max(window.innerHeight * 0.61, phoneRect.bottom - stickyTop - 18),
-          );
-
-          const initialWidth = Math.max(300, Math.min(500, phoneRect.width * 1.42));
-          const initialHeight = Math.max(104, Math.min(148, phoneRect.height * 0.205));
-          const width = mix(initialWidth, window.innerWidth, expandPanel);
-          const height = mix(initialHeight, window.innerHeight, expandPanel);
-          const top = mix(initialTop, window.innerHeight * 0.5, expandPanel);
+          // Full-screen layer clipped down to the phone's lower popup area.
+          // Animating clip-path avoids expensive layout/reflow each frame.
+          const initialWidth = Math.max(300, Math.min(500, viewportWidth * 0.36));
+          const initialHeight = Math.max(104, Math.min(148, viewportHeight * 0.19));
+          const initialCenterY = viewportHeight * 0.71;
+          const initialSide = Math.max((viewportWidth - initialWidth) / 2, 0);
+          const initialTop = Math.max(initialCenterY - initialHeight / 2, 0);
+          const initialBottom = Math.max(viewportHeight - (initialCenterY + initialHeight / 2), 0);
+          const side = mix(initialSide, 0, expandPanel);
+          const topInset = mix(initialTop, 0, expandPanel);
+          const bottomInset = mix(initialBottom, 0, expandPanel);
           const borderRadius = mix(24, 0, expandPanel);
 
           phoneTransition.style.opacity = String(appear);
-          phoneTransition.style.width = `${width}px`;
-          phoneTransition.style.height = `${height}px`;
-          phoneTransition.style.top = `${top}px`;
-          phoneTransition.style.borderRadius = `${borderRadius}px`;
-          phoneTransition.style.transform = `translate(-50%, -50%) scale(${mix(.94, 1, appear)})`;
+          phoneTransition.style.clipPath = `inset(${topInset}px ${side}px ${bottomInset}px ${side}px round ${borderRadius}px)`;
 
           if (transitionCta) {
-            const ctaOut = 1 - smooth(range(p, 0.585, 0.635));
+            const ctaOut = 1 - smooth(range(p, 0.70, 0.755));
             transitionCta.style.opacity = String(ctaOut);
             transitionCta.style.transform = `translate(-50%, -50%) scale(${mix(1, .9, 1 - ctaOut)})`;
           }
@@ -167,63 +189,55 @@ export function HomeMotion({
           }
 
           if (transitionCenter) {
-            const centerGrow = smooth(range(p, 0.605, 0.685));
-            transitionCenter.style.top = `${mix(60, 52, centerGrow)}%`;
+            const centerGrow = smooth(range(p, 0.715, 0.805));
             transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.38, 1, centerGrow)})`;
           }
 
           transitionFloats.forEach((card, index) => {
-            const local = smooth(range(p, 0.625 + index * 0.008, 0.69 + index * 0.008));
+            const local = smooth(range(p, 0.735 + index * 0.008, 0.81 + index * 0.008));
             card.style.opacity = String(local);
             card.style.transform = `scale(${mix(.58, 1, local)})`;
           });
 
-          const backdropOut = smooth(range(p, 0.57, 0.68));
-          demoBackdrop.style.opacity = String(1 - backdropOut * 0.93);
-          demoBackdrop.style.filter = `brightness(${mix(1, .18, backdropOut)})`;
+          const backdropOut = smooth(range(p, 0.68, 0.80));
+          demoBackdrop.style.opacity = String(1 - backdropOut * 0.95);
         } else {
           demoBackdrop.style.opacity = "1";
-          demoBackdrop.style.filter = "none";
         }
 
         if (demoCaption) {
-          const enterCaption = smooth(range(p, 0.18, 0.3));
-          const leaveCaption = 1 - smooth(range(p, 0.42, 0.53));
+          const enterCaption = smooth(range(p, 0.14, 0.22));
+          const leaveCaption = 1 - smooth(range(p, 0.52, 0.60));
           demoCaption.style.opacity = String(enterCaption * leaveCaption);
         }
       }
 
       if (orbitTrack && orbitCenter && orbitHeading) {
-        const rect = orbitTrack.getBoundingClientRect();
-        const p = progressFor(orbitTrack);
+        const p = orbitP;
+        const entryP = orbitEntryP;
 
-        // Start revealing as soon as the dotted scene enters the viewport,
-        // instead of waiting for the sticky section's internal scroll progress.
-        const enter = clamp01(
-          (window.innerHeight - rect.top) / Math.max(window.innerHeight * 0.58, 1),
-        );
-        const enterEase = smooth(enter);
-
-        const headingIn = smooth(range(enterEase, 0.02, 0.42));
+        // Start revealing while the dotted scene is entering the viewport, not
+        // only after its internal sticky progress begins.
+        const headingIn = smooth(range(entryP, 0.08, 0.36));
         const headingOut = 1 - smooth(range(p, 0.72, 0.92));
         orbitHeading.style.opacity = String(headingIn * headingOut);
-        orbitHeading.style.transform = `translate3d(0, ${mix(22, -18, smooth(range(enterEase, 0, 1)))}px, 0)`;
+        orbitHeading.style.transform = `translate3d(0, ${mix(22, -18, smooth(Math.max(entryP, range(p, 0, .86))))}px, 0)`;
 
-        const centerIn = smooth(range(enterEase, 0.0, 0.34));
+        const centerIn = smooth(range(entryP, 0.02, 0.28));
         const centerOut = 1 - smooth(range(p, 0.82, 1));
         orbitCenter.style.opacity = String(centerIn * centerOut);
-        orbitCenter.style.transform = `translate(-50%, -50%) scale(${mix(.90, 1, centerIn) * mix(1, .9, 1 - centerOut)})`;
+        orbitCenter.style.transform = `translate(-50%, -50%) scale(${mix(.86, 1, centerIn) * mix(1, .9, 1 - centerOut)})`;
 
         floats.forEach((card, index) => {
-          const start = 0.03 + index * 0.055;
-          const inP = smooth(range(enterEase, start, Math.min(start + 0.32, 1)));
+          const start = 0.02 + index * 0.035;
+          const inP = smooth(range(entryP, start, start + 0.30));
           const outP = smooth(range(p, 0.82, 1));
           const [sx, sy, sr] = floatStarts[index] ?? [0, 0, 0];
           const driftX = sx * (1 - inP) + sx * -0.12 * inP;
           const driftY = sy * (1 - inP) + sy * -0.08 * inP;
           const rotate = sr * (1 - inP) + sr * -0.2 * inP;
           card.style.opacity = String(inP * (1 - outP * .7));
-          card.style.transform = `translate3d(${driftX}px, ${driftY}px, 0) scale(${mix(.78, 1, inP)}) rotate(${rotate}deg)`;
+          card.style.transform = `translate3d(${driftX}px, ${driftY}px, 0) scale(${mix(.72, 1, inP)}) rotate(${rotate}deg)`;
         });
       }
     };
