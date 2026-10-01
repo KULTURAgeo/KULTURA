@@ -105,16 +105,22 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
         const entry = smooth(range(p, 0.05, 0.25));
+        const focusZoom = smooth(range(p, 0.40, 0.58));
         const handoff = smooth(range(p, 0.58, 0.72));
+        const phoneFade = smooth(range(p, 0.64, 0.76));
         const entryOffset = mix(window.innerHeight * 0.82, 0, entry);
+        const zoomLift = mix(0, -window.innerHeight * 0.04, focusZoom);
         const handoffOffset = mix(0, -window.innerHeight * 0.04, handoff);
-        const scale = mix(0.73, 1, entry) * mix(1, 0.98, handoff);
-        const opacity = entry * (1 - handoff * 0.92);
+        const entryScale = mix(0.73, 1, entry);
+        const focusScale = mix(1, 1.14, focusZoom);
+        const handoffScale = mix(1, 0.98, handoff);
+        const scale = entryScale * focusScale * handoffScale;
+        const opacity = entry * (1 - phoneFade * 0.92);
 
-        phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + handoffOffset}px), 0) scale(${scale})`;
+        phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset + zoomLift + handoffOffset}px), 0) scale(${scale})`;
         phone.style.opacity = String(opacity);
 
-        const slidePosition = range(p, 0.30, 0.56) * Math.max(phoneSlides.length - 1, 0);
+        const slidePosition = range(p, 0.30, 0.54) * Math.max(phoneSlides.length - 1, 0);
         phoneSlides.forEach((slide, index) => {
           const distance = index - slidePosition;
           const alpha = clamp01(1 - Math.abs(distance));
@@ -126,7 +132,7 @@ export function HomeMotion({
         if (phoneTransition) {
           const appear = smooth(range(p, 0.56, 0.61));
           const expandPanel = smooth(range(p, 0.60, 0.75));
-          const sceneIn = smooth(range(p, 0.68, 0.79));
+          const sceneIn = smooth(range(p, 0.66, 0.78));
 
           const phoneRect = phone.getBoundingClientRect();
           const stickyRect = demoTrack.getBoundingClientRect();
@@ -165,7 +171,7 @@ export function HomeMotion({
           }
 
           transitionFloats.forEach((card, index) => {
-            const local = smooth(range(p, 0.70 + index * 0.012, 0.79 + index * 0.012));
+            const local = smooth(range(p, 0.67 + index * 0.01, 0.76 + index * 0.01));
             card.style.opacity = String(local);
             card.style.transform = `scale(${mix(.74, 1, local)})`;
           });
@@ -187,26 +193,26 @@ export function HomeMotion({
 
       if (orbitTrack && orbitCenter && orbitHeading) {
         const p = progressFor(orbitTrack);
-        const headingIn = smooth(range(p, 0.0, 0.08));
+        const headingIn = smooth(range(p, -0.05, 0.05));
         const headingOut = 1 - smooth(range(p, 0.72, 0.92));
         orbitHeading.style.opacity = String(headingIn * headingOut);
         orbitHeading.style.transform = `translate3d(0, ${mix(14, -18, smooth(range(p, 0, .86)))}px, 0)`;
 
-        const centerIn = smooth(range(p, 0.0, 0.06));
+        const centerIn = smooth(range(p, -0.06, 0.04));
         const centerOut = 1 - smooth(range(p, 0.82, 1));
         orbitCenter.style.opacity = String(centerIn * centerOut);
-        orbitCenter.style.transform = `translate(-50%, -50%) scale(${mix(.985, 1, centerIn) * mix(1, .9, 1 - centerOut)})`;
+        orbitCenter.style.transform = `translate(-50%, -50%) scale(${mix(.94, 1, centerIn) * mix(1, .9, 1 - centerOut)})`;
 
         floats.forEach((card, index) => {
-          const start = index * 0.012;
-          const inP = smooth(range(p, start, start + 0.09));
+          const start = -0.07 + index * 0.012;
+          const inP = smooth(range(p, start, start + 0.12));
           const outP = smooth(range(p, 0.82, 1));
           const [sx, sy, sr] = floatStarts[index] ?? [0, 0, 0];
           const driftX = sx * (1 - inP) + sx * -0.12 * inP;
           const driftY = sy * (1 - inP) + sy * -0.08 * inP;
           const rotate = sr * (1 - inP) + sr * -0.2 * inP;
           card.style.opacity = String(inP * (1 - outP * .7));
-          card.style.transform = `translate3d(${driftX}px, ${driftY}px, 0) scale(${mix(.72, 1, inP)}) rotate(${rotate}deg)`;
+          card.style.transform = `translate3d(${driftX}px, ${driftY}px, 0) scale(${mix(.82, 1, inP)}) rotate(${rotate}deg)`;
         });
       }
     };
