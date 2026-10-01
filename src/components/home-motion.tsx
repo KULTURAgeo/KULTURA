@@ -15,128 +15,171 @@ export function HomeMotion({
     const node = root.current;
     if (!node) return;
 
-    const revealNodes = Array.from(
-      node.querySelectorAll<HTMLElement>("[data-reveal]"),
-    );
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const revealNodes = Array.from(node.querySelectorAll<HTMLElement>("[data-reveal]"));
+
+    if (reduced) {
       revealNodes.forEach((item) => item.setAttribute("data-visible", "true"));
       return;
     }
 
-    const revealTransitions = revealNodes.map((item) => item.style.transition);
-    const marquee = node.querySelector<HTMLElement>("[data-home-marquee]");
-    const marqueeAnimation = marquee?.style.animation ?? "";
-    const hasFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     let cancelled = false;
     let cleanup = () => {};
 
-    void import("animejs").then(
-      ({ animate, createAnimatable, createScope, onScroll, stagger }) => {
-        if (cancelled) return;
-        let pointerHandler: ((event: PointerEvent) => void) | null = null;
+    void import("animejs").then(({ animate, createScope, onScroll, stagger }) => {
+      if (cancelled) return;
 
-        const scope = createScope({ root: node }).add(() => {
-          revealNodes.forEach((item, index) => {
-            item.style.transition = "none";
-            animate(item, {
-              opacity: [0, 1],
-              y: [34, 0],
-              duration: 760,
-              delay: Math.min((index % 3) * 70, 140),
-              ease: "out(4)",
-              autoplay: onScroll({
-                target: item,
-                enter: "top bottom",
-                leave: "bottom top",
-                repeat: false,
-              }),
-            });
+      const scope = createScope({ root: node }).add(() => {
+        revealNodes.forEach((item) => {
+          item.style.transition = "none";
+          animate(item, {
+            opacity: [0, 1],
+            y: [36, 0],
+            duration: 760,
+            ease: "out(4)",
+            autoplay: onScroll({
+              target: item,
+              enter: "top 88%",
+              leave: "bottom top",
+              repeat: false,
+            }),
           });
+        });
 
-          const hero = node.querySelector<HTMLElement>("[data-home-hero]");
-          const heroMedia = node.querySelector<HTMLElement>("[data-home-media]");
-          if (hero && heroMedia) {
-            animate(heroMedia, {
-              y: [0, 110],
-              scale: [1, 1.072],
+        const introScene = node.querySelector<HTMLElement>("[data-intro-scene]");
+        const introTitle = node.querySelector<HTMLElement>("[data-intro-title]");
+        const introCopy = node.querySelector<HTMLElement>("[data-intro-copy]");
+        if (introScene && introTitle) {
+          animate(introTitle, {
+            scale: [1, 0.86],
+            y: [0, -82],
+            letterSpacing: ["-0.075em", "-0.055em"],
+            ease: "linear",
+            autoplay: onScroll({
+              target: introScene,
+              enter: "top top",
+              leave: "bottom top",
+              sync: true,
+            }),
+          });
+          if (introCopy) {
+            animate(introCopy, {
+              opacity: [1, 0.15],
+              y: [0, -44],
               ease: "linear",
               autoplay: onScroll({
-                target: hero,
-                enter: "top top",
+                target: introScene,
+                enter: "35% top",
                 leave: "bottom top",
                 sync: true,
               }),
             });
           }
+        }
 
-          const intro = Array.from(
-            node.querySelectorAll<HTMLElement>("[data-home-intro]"),
-          );
-          if (intro.length) {
-            animate(intro, {
-              opacity: [0, 1],
-              y: [24, 0],
-              duration: 820,
-              delay: stagger(95, { start: 80 }),
-              ease: "out(4)",
-            });
-          }
-
-          if (marquee) {
-            marquee.style.animation = "none";
-            animate(marquee, {
-              x: ["0%", "-50%"],
-              duration: 24000,
+        const studioScene = node.querySelector<HTMLElement>("[data-studio-scene]");
+        const studioBackdrop = node.querySelector<HTMLElement>("[data-studio-backdrop]");
+        const generator = node.querySelector<HTMLElement>("[data-generator-card]");
+        const studioCaption = node.querySelector<HTMLElement>("[data-studio-caption]");
+        const slideKnob = node.querySelector<HTMLElement>("[data-slide-knob]");
+        if (studioScene) {
+          if (studioBackdrop) {
+            animate(studioBackdrop, {
+              scale: [1.12, 1.01],
+              y: [70, -24],
               ease: "linear",
-              loop: true,
+              autoplay: onScroll({ target: studioScene, enter: "top top", leave: "bottom top", sync: true }),
+            });
+          }
+          if (generator) {
+            animate(generator, {
+              y: [130, -26],
+              scale: [0.76, 1.02],
+              rotate: [-7, 0],
+              opacity: [0.15, 1],
+              ease: "linear",
+              autoplay: onScroll({ target: studioScene, enter: "top top", leave: "75% top", sync: true }),
+            });
+          }
+          if (studioCaption) {
+            animate(studioCaption, {
+              opacity: [0, 1],
+              x: [-55, 0],
+              ease: "linear",
+              autoplay: onScroll({ target: studioScene, enter: "20% top", leave: "65% top", sync: true }),
+            });
+          }
+          if (slideKnob) {
+            animate(slideKnob, {
+              x: [0, 164],
+              rotate: [0, 360],
+              ease: "linear",
+              autoplay: onScroll({ target: studioScene, enter: "35% top", leave: "78% top", sync: true }),
+            });
+          }
+        }
+
+        const orbitScene = node.querySelector<HTMLElement>("[data-orbit-scene]");
+        const orbitHero = node.querySelector<HTMLElement>("[data-orbit-hero]");
+        const orbitCopy = node.querySelector<HTMLElement>("[data-orbit-copy]");
+        if (orbitScene) {
+          if (orbitHero) {
+            animate(orbitHero, {
+              scale: [0.68, 1.03],
+              rotate: [-5, 0],
+              y: [110, -18],
+              ease: "linear",
+              autoplay: onScroll({ target: orbitScene, enter: "top top", leave: "78% top", sync: true }),
+            });
+          }
+          if (orbitCopy) {
+            animate(orbitCopy, {
+              opacity: [0, 1, 0.2],
+              y: [42, 0, -52],
+              ease: "linear",
+              autoplay: onScroll({ target: orbitScene, enter: "8% top", leave: "92% top", sync: true }),
             });
           }
 
-          if (hasFinePointer) {
-            const orb = node.querySelector<HTMLElement>("[data-home-orb]");
-            const ring = node.querySelector<HTMLElement>("[data-home-ring]");
-            const orbMotion = orb
-              ? createAnimatable(orb, {
-                  x: 360,
-                  y: 360,
-                  rotate: 420,
-                  ease: "out(3)",
-                })
-              : null;
-            const ringMotion = ring
-              ? createAnimatable(ring, {
-                  x: 520,
-                  y: 520,
-                  ease: "out(3)",
-                })
-              : null;
-
-            if (orbMotion || ringMotion) {
-              pointerHandler = (event: PointerEvent) => {
-                const rect = node.getBoundingClientRect();
-                const x =
-                  ((event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5) * 2;
-                const y =
-                  ((event.clientY - rect.top) / Math.max(rect.height, 1) - 0.5) * 2;
-                orbMotion?.x(x * 10).y(y * 10).rotate(x * 4);
-                ringMotion?.x(x * -10).y(y * -10);
-              };
-              node.addEventListener("pointermove", pointerHandler, { passive: true });
-            }
-          }
-        });
-
-        cleanup = () => {
-          if (pointerHandler)
-            node.removeEventListener("pointermove", pointerHandler);
-          revealNodes.forEach((item, index) => {
-            item.style.transition = revealTransitions[index] ?? "";
+          const floatCards = Array.from(node.querySelectorAll<HTMLElement>("[data-float-card]"));
+          floatCards.forEach((card, index) => {
+            const x = Number(card.dataset.driftX ?? 0);
+            const y = Number(card.dataset.driftY ?? 0);
+            const r = Number(card.dataset.driftR ?? 0);
+            animate(card, {
+              opacity: [0, 1],
+              scale: [0.72, 1],
+              x: [-x * 0.45, x],
+              y: [-y * 0.4, y],
+              rotate: [-r * 0.6, r],
+              delay: index * 25,
+              ease: "linear",
+              autoplay: onScroll({ target: orbitScene, enter: "10% top", leave: "82% top", sync: true }),
+            });
           });
-          if (marquee) marquee.style.animation = marqueeAnimation;
-          scope.revert();
-        };
-      },
-    );
+        }
+
+        const categoryCards = Array.from(node.querySelectorAll<HTMLElement>("[data-category-card]"));
+        if (categoryCards.length) {
+          animate(categoryCards, {
+            opacity: [0, 1],
+            y: [58, 0],
+            scale: [0.97, 1],
+            delay: stagger(70),
+            duration: 820,
+            ease: "out(4)",
+            autoplay: onScroll({
+              target: categoryCards[0],
+              enter: "top 88%",
+              leave: "bottom top",
+              repeat: false,
+            }),
+          });
+        }
+      });
+
+      cleanup = () => scope.revert();
+    });
 
     return () => {
       cancelled = true;
