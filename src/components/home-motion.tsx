@@ -79,6 +79,13 @@ export function HomeMotion({
       [70, 120, -9],
     ];
 
+    // Tinker keeps the phone scene alive for much longer than our first pass.
+    // Increasing the sticky track gives the phone several extra scroll beats
+    // before the handoff begins without changing the rest of the page.
+    if (demoTrack) {
+      demoTrack.style.height = "330svh";
+    }
+
     if (phoneTransition) {
       // Keep the transition layer full-screen at all times and reveal it with
       // clip-path. This avoids changing width/height/top on every scroll frame,
@@ -130,8 +137,6 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-radius", `${radius}px`);
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
-        // Slower, Tinker-like phone pacing: enter early, stay on screen for a
-        // noticeably longer hold, then focus-zoom just before the handoff.
         const entry = smooth(range(p, 0.035, 0.17));
         const focusZoom = smooth(range(p, 0.56, 0.67));
         const handoff = smooth(range(p, 0.665, 0.79));
@@ -162,8 +167,6 @@ export function HomeMotion({
           const expandPanel = smooth(range(p, 0.68, 0.805));
           const sceneIn = smooth(range(p, 0.715, 0.81));
 
-          // Full-screen layer clipped down to the phone's lower popup area.
-          // Animating clip-path avoids expensive layout/reflow each frame.
           const initialWidth = Math.max(300, Math.min(500, viewportWidth * 0.36));
           const initialHeight = Math.max(104, Math.min(148, viewportHeight * 0.19));
           const initialCenterY = viewportHeight * 0.71;
@@ -216,8 +219,6 @@ export function HomeMotion({
         const p = orbitP;
         const entryP = orbitEntryP;
 
-        // Start revealing while the dotted scene is entering the viewport, not
-        // only after its internal sticky progress begins.
         const headingIn = smooth(range(entryP, 0.08, 0.36));
         const headingOut = 1 - smooth(range(p, 0.72, 0.92));
         orbitHeading.style.opacity = String(headingIn * headingOut);
