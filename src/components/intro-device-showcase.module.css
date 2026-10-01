@@ -1,0 +1,229 @@
+.stage {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(190px, 27svh, 300px);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.backdrop {
+  position: absolute;
+  left: clamp(18px, 2vw, 32px);
+  right: clamp(18px, 2vw, 32px);
+  bottom: 0;
+  height: clamp(150px, 22svh, 245px);
+  overflow: hidden;
+  border-radius: 26px 26px 0 0;
+  background: #1f2f28;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.backdropImage {
+  object-fit: cover;
+  object-position: center 56%;
+  filter: saturate(.68) contrast(1.08) brightness(.55);
+  transform: scale(1.06);
+}
+
+.backdropTint {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(18, 39, 29, .78), rgba(23, 51, 38, .44) 44%, rgba(8, 14, 11, .68)),
+    linear-gradient(180deg, rgba(201, 255, 75, .08), rgba(0, 0, 0, .18));
+}
+
+.logoPattern {
+  position: absolute;
+  inset: 0;
+  opacity: .26;
+  background-image: url('/icon.svg');
+  background-size: 74px 74px;
+  background-repeat: repeat;
+  mix-blend-mode: screen;
+  transform: rotate(-7deg) scale(1.16);
+}
+
+.backdropCopy {
+  position: absolute;
+  left: clamp(18px, 3vw, 46px);
+  right: clamp(18px, 3vw, 46px);
+  bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  color: rgba(255, 255, 255, .88);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.phone {
+  position: absolute;
+  left: 50%;
+  bottom: -138px;
+  width: clamp(182px, 16vw, 244px);
+  aspect-ratio: .49;
+  transform: translateX(-50%);
+  border: 7px solid #111;
+  border-radius: 36px;
+  background: #f4f4ef;
+  color: #0a0a0a;
+  overflow: hidden;
+  box-shadow:
+    0 20px 52px rgba(0, 0, 0, .32),
+    0 0 0 1px rgba(255, 255, 255, .5) inset;
+  text-decoration: none;
+  pointer-events: auto;
+  transition: transform .28s ease, box-shadow .28s ease;
+}
+
+.phone:hover {
+  transform: translateX(-50%) translateY(-5px) rotate(-.7deg);
+  box-shadow: 0 26px 64px rgba(0, 0, 0, .38);
+}
+
+.phoneTop {
+  position: relative;
+  height: 34px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 7px;
+  font-weight: 800;
+}
+
+.dynamicIsland {
+  position: absolute;
+  left: 50%;
+  top: 7px;
+  width: 54px;
+  height: 15px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #050505;
+}
+
+.appHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 13px 10px;
+}
+
+.appBrand {
+  font-size: 16px;
+  font-weight: 950;
+  letter-spacing: -.05em;
+}
+
+.appAvatar {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #c9ff4b;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.screenLabel {
+  padding: 0 13px 8px;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.productCard {
+  position: relative;
+  margin: 0 10px;
+  height: 52%;
+  min-height: 150px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: #d7d7d0;
+}
+
+.productCard img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.productShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,.68));
+}
+
+.productMeta {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 8px;
+  color: #fff;
+}
+
+.productMeta strong {
+  max-width: 65%;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: -.03em;
+}
+
+.productMeta span {
+  font-size: 6px;
+  font-weight: 850;
+  letter-spacing: .08em;
+}
+
+.phoneNav {
+  display: flex;
+  justify-content: space-between;
+  padding: 13px 14px 0;
+  font-size: 6px;
+  font-weight: 900;
+  letter-spacing: .1em;
+}
+
+@media (max-width: 720px) {
+  .stage {
+    height: 190px;
+  }
+
+  .backdrop {
+    left: 12px;
+    right: 12px;
+    height: 145px;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .phone {
+    width: 168px;
+    bottom: -116px;
+    border-width: 6px;
+    border-radius: 30px;
+  }
+
+  .logoPattern {
+    background-size: 58px 58px;
+  }
+
+  .backdropCopy {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone {
+    transition: none;
+  }
+}
