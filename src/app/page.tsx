@@ -4,280 +4,303 @@ import { pageMetadata } from "@/lib/site";
 import { campaignImage, money } from "@/lib/catalog";
 import { getHomepageCatalog } from "@/lib/catalog/repository";
 import { CatalogNotice } from "@/components/catalog-notice";
-import { ButtonLink } from "@/components/ui";
 import { Newsletter } from "@/components/newsletter";
 import { HomeMotion } from "@/components/home-motion";
 import styles from "./home.module.css";
 
 export const metadata = pageMetadata("KULTURA — Step Into Kultura", "/");
 
+const FALLBACK_SOCIAL = "/contact";
+
 export default async function Home() {
   const { products: showcase, categories, status } = await getHomepageCatalog();
+  const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL?.trim() || FALLBACK_SOCIAL;
+  const facebookUrl = process.env.NEXT_PUBLIC_FACEBOOK_URL?.trim() || FALLBACK_SOCIAL;
 
-  const storyCards = [
-    {
-      number: "01",
-      eyebrow: "FORM / SILHOUETTE",
-      title: "BUILT TO HOLD ITS SHAPE.",
-      copy: "Volume, proportion and structure before anything else.",
-      image: showcase[0]?.image ?? campaignImage,
-      alt: showcase[0]?.images[0]?.alt ?? "KULTURA streetwear silhouette",
-      href: showcase[0] ? `/product/${showcase[0].slug}` : "/shop",
-    },
-    {
-      number: "02",
-      eyebrow: "DETAIL / TEXTURE",
-      title: "CLOSE UP CHANGES EVERYTHING.",
-      copy: "The pieces are designed to reward a second look.",
-      image: showcase[1]?.image ?? campaignImage,
-      alt: showcase[1]?.images[0]?.alt ?? "KULTURA garment detail",
-      href: showcase[1] ? `/product/${showcase[1].slug}` : "/shop",
-    },
-    {
-      number: "03",
-      eyebrow: "MOVEMENT / EVERYDAY",
-      title: "MADE FOR THE WAY YOU MOVE.",
-      copy: "Streetwear that works in motion, not only in a still frame.",
-      image: campaignImage,
-      alt: "KULTURA campaign in a raw urban setting",
-      href: "/drops",
-    },
-    {
-      number: "04",
-      eyebrow: "IDENTITY / KULTURA",
-      title: "WEAR IT YOUR OWN WAY.",
-      copy: "No uniform thinking. One language, different voices.",
-      image: showcase[2]?.image ?? campaignImage,
-      alt: showcase[2]?.images[0]?.alt ?? "KULTURA independent streetwear",
-      href: showcase[2] ? `/product/${showcase[2].slug}` : "/about",
-    },
-  ];
+  const heroProduct = showcase[0] ?? null;
+  const secondProduct = showcase[1] ?? heroProduct;
+  const thirdProduct = showcase[2] ?? secondProduct ?? heroProduct;
 
-  const editorialImages = [
-    {
-      src: campaignImage,
-      alt: "KULTURA campaign editorial",
-      label: "CAMPAIGN 001",
-      note: "TBILISI / 2026",
-    },
-    {
-      src: showcase[3]?.image ?? showcase[0]?.image ?? campaignImage,
-      alt: showcase[3]?.images[0]?.alt ?? showcase[0]?.images[0]?.alt ?? "KULTURA product editorial",
-      label: "THE ROTATION",
-      note: showcase[3]?.name ?? showcase[0]?.name ?? "KULTURA",
-    },
-  ];
+  const phoneSlides = [heroProduct, secondProduct, thirdProduct];
+  const floatProducts = Array.from({ length: 6 }, (_, index) =>
+    showcase[index % Math.max(showcase.length, 1)] ?? null,
+  );
+
+  const categoryTiles = categories.map((category, index) => {
+    const product =
+      showcase.find((item) => item.categorySlug === category.slug) ??
+      showcase[index % Math.max(showcase.length, 1)] ??
+      null;
+    return {
+      ...category,
+      image: product?.image ?? campaignImage,
+      alt: product?.images[0]?.alt ?? `${category.name} by KULTURA`,
+    };
+  });
 
   return (
     <HomeMotion className={styles.home}>
-      <section className={styles.hero} data-home-hero>
-        <div className={styles.heroMedia} aria-hidden="true" data-home-media>
+      <section className={styles.hero} data-hero>
+        <div className={styles.heroInner} data-hero-copy>
+          <p className={styles.eyebrow}>INDEPENDENT STREETWEAR / GEORGIA</p>
+          <h1>STEP INTO KULTURA</h1>
+          <p className={styles.heroLead}>
+            Clothing with presence. Strong silhouettes, restrained detail and movement at the center.
+          </p>
+          <div className={styles.socials}>
+            <a href={instagramUrl} target={instagramUrl.startsWith("http") ? "_blank" : undefined} rel="noreferrer">INSTAGRAM ↗</a>
+            <a href={facebookUrl} target={facebookUrl.startsWith("http") ? "_blank" : undefined} rel="noreferrer">FACEBOOK ↗</a>
+          </div>
+        </div>
+
+        <div className={styles.heroPeek} aria-hidden="true">
           <Image src={campaignImage} alt="" fill priority sizes="100vw" />
+          <span className={styles.heroPeekGrid} />
+          <span className={styles.heroPeekWord}>KULTURA</span>
         </div>
-        <div className={styles.heroShade} />
-        <div className={styles.heroGrain} />
-        <div className={styles.heroChromeOrb} aria-hidden="true" data-home-orb>✳</div>
-
-        <div className={styles.heroMeta} data-home-intro>
-          <span>KULTURA / INDEPENDENT STREETWEAR</span>
-          <span>TBILISI — GEORGIA</span>
-          <span>COLLECTION 001 / 2026</span>
-        </div>
-
-        <div className={styles.heroContent}>
-          <p className={styles.heroKicker} data-home-intro>STEP INTO KULTURA / NEW ERA</p>
-          <h1 className={styles.heroTitle} data-home-intro>KULTURA</h1>
-          <div className={styles.heroFooter} data-home-intro>
-            <p className={styles.heroLead}>
-              Clothing with presence.<br />
-              Built for movement, made to be yours.
-            </p>
-            <div className={styles.heroIndex} aria-hidden="true">
-              <strong>001</strong>
-              <span>FIRST CHAPTER</span>
-            </div>
-            <p className={styles.heroAside}>
-              A darker, sharper everyday uniform — designed outside the expected.
-            </p>
-          </div>
-          <div style={{ marginTop: 24 }} data-home-intro>
-            <ButtonLink href="/shop">ENTER THE SHOP ↗</ButtonLink>
-          </div>
-        </div>
-
-        <span className={styles.scrollCue}>SCROLL TO EXPLORE ↓</span>
       </section>
 
-      <div className={styles.kineticStrip} aria-hidden="true">
-        <div className={styles.kineticTrack} data-home-marquee>
-          <span>INDEPENDENT SPIRIT</span><span>✳</span>
-          <span>FORM IN MOTION</span><span>✳</span>
-          <span>NO UNIFORM THINKING</span><span>✳</span>
-          <span>STEP INTO KULTURA</span><span>✳</span>
-          <span>INDEPENDENT SPIRIT</span><span>✳</span>
-          <span>FORM IN MOTION</span><span>✳</span>
-          <span>NO UNIFORM THINKING</span><span>✳</span>
-          <span>STEP INTO KULTURA</span><span>✳</span>
-        </div>
-      </div>
-
-      <section className={styles.statement}>
-        <div className={styles.statementLabel} data-reveal>
-          <div>
-            <p>001 / KULTURA STATE OF MIND</p>
-            <p>We build clothing as a visual language — strong enough to speak before you do.</p>
+      <section className={styles.demoTrack} data-demo-track>
+        <div className={styles.demoSticky}>
+          <div className={styles.demoBackdrop} data-demo-backdrop>
+            <Image src={campaignImage} alt="" fill sizes="100vw" />
+            <div className={styles.demoShade} />
+            <div className={styles.demoGrid} />
+            <div className={styles.demoLogoField} aria-hidden="true">KULTURA</div>
           </div>
-          <span className={styles.statementMark} aria-hidden="true">✳</span>
-        </div>
-        <p className={styles.statementCopy} data-reveal>
-          NOT MADE TO <em>BLEND IN.</em><br />
-          MADE TO BECOME<br />
-          PART OF <em>HOW YOU MOVE.</em>
-        </p>
-      </section>
 
-      <section className={styles.toolSection}>
-        <div className={styles.sectionTop} data-reveal>
-          <div>
-            <p className="eyebrow">002 / THE KULTURA SYSTEM</p>
-            <h2>THE IDEA,<br />IN FOUR PARTS.</h2>
-          </div>
-          <p>
-            A product story that moves like an editorial — swipe, scroll and explore the details.
-          </p>
-        </div>
-
-        <div className={styles.cardRail}>
-          {storyCards.map((card) => (
-            <Link className={styles.toolCard} href={card.href} key={card.number} data-reveal>
-              <div className={styles.toolMedia}>
-                <Image src={card.image} alt={card.alt} fill sizes="(max-width: 720px) 83vw, 37vw" />
+          <div className={styles.phone} data-phone>
+            <div className={styles.phoneFrame}>
+              <div className={styles.phoneTop}>
+                <span>9:41</span>
+                <span className={styles.island} />
+                <span>5G ◒</span>
               </div>
-              <div className={styles.toolCopy}>
-                <div className={styles.toolNumber}>
-                  <span>{card.number}</span>
-                  <span>{card.eyebrow}</span>
-                </div>
-                <div className={styles.toolBottom}>
-                  <h3>{card.title}</h3>
-                  <p>{card.copy}</p>
-                </div>
+              <div className={styles.phoneHeader}>
+                <strong>KULTURA</strong>
+                <span>K</span>
               </div>
-              <span className={styles.toolArrow} aria-hidden="true">↗</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+              <div className={styles.phoneLabel}>FEATURED / DROP 001</div>
 
-      <section className={styles.productSection}>
-        <div className={styles.sectionTop} data-reveal>
-          <div>
-            <p className="eyebrow">003 / THE ROTATION</p>
-            <h2>SELECTED<br />PIECES.</h2>
-          </div>
-          <p>Drag or swipe through the current KULTURA rotation. Every card goes straight to the product.</p>
-        </div>
-
-        <CatalogNotice status={status} empty={!showcase.length} />
-
-        {showcase.length ? (
-          <div className={styles.productRail}>
-            {showcase.map((product, index) => (
-              <article className={styles.productCard} key={product.id} data-reveal>
-                <Link href={`/product/${product.slug}`}>
-                  <div className={styles.productVisual}>
+              <div className={styles.phoneViewport}>
+                {phoneSlides.map((product, index) => (
+                  <div
+                    className={styles.phoneSlide}
+                    data-phone-slide
+                    data-index={index}
+                    key={`${product?.id ?? "fallback"}-${index}`}
+                  >
                     <Image
-                      src={product.image}
-                      alt={product.images[0]?.alt ?? product.name}
+                      src={product?.image ?? campaignImage}
+                      alt={product?.images[0]?.alt ?? "KULTURA product"}
                       fill
-                      sizes="(max-width: 720px) 72vw, 31vw"
+                      sizes="260px"
                     />
-                    <span className={styles.productOverlay} />
-                    <span className={styles.productChip}>0{index + 1} / KULTURA</span>
-                  </div>
-                  <div className={styles.productInfo}>
-                    <div>
-                      <h3>{product.name.replace("KULTURA ", "")}</h3>
-                      <p>
-                        {[...new Set(product.variants.map((variant) => variant.color.toUpperCase()))].join(" / ") || "—"}
-                        {" / "}{product.category.toUpperCase()}
-                      </p>
+                    <div className={styles.phoneSlideShade} />
+                    <div className={styles.phoneMeta}>
+                      <strong>{product?.name?.replace("KULTURA ", "") ?? `KULTURA 0${index + 1}`}</strong>
+                      <span>{product ? money(product.price) : "VIEW"}</span>
                     </div>
-                    <span className={styles.productPrice}>{money(product.price)}</span>
                   </div>
-                </Link>
-              </article>
-            ))}
-          </div>
-        ) : null}
-      </section>
+                ))}
+              </div>
 
-      <section className={styles.editorialSection}>
-        <div className={styles.editorialCopy}>
-          <div className={styles.editorialSticky} data-reveal>
-            <p className="eyebrow">004 / CAMPAIGN 001</p>
-            <h2>
-              OUTSIDE<br />
-              THE<br />
-              <span>EXPECTED.</span>
-            </h2>
-            <p>
-              KULTURA lives between utility and attitude. Strong silhouettes, restrained detail and enough room for the person wearing it to finish the story.
-            </p>
-            <ButtonLink href="/about" secondary>THE KULTURA STATE OF MIND ↗</ButtonLink>
-          </div>
-          <p className="eyebrow">INDEPENDENT / TBILISI / 2026</p>
-        </div>
-
-        <div className={styles.editorialGallery}>
-          {editorialImages.map((image, index) => (
-            <div className={styles.editorialShot} key={`${image.label}-${index}`} data-reveal>
-              <Image src={image.src} alt={image.alt} fill sizes="(max-width: 980px) 100vw, 62vw" />
-              <div className={styles.shotMeta}>
-                <span>0{index + 1} / {image.label}</span>
-                <span>{image.note}</span>
+              <div
+                className={styles.phoneBottom}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 64px 1fr",
+                  alignItems: "center",
+                  width: "100%",
+                }}
+              >
+                <span style={{ justifySelf: "start" }}>HOME</span>
+                <span
+                  data-phone-logo
+                  style={{
+                    position: "relative",
+                    width: 64,
+                    height: 26,
+                    justifySelf: "center",
+                    display: "block",
+                    borderRadius: 999,
+                    overflow: "hidden",
+                    background: "#000",
+                    border: "1px solid rgba(0,0,0,.36)",
+                    boxShadow: "0 3px 10px rgba(0,0,0,.22)",
+                    transformOrigin: "center center",
+                    willChange: "transform,opacity",
+                  }}
+                >
+                  <Image
+                    src="/images/kultura-phone-badge.png"
+                    alt="KULTURA globe logo"
+                    fill
+                    unoptimized
+                    sizes="64px"
+                    style={{ objectFit: "contain", objectPosition: "center", padding: "1px 3px" }}
+                  />
+                </span>
+                <span style={{ justifySelf: "end" }}>01</span>
               </div>
             </div>
-          ))}
+          </div>
+
+          <div
+            data-phone-transition
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              width: "100vw",
+              height: "100svh",
+              transform: "translate(-50%, -50%)",
+              overflow: "hidden",
+              backgroundColor: "#030303",
+              boxShadow: "0 26px 70px rgba(0,0,0,.4)",
+              zIndex: 8,
+              opacity: 0,
+              pointerEvents: "none",
+              willChange: "transform,clip-path,opacity",
+            }}
+          >
+            <div
+              data-scene-logo
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                width: "min(980px, 74vw)",
+                aspectRatio: "1091 / 630",
+                transform: "translate(-50%, -50%) scale(.72)",
+                zIndex: 0,
+                opacity: 0,
+                willChange: "transform,opacity",
+              }}
+            >
+              <Image
+                src="/images/kultura-scene-logo.jpg"
+                alt=""
+                fill
+                unoptimized
+                sizes="74vw"
+                style={{ objectFit: "contain", objectPosition: "center" }}
+              />
+            </div>
+
+            <div
+              data-transition-scene
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 2,
+                opacity: 0,
+              }}
+            >
+              <div
+                data-transition-center
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: "52%",
+                  width: "min(410px, 28vw)",
+                  aspectRatio: ".69",
+                  transform: "translate(-50%, -50%) scale(.8)",
+                  borderRadius: "24px",
+                  overflow: "hidden",
+                  boxShadow: "0 24px 64px rgba(0,0,0,.48)",
+                  zIndex: 5,
+                }}
+              >
+                <Image
+                  src={heroProduct?.image ?? campaignImage}
+                  alt=""
+                  fill
+                  sizes="(max-width: 720px) 55vw, 28vw"
+                  style={{ objectFit: "cover" }}
+                />
+              </div>
+
+              {floatProducts.slice(0, 4).map((product, index) => (
+                <div
+                  data-transition-float
+                  data-index={index}
+                  key={`transition-${product?.id ?? index}`}
+                  style={{
+                    position: "absolute",
+                    width: index % 2 ? "13vw" : "15vw",
+                    maxWidth: index % 2 ? 190 : 230,
+                    minWidth: 100,
+                    aspectRatio: index % 2 ? "1 / 1" : ".78",
+                    left: index === 0 ? "7%" : index === 2 ? "8%" : undefined,
+                    right: index === 1 ? "9%" : index === 3 ? "7%" : undefined,
+                    top: index < 2 ? "18%" : undefined,
+                    bottom: index >= 2 ? "12%" : undefined,
+                    borderRadius: 17,
+                    overflow: "hidden",
+                    opacity: 0,
+                    transform: "scale(.74)",
+                    boxShadow: "0 20px 52px rgba(0,0,0,.42)",
+                    zIndex: 4,
+                  }}
+                >
+                  <Image
+                    src={product?.image ?? campaignImage}
+                    alt=""
+                    fill
+                    sizes="15vw"
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.demoCaption} data-demo-caption>
+            <span>SCROLL TO EXPLORE</span>
+            <span>PRODUCTS IN MOTION</span>
+          </div>
         </div>
       </section>
 
-      <section className={styles.categorySection}>
-        <div className={styles.sectionTop} data-reveal style={{ paddingInline: 0 }}>
-          <div>
-            <p className="eyebrow">005 / FIND YOUR UNIFORM</p>
-            <h2>CHOOSE<br />YOUR LANE.</h2>
-          </div>
-          <p>Every category is a different entry point into the same KULTURA language.</p>
-        </div>
+      <section className={styles.bothSection} data-reveal>
+        <p className={styles.bothEyebrow}>KULTURA / CATEGORIES</p>
+        <h2>FASHION OR KULTURA?<br /><em>BOTH.</em></h2>
+        <p className={styles.bothLead}>Choose the piece. Keep the attitude.</p>
+        <Link href="/shop" className={styles.cta}>SHOP KULTURA ↗</Link>
+      </section>
 
-        <div className={styles.categoryGrid}>
-          {categories.map((category, index) => (
-            <Link className={styles.categoryCard} href={`/shop/${category.slug}`} key={category.slug} data-reveal>
-              <span className={styles.categoryNumber}>0{index + 1}</span>
-              <h3 className={styles.categoryName}>{category.name}</h3>
-              <div className={styles.categoryMeta}>
-                <span>SHOP CATEGORY</span>
-                <span aria-hidden="true">↗</span>
+      <section className={styles.gallerySection}>
+        <CatalogNotice status={status} empty={!showcase.length && !categories.length} />
+        <div className={styles.galleryGrid}>
+          {categoryTiles.map((category, index) => (
+            <Link
+              href={`/shop/${category.slug}`}
+              className={styles.galleryCard}
+              data-gallery-card
+              data-reveal
+              key={category.slug}
+            >
+              <Image src={category.image} alt={category.alt} fill sizes="(max-width: 720px) 92vw, 25vw" />
+              <span className={styles.galleryShade} />
+              <span className={styles.galleryIndex}>0{index + 1}</span>
+              <div className={styles.galleryCopy}>
+                <strong>{category.name}</strong>
+                <span>SHOP CATEGORY ↗</span>
               </div>
             </Link>
           ))}
         </div>
       </section>
 
-      <section className={styles.finale}>
-        <div className={styles.finaleRing} aria-hidden="true" data-home-ring />
-        <div className={styles.finaleContent} data-reveal>
-          <span className={styles.finaleMark} aria-hidden="true">✳</span>
-          <p className="eyebrow">KULTURA / YOUR NEXT UNIFORM</p>
-          <h2>STEP<br />INSIDE.</h2>
-          <p>
-            Explore the current collection, save your favorites and build the rotation your way.
-          </p>
-          <div className={styles.ctaRow}>
-            <ButtonLink href="/shop">SHOP KULTURA ↗</ButtonLink>
-            <ButtonLink href="/drops" secondary>VIEW DROP 001 ↗</ButtonLink>
-          </div>
+      <section className={styles.endScene}>
+        <Image src={thirdProduct?.image ?? campaignImage} alt="" fill sizes="100vw" />
+        <div className={styles.endShade} />
+        <div className={styles.endCopy} data-reveal>
+          <span>STEP INTO KULTURA</span>
+          <h2>WEAR IT<br />YOUR WAY.</h2>
+          <Link href="/shop" className={styles.endCta}>ENTER SHOP ↗</Link>
         </div>
       </section>
 
