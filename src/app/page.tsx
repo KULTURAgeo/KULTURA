@@ -8,6 +8,7 @@ import { Newsletter } from "@/components/newsletter";
 import { HomeMotion } from "@/components/home-motion";
 import { IntroDeviceShowcase } from "@/components/intro-device-showcase";
 import styles from "./home.module.css";
+import introScroll from "./intro-scroll.module.css";
 
 export const metadata = pageMetadata("KULTURA — Step Into Kultura", "/");
 
@@ -47,7 +48,7 @@ export default async function Home() {
 
   return (
     <HomeMotion className={styles.home}>
-      <section className={styles.introScene} data-intro-scene>
+      <section className={`${styles.introScene} ${introScroll.journey}`} data-intro-scene>
         <div className={styles.sceneNav} data-scene-nav>
           <Link href="/" className={styles.brandPill} aria-label="KULTURA home">
             <span aria-hidden="true">✳</span>
@@ -57,7 +58,7 @@ export default async function Home() {
         </div>
 
         <div className={styles.introGlow} aria-hidden="true" />
-        <div className={styles.introCenter} data-intro-copy>
+        <div className={`${styles.introCenter} ${introScroll.copySticky}`} data-intro-copy>
           <p className={styles.introEyebrow}>STREETWEAR / GEORGIA</p>
           <h1 className={styles.introTitle} data-intro-title>
             <span>STEP INTO</span>
@@ -83,14 +84,14 @@ export default async function Home() {
           productHref={heroProduct ? `/product/${heroProduct.slug}` : "/shop"}
         />
 
-        <div className={styles.introFooter}>
+        <div className={`${styles.introFooter} ${introScroll.footer}`}>
           <span>SCROLL TO ENTER</span>
           <span>001 / 2026</span>
           <span>GEORGIA / GEL</span>
         </div>
       </section>
 
-      <section className={styles.studioScene} data-studio-scene>
+      <section className={`${styles.studioScene} ${introScroll.skipStudio}`} data-studio-scene>
         <div className={styles.studioSticky}>
           <div className={styles.sceneNav}>
             <Link href="/" className={`${styles.brandPill} ${styles.brandPillLight}`}>
