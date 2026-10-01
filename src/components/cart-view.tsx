@@ -15,7 +15,7 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
     if (!ready && !busy) void refresh();
   }, [ready, busy, refresh]);
 
-  const canCheckout =
+  const canReview =
     cart.ready &&
     !cart.error &&
     cart.quote.lines.length > 0 &&
@@ -93,13 +93,13 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
             <strong>{cart.error ? "Refresh required" : money(cart.quote.subtotal)}</strong>
           </div>
           <p className="muted">
-            Prices and availability are refreshed from the store. Delivery is calculated at checkout. Items are not reserved.
+            Prices and availability are refreshed from the store. Delivery is calculated before checkout. Items are not reserved.
           </p>
 
           {compact ? (
             <Link className="button" href="/cart" onClick={cart.close}>VIEW YOUR BAG ↗</Link>
-          ) : canCheckout ? (
-            <Link className="button" href="/checkout">PROCEED TO CHECKOUT ↗</Link>
+          ) : canReview ? (
+            <Link className="button" href="/checkout/review">REVIEW ORDER ↗</Link>
           ) : (
             <Button disabled>CHECKOUT UNAVAILABLE</Button>
           )}

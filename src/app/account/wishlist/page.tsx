@@ -3,6 +3,7 @@ import { requirePage } from "@/lib/auth/guards";
 import { getProductsByIds } from "@/lib/catalog/repository";
 import { ProductCard } from "@/components/product-card";
 import { WishlistButton } from "@/components/wishlist-button";
+import { WishlistAddToBag } from "@/components/wishlist-add-to-bag";
 import styles from "./wishlist.module.css";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +56,7 @@ export default async function WishlistPage({
             {ordered.map((product) => (
               <div className={styles.item} key={product.id}>
                 <ProductCard product={product} />
+                <WishlistAddToBag product={product} />
                 <WishlistButton product={product} saved />
               </div>
             ))}

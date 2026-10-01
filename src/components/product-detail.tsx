@@ -2,19 +2,21 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { money, type Product } from "@/lib/catalog";
-import {useCart} from "./cart-provider";
+import { useCart } from "./cart-provider";
 import { Badge, Button } from "./ui";
 import { trackAddToCart, trackViewItem } from "./analytics";
 import { MAX_QUANTITY } from "@/lib/cart/model";
 import { ProductBadges } from "./product-badges";
 import { SizeGuide } from "./size-guide";
 import { WishlistButton } from "./wishlist-button";
+
 export function ProductDetail({ product, wishlistSaved = false }: { product: Product; wishlistSaved?: boolean }) {
-  const cart=useCart();
+  const cart = useCart();
   const [size, setSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [view, setView] = useState(0);
   const [message, setMessage] = useState("");
+  const [zoomOpen, setZoomOpen] = useState(false);
   const colors = [...new Set(product.variants.map((v) => v.color))];
   const [color, setColor] = useState(colors[0]);
   const variant = product.variants.find(
@@ -44,7 +46,10 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
           },
         ];
   const currentImage = gallery[view] ?? gallery[0];
-  const sampleImagery = product.images.some(image => /^\/images\/(hoodie|tee|pants|cap)\.jpg$/.test(image.src));
+  const sampleImagery = product.images.some((image) =>
+    /^\/images\/(hoodie|tee|pants|cap)\.jpg$/.test(image.src),
+  );
+
   useEffect(() => {
     const track = () =>
       trackViewItem({
@@ -58,11 +63,35 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
     window.addEventListener("kultura:analytics-ready", track, { once: true });
     return () => window.removeEventListener("kultura:analytics-ready", track);
   }, [product.id, product.name, product.category, product.price]);
+
+  useEffect(() => {
+    if (!zoomOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setZoomOpen(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [zoomOpen]);
+
   return (
     <div className="product-detail">
       <div>
         <div
           className={`gallery-main ${currentImage.crop ? "detail-crop" : ""}`}
+          role="button"
+          tabIndex={0}
+          aria-label={`Open larger image: ${currentImage.label}`}
+          onClick={() => setZoomOpen(true)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              setZoomOpen(true);
+            }
+          }}
         >
           <Image
             src={currentImage.src}
@@ -179,7 +208,32 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
         <Button
           className="add-button"
           disabled={!variant || variant.stock === 0 || cart.busy}
-          onClick={async()=>{if(!variant)return;const ok=await cart.add({productId:product.id,variantId:variant.id,size:variant.size,color:variant.color,quantity,observedPrice:product.price});if(ok){trackAddToCart({id:product.id,name:product.name,category:product.category,variant:`${variant.color} / ${variant.size}`,price:product.price,quantity});}setMessage(ok?`${quantity} item${quantity === 1 ? "" : "s"} added to your bag.`:"Unable to add this item. Please try again.");}}
+          onClick={async () => {
+            if (!variant) return;
+            const ok = await cart.add({
+              productId: product.id,
+              variantId: variant.id,
+              size: variant.size,
+              color: variant.color,
+              quantity,
+              observedPrice: product.price,
+            });
+            if (ok) {
+              trackAddToCart({
+                id: product.id,
+                name: product.name,
+                category: product.category,
+                variant: `${variant.color} / ${variant.size}`,
+                price: product.price,
+                quantity,
+              });
+            }
+            setMessage(
+              ok
+                ? `${quantity} item${quantity === 1 ? "" : "s"} added to your bag.`
+                : "Unable to add this item. Please try again.",
+            );
+          }}
         >
           {soldOut ? "SOLD OUT" : "ADD TO CART"}{" "}
           <span aria-hidden="true">↗</span>
@@ -203,6 +257,34 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
           </details>
         </div>
       </div>
+
+      {zoomOpen ? (
+        <div
+          className="product-zoom-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${product.name} image preview`}
+          onClick={() => setZoomOpen(false)}
+        >
+          <button
+            type="button"
+            className="product-zoom-close"
+            onClick={() => setZoomOpen(false)}
+            autoFocus
+          >
+            CLOSE ×
+          </button>
+          <div className="product-zoom-image" onClick={(event) => event.stopPropagation()}>
+            <Image
+              src={currentImage.src}
+              alt={`${currentImage.alt} — enlarged ${currentImage.label}`}
+              fill
+              sizes="95vw"
+              priority
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

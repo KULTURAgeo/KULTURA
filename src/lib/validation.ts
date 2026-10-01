@@ -60,7 +60,7 @@ export function version(data: FormData): string {
 export function safeNext(value: unknown): string {
     if (typeof value !== "string")
         return "/account";
-    if (value === "/checkout")
+    if (value === "/checkout" || value === "/checkout/review")
         return value;
     return /^\/(account|admin)(\/[a-zA-Z0-9-]+)*$/.test(value) ? value : "/account";
 }
@@ -87,7 +87,6 @@ export function variantInput(data: FormData) {
         throw new InputError("SKU must use uppercase letters, numbers, underscores or hyphens.");
     return { sku, size: text(data, "size", 40), color: text(data, "color", 80), stock_quantity: integer(data.get("stock_quantity"), "Stock", 0, 1000000), is_active: data.get("is_active") === "on" };
 }
-
 
 function optionalMoney(data: FormData, key: string): number | null {
     const raw = text(data, key, 20, false);
