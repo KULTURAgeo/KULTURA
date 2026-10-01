@@ -111,20 +111,27 @@ export default async function Home() {
                   data-phone-logo
                   style={{
                     position: "relative",
-                    width: 46,
-                    height: 28,
+                    width: 58,
+                    height: 30,
                     display: "grid",
                     placeItems: "center",
-                    borderRadius: 9,
+                    borderRadius: 999,
                     overflow: "hidden",
-                    background: "#070707",
-                    border: "1px solid rgba(0,0,0,.18)",
-                    boxShadow: "0 4px 14px rgba(0,0,0,.18)",
+                    background: "#030303",
+                    border: "1px solid rgba(255,255,255,.34)",
+                    boxShadow: "0 4px 14px rgba(0,0,0,.24), inset 0 0 0 1px rgba(255,255,255,.05)",
                     transformOrigin: "center center",
                     willChange: "transform,opacity",
                   }}
                 >
-                  <Image src="/kultura-globe.svg" alt="" width={40} height={24} unoptimized />
+                  <Image
+                    src="/kultura-globe.svg"
+                    alt=""
+                    width={52}
+                    height={29}
+                    unoptimized
+                    style={{ objectFit: "contain" }}
+                  />
                 </span>
                 <span>01</span>
               </div>
@@ -142,7 +149,7 @@ export default async function Home() {
               height: "100svh",
               transform: "translate(-50%, -50%)",
               overflow: "hidden",
-              backgroundColor: "#080808",
+              backgroundColor: "#030303",
               boxShadow: "0 26px 70px rgba(0,0,0,.4)",
               zIndex: 8,
               opacity: 0,
@@ -151,28 +158,28 @@ export default async function Home() {
             }}
           >
             <div
-              data-logo-pattern
+              data-scene-logo
               style={{
                 position: "absolute",
-                inset: "-10%",
+                left: "50%",
+                top: "50%",
+                width: "min(980px, 74vw)",
+                aspectRatio: "1005 / 565",
+                transform: "translate(-50%, -50%) scale(.72)",
                 zIndex: 0,
                 opacity: 0,
-                backgroundImage: "url('/kultura-globe.svg')",
-                backgroundRepeat: "repeat",
-                backgroundSize: "112px 74px",
-                backgroundPosition: "center",
-                filter: "grayscale(1) brightness(1.55)",
                 willChange: "transform,opacity",
               }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 1,
-                background: "radial-gradient(circle at center, transparent 18%, rgba(0,0,0,.18) 62%, rgba(0,0,0,.58) 100%)",
-              }}
-            />
+            >
+              <Image
+                src="/kultura-globe.svg"
+                alt=""
+                fill
+                unoptimized
+                sizes="74vw"
+                style={{ objectFit: "contain" }}
+              />
+            </div>
 
             <div
               data-transition-scene
@@ -194,7 +201,8 @@ export default async function Home() {
                   transform: "translate(-50%, -50%) scale(.8)",
                   borderRadius: "24px",
                   overflow: "hidden",
-                  boxShadow: "0 24px 64px rgba(0,0,0,.34)",
+                  boxShadow: "0 24px 64px rgba(0,0,0,.48)",
+                  zIndex: 5,
                 }}
               >
                 <Image
@@ -225,7 +233,8 @@ export default async function Home() {
                     overflow: "hidden",
                     opacity: 0,
                     transform: "scale(.74)",
-                    boxShadow: "0 20px 52px rgba(0,0,0,.3)",
+                    boxShadow: "0 20px 52px rgba(0,0,0,.42)",
+                    zIndex: 4,
                   }}
                 >
                   <Image
