@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { FloatingHomeNav } from "./floating-home-nav";
 
 export function HomeMotion({
   children,
@@ -189,6 +190,7 @@ export function HomeMotion({
 
   return (
     <div ref={root} className={className}>
+      <FloatingHomeNav />
       {children}
     </div>
   );
