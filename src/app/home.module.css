@@ -203,6 +203,8 @@
 .phoneFrame {
   position: absolute;
   inset: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border: 7px solid #121212;
   border-radius: 38px;
@@ -213,6 +215,7 @@
 
 .phoneTop {
   height: 35px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -235,6 +238,7 @@
 
 .phoneHeader {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   padding: 6px 14px 10px;
@@ -257,6 +261,7 @@
 }
 
 .phoneLabel {
+  flex-shrink: 0;
   padding: 0 14px 8px;
   font-size: 7px;
   font-weight: 900;
@@ -265,7 +270,8 @@
 
 .phoneViewport {
   position: relative;
-  height: 68%;
+  flex: 1;
+  min-height: 0;
   margin: 0 10px;
   overflow: hidden;
   border-radius: 22px;
@@ -321,8 +327,9 @@
 
 .phoneBottom {
   display: flex;
+  flex-shrink: 0;
   justify-content: space-between;
-  padding: 13px 14px 0;
+  padding: 13px 14px;
   font-size: 6px;
   font-weight: 900;
   letter-spacing: .1em;
@@ -672,6 +679,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .home [data-reveal] { opacity: 1; transform: none; }
+  .demoTrack { height: 100svh; }
+  .demoSticky { position: relative; }
+  .phone { opacity: 1; transform: translate(-50%, -50%); }
   .phone,
   .orbitCenter,
   .floatCard,
