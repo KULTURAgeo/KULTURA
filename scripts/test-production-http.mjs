@@ -4,11 +4,13 @@ const base=process.env.QA_BASE_URL || "http://localhost:3000";
 const checks=[];
 async function check(name,fn){await fn();checks.push(name);}
 for(const route of ["/","/shop","/drops","/about","/contact","/shipping","/returns","/privacy","/terms","/size-guide","/login","/register","/forgot-password","/cart"]){
- await check("Public route and security headers "+route,async()=>{const r=await fetch(base+route);assert.equal(r.status,200);assert.equal(r.headers.get("x-content-type-options"),"nosniff");assert.equal(r.headers.get("x-frame-options"),"DENY");assert.match(r.headers.get("x-robots-tag"),/noindex/);assert.ok((await r.text()).includes("<h1"));});
+ await check("Public route and security headers "+route,async()=>{const r=await fetch(base+route);assert.equal(r.status,200);assert.equal(r.headers.get("x-content-type-options"),"nosniff");assert.equal(r.headers.get("x-frame-options"),"DENY");assert.equal(r.headers.get("x-permitted-cross-domain-policies"),"none");assert.match(r.headers.get("content-security-policy")??"",/frame-ancestors 'none'/);assert.match(r.headers.get("content-security-policy")??"",/object-src 'none'/);assert.match(r.headers.get("x-robots-tag"),/noindex/);assert.ok((await r.text()).includes("<h1"));});
 }
 for(const route of ["/constructor","/toString","/this-page-does-not-exist"]){
  await check("Unknown information page is 404 "+route,async()=>assert.equal((await fetch(base+route)).status,404));
 }
+await check("Reject XML request bodies",async()=>{const r=await fetch(base+"/",{method:"POST",headers:{"content-type":"application/xml"},body:"<?xml version=\"1.0\"?><root/>"});assert.equal(r.status,415);assert.equal(r.headers.get("x-content-type-options"),"nosniff");assert.match(r.headers.get("cache-control")??"",/no-store/);});
+await check("Reject +xml request bodies",async()=>{const r=await fetch(base+"/",{method:"POST",headers:{"content-type":"application/soap+xml; charset=utf-8"},body:"<Envelope/>"});assert.equal(r.status,415);});
 await check("Prelaunch robots blocks indexing",async()=>assert.match(await(await fetch(base+"/robots.txt")).text(),/Disallow: \//));
 await check("Prelaunch sitemap excludes URLs",async()=>assert.ok(!(await(await fetch(base+"/sitemap.xml")).text()).includes("<loc>")));
 for(const path of ["/social-card.png","/apple-touch-icon.png","/icon.svg"]){
