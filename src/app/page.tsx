@@ -133,10 +133,11 @@ export default async function Home() {
                   }}
                 >
                   <Image
-                    src="/images/kultura-phone-badge.png"
+                    src="/images/kultura-globe-phone.webp"
                     alt="KULTURA globe logo"
                     fill
                     unoptimized
+                    loading="eager"
                     sizes="64px"
                     style={{ objectFit: "contain", objectPosition: "center", padding: "1px 3px" }}
                   />
@@ -180,10 +181,11 @@ export default async function Home() {
               }}
             >
               <Image
-                src="/images/kultura-scene-logo.jpg"
+                src="/images/kultura-globe-scene.webp"
                 alt=""
                 fill
                 unoptimized
+                loading="eager"
                 sizes="74vw"
                 style={{ objectFit: "contain", objectPosition: "center" }}
               />
