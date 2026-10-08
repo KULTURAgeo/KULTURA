@@ -10,12 +10,28 @@ import styles from "./home.module.css";
 
 export const metadata = pageMetadata("KULTURA — Step Into Kultura", "/");
 
-const FALLBACK_SOCIAL = "/contact";
+const INSTAGRAM_URL = "https://www.instagram.com/kultura.geo/";
+
+function facebookProfileUrl(): string | undefined {
+  const configured = process.env.NEXT_PUBLIC_FACEBOOK_URL?.trim();
+  if (!configured) return undefined;
+  try {
+    const url = new URL(configured);
+    if (
+      url.protocol === "https:" &&
+      ["facebook.com", "www.facebook.com", "m.facebook.com"].includes(url.hostname.toLowerCase())
+    ) {
+      return url.href;
+    }
+  } catch {
+    // An unset or invalid profile URL must not redirect customers elsewhere.
+  }
+  return undefined;
+}
 
 export default async function Home() {
   const { products: showcase, categories, status } = await getHomepageCatalog();
-  const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL?.trim() || FALLBACK_SOCIAL;
-  const facebookUrl = process.env.NEXT_PUBLIC_FACEBOOK_URL?.trim() || FALLBACK_SOCIAL;
+  const facebookUrl = facebookProfileUrl();
 
   const heroProduct = showcase[0] ?? null;
   const secondProduct = showcase[1] ?? heroProduct;
@@ -48,8 +64,15 @@ export default async function Home() {
             Clothing with presence. Strong silhouettes, restrained detail and movement at the center.
           </p>
           <div className={styles.socials}>
-            <a href={instagramUrl} target={instagramUrl.startsWith("http") ? "_blank" : undefined} rel="noreferrer">INSTAGRAM ↗</a>
-            <a href={facebookUrl} target={facebookUrl.startsWith("http") ? "_blank" : undefined} rel="noreferrer">FACEBOOK ↗</a>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">INSTAGRAM ↗</a>
+            <a
+              href={facebookUrl}
+              target={facebookUrl ? "_blank" : undefined}
+              rel={facebookUrl ? "noopener noreferrer" : undefined}
+              aria-disabled={!facebookUrl}
+            >
+              FACEBOOK ↗
+            </a>
           </div>
         </div>
 
