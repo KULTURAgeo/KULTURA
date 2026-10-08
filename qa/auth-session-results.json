@@ -1,6 +1,6 @@
 {
   "scope": "Real SSR SDK, auth actions, guards, proxy and callback routes with simulated Supabase HTTP and cookies; not hosted Supabase.",
-  "passed": 27,
+  "passed": 30,
   "checks": [
     "Unauthenticated account redirects to login",
     "Password login persists production cookies and safe next destination",
@@ -18,8 +18,11 @@
     "Dedicated logout succeeds without Redis: missing",
     "Logout rejects invalid Origin without signing out",
     "Logout rejects missing Origin without signing out",
+    "Logout rejects null Origin without signing out",
+    "Logout rejects malformed Origin without signing out",
     "Logout rejects cross-site without signing out",
     "Login remains fail-closed for Redis timeout, unavailable and invalid response",
+    "Sensitive pages preserve same-origin form Origin without cross-origin referrers",
     "Proxy refresh forwards rotated cookies to browser and downstream server",
     "Registration uses configured production callback and stores PKCE verifier",
     "Email PKCE exchange writes session before account redirect",

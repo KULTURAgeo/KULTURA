@@ -102,6 +102,7 @@ for(const mode of ["healthy","timeout","unavailable","invalid","missing"]){
   try{
    const response=await proxy(new NextRequest(process.env.SITE_URL+"/auth/logout",{method:"POST",headers:{origin:process.env.SITE_URL,host:"store.example.invalid","content-type":"application/x-www-form-urlencoded","sec-fetch-site":"same-origin"},body:""}));
    assert.equal(response.status,200);
+   assert.equal(response.headers.get("referrer-policy"),"same-origin");
    const result=await logoutPost();
    assert.equal(result.status,303);assert.equal(result.headers.get("location"),"/login");
    assert.equal(await result.text(),"");
@@ -114,6 +115,8 @@ for(const mode of ["healthy","timeout","unavailable","invalid","missing"]){
 for(const [name,values] of [
  ["invalid Origin",{origin:"https://evil.invalid"}],
  ["missing Origin",{}],
+ ["null Origin",{origin:"null"}],
+ ["malformed Origin",{origin:"not-an-origin"}],
  ["cross-site",{origin:process.env.SITE_URL,"sec-fetch-site":"cross-site"}]
 ]){
  await check("Logout rejects "+name+" without signing out",async()=>{
@@ -144,6 +147,13 @@ await check("Login remains fail-closed for Redis timeout, unavailable and invali
 });
 
 await browser.auth.stopAutoRefresh();
+await check("Sensitive pages preserve same-origin form Origin without cross-origin referrers",async()=>{
+ for(const path of ["/account","/account/orders","/login","/register","/forgot-password","/reset-password","/admin","/checkout","/auth/logout","/order-confirmation/fixture"]){
+  const response=await proxy(new NextRequest(process.env.SITE_URL+path));
+  assert.equal(response.headers.get("referrer-policy"),"same-origin",path);
+  assert.match(response.headers.get("cache-control"),/no-store/,path);
+ }
+});
 await check("Proxy refresh forwards rotated cookies to browser and downstream server",async()=>{
  cookieValues.clear();
  const expired=session(-60);
