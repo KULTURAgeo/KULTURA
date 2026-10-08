@@ -1,1 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><image x="0" y="0" width="64" height="64" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAFUklEQVR42u1aLYzrOBCeXZ10ZmcYGHaFgYGBgYWFhYULFxYWFi4sLCwsDAwMzLEcCziQx6KHHvlG98nPcdK82+qktaUorWPHM9/8T/vyz7fv8pXHq3zxEQGIAEQAIgARgAhABCACEAGIAEQAIgARgK84fnvSOVZEDC79nuI+YK4XkRGfR3wf/s8AGOfqMJ+IyEZEctyVyRbrMswPYNRib4a5GndLezvsb/F5/K8AeFnZETKQYI77iEuZU0BqEWnwLAU4gmeNiGxFpBSRPZ7luLfQAMH7Muw3mG+xv8Hnp2tAAsIPIvIn5v4Cwx8iUoHJAkxlIPRCmqJANphTwCzts5h7w/oM8znWjHhvTWd+ugbkYHwrIn+IyDcQcAMRLaR1AoO3AHFHMPk+odYZzknxnhv5kAxXQprViMj9Ea14BIAMqBfknEp8/hCRK9RzB4ldMR+y13cCtA+sO+C9lYic6fwEzxIwn5IJXZdoxBIALGw0I5W9gbESNpqSFy9A5GUBqCfyA3PEpsR8hXMT8icN0aS01nN0zAGQQ0qGUK0dG2ZmhDy6kAfXayCHKdCQEqC1TlTRUKlSNfTOgnxN73HQBd6b4PlxKqSGANhDvWpifiouH0lCHQ5OSUrKFDNv6Pl9AlTOCVTSBkJRzRwCJrsn//DmM7MpAPaQ6AnM3wNaokAdZ9YZJxkaHR8w0Lw4YLmjgGrfwdgYMJs9hep3F7DXgNofyauGwuEBa5oZGx5xeE9ZnuYHnTM/zDjPCpfmHVOjo9CrphGsBTQkXUBMPcPUjuJ4vzJF7nB/dNzIjGQGhIYAMCEACpLUXMppyfu3E/a7ZAwrAaggoBJ0hEYNOktEHS8AhhILs0ClNeUdCIBxhQaYlbn9QA63nFmr5pVS3vBTKrwhr3kNoGoo3hoqaBIKXwnZu0w4NUORIg1EAXHANR6/kkMjfEIwdP+d6pfejQJ78uTWKVVHDzFamBhSYQPm7cSenu6GCaH91hMt+BrofC26NF8YPICJQ2OPHKJ2NWAgAEosMAFEc3JgtQftKSmOxEAJ87GeBMt4QqdPC9W+zzNmUDpm85MJtACgpe9zPiChJGVNBBDSgrVRRDVujt6CSvCbzwlqKvrmpJ5To4HZFIzoA2Okxsmazo+aW7HAYXMJb3n9qyelTSiXDg2tw7VGX9tYyVdGgRRndwvylYLK5ksoD2jIlvYLJHuG6m5XaoD8gvoXVEeMCyRvqEMVTIUrqq1PM0lKj7U5VYBTkrZOkZRTHpFROEwpEoR6EzsfQ55zD9QjuC8thrSIyKnqamc0IXVaVxkx44YwdmI6b5wIYElTuCk6UgF0DPgPC7rMRDtuthxOqFbPEDs/PJFgQ308odpfqLAZnF6AXmfsPVLBYpx8glteCc031BxtnZK7pIh2x9WvaYgYUm+1ozM5Sk2Zted3pFbXEru+UEXZLfDiR0fjttRO105yAaFcqUodfrUnuCGvm5METg6jFupZgrmPBQDYBT3BPa4KjLE5bkGHdqf/xrlLSvTFbfGW7FBb1yUO0h5hQ9lkBYIViFugoJlzdgcyk8rjp3ZOtOIfUD6lLc72qZ1iLotr+ffXnRwSstTE6B3nqUVYT6qu3eee9qk55lS1ctm+wf1K6fGnAOALbxsiLKUQWZODSqh5oU2KHfZf8Twjr92Q+WUUMbgL3FFXKXU6TuMzAJjKzRMiyhBhKkXtJVTU5bXEXOdUpC1FlzFQV4yPZpUvT/q3uPHU8e7c4FSSDzOzZjzr5/Fxoj8QSpGfMuI/RCIAEYAIQAQgAhABiABEACIAEYAIQAQgAhAB+HrjB+O4/T1t/2pIAAAAAElFTkSuQmCC"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" aria-label="KULTURA globe">
+  <defs>
+    <linearGradient id="silver" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset=".28" stop-color="#D9E1EA"/>
+      <stop offset=".54" stop-color="#FFFFFF"/>
+      <stop offset=".75" stop-color="#BDC7D4"/>
+      <stop offset="1" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+  <g stroke="url(#silver)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="32" cy="32" rx="29.5" ry="18"/>
+    <path d="M32 14v36"/>
+    <path d="M3 32h58"/>
+    <path d="M30.7 14.3C20.3 17.8 15 24.3 15 32s5.3 14.2 15.7 17.7"/>
+    <path d="M33.3 14.3C43.7 17.8 49 24.3 49 32s-5.3 14.2-15.7 17.7"/>
+    <path d="M12 21.8C21 25.5 43 25.5 52 21.8" stroke-width="2.7"/>
+    <path d="M12 42.2C21 38.5 43 38.5 52 42.2" stroke-width="2.7"/>
+  </g>
+  <g stroke="#FFFFFF" stroke-width="1.1" stroke-linecap="round" opacity=".75">
+    <path d="M4.5 27c3-10 14-12.6 26-12.6"/>
+    <path d="M33.5 49.4C47 48.7 57 43 60.6 34"/>
+    <path d="M32 15v34"/>
+  </g>
+</svg>
