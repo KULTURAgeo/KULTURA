@@ -11,6 +11,18 @@ for(const route of ["/constructor","/toString","/this-page-does-not-exist"]){
 }
 await check("Reject XML request bodies",async()=>{const r=await fetch(base+"/",{method:"POST",headers:{"content-type":"application/xml"},body:"<?xml version=\"1.0\"?><root/>"});assert.equal(r.status,415);assert.equal(r.headers.get("x-content-type-options"),"nosniff");assert.match(r.headers.get("cache-control")??"",/no-store/);});
 await check("Reject +xml request bodies",async()=>{const r=await fetch(base+"/",{method:"POST",headers:{"content-type":"application/soap+xml; charset=utf-8"},body:"<Envelope/>"});assert.equal(r.status,415);});
+await check("CSP uses a fresh nonce matching inline framework scripts",async()=>{
+ const response=await fetch(base+"/");const policy=response.headers.get("content-security-policy");
+ const nonce=policy.match(/'nonce-([^']+)'/)[1];const html=await response.text();
+ assert.ok(!policy.includes("unsafe-eval"));assert.match(policy,/script-src-attr 'none'/);
+ for(const script of html.matchAll(/<script\b([^>]*)>/g))assert.ok(script[1].includes('nonce="'+nonce+'"'),"Script missing request nonce");
+ const second=await fetch(base+"/");assert.notEqual(second.headers.get("content-security-policy"),policy);
+ assert.match(response.headers.get("cache-control"),/no-store/);
+});
+await check("Missing and cross-site Origin cannot invoke actions",async()=>{
+ for(const origin of [undefined,"https://evil.invalid"]){const headers={"content-type":"text/plain"};if(origin)headers.origin=origin;const r=await fetch(base+"/login",{method:"POST",headers,body:"[]"});assert.equal(r.status,403);}
+});
+await check("Extension-like action target cannot bypass CSRF",async()=>{const r=await fetch(base+"/fake.js",{method:"POST",headers:{"content-type":"text/plain"},body:"[]"});assert.equal(r.status,403);});
 await check("Prelaunch robots blocks indexing",async()=>assert.match(await(await fetch(base+"/robots.txt")).text(),/Disallow: \//));
 await check("Prelaunch sitemap excludes URLs",async()=>assert.ok(!(await(await fetch(base+"/sitemap.xml")).text()).includes("<loc>")));
 for(const path of ["/social-card.png","/apple-touch-icon.png","/icon.svg"]){

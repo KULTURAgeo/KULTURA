@@ -1,8 +1,9 @@
 "use server";
+import { strictForm } from "@/lib/security/input";
 
 import { revalidatePath } from "next/cache";
 import { safeFailure, type ActionState } from "@/lib/actions";
-import { requireActor } from "@/lib/auth/guards";
+import { requireActionActor } from "@/lib/auth/guards";
 import { id, integer, InputError, text } from "@/lib/validation";
 
 const REQUEST_TYPES = ["return", "refund"] as const;
@@ -20,7 +21,8 @@ export async function createReturnRequest(
   data: FormData,
 ): Promise<ActionState> {
   try {
-    const { client } = await requireActor();
+    strictForm(data, ["order_id", "request_type", "reason", "details", "return_item"], ["return_item"]);
+    const { client } = await requireActionActor();
     const orderId = id(data.get("order_id"), "order");
     const requestType = text(data, "request_type", 20);
     const reason = text(data, "reason", 40);

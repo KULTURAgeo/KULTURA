@@ -1,3 +1,7 @@
+import { randomBytes } from "node:crypto";
+import { contentSecurityPolicy } from "./lib/security/csp";
+import { assertSameOrigin, requestIp } from "./lib/security/request";
+import { rateLimit, RequestError } from "./lib/security/rate-limit";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseConfig } from "./lib/supabase/config";
@@ -11,7 +15,7 @@ const EXACT_SENSITIVE_PATHS = new Set([
   "/forgot-password",
   "/reset-password",
 ]);
-const SENSITIVE_PREFIXES = ["/account", "/admin", "/checkout", "/auth"];
+const SENSITIVE_PREFIXES = ["/account", "/admin", "/checkout", "/auth", "/order-confirmation"];
 
 function isSensitivePath(pathname: string) {
   return (
@@ -67,6 +71,40 @@ export async function proxy(request: NextRequest) {
     return blocked;
   }
 
+  if (MUTATING_METHODS.has(request.method)) {
+    try {
+      assertSameOrigin(request.headers);
+      const length = request.headers.get("content-length");
+      if (length && (!/^\d+$/.test(length) || Number(length) > 4 * 1024 * 1024)) throw new RequestError(413, "Request is too large.");
+      const type = request.headers.get("content-type")?.split(";", 1)[0]?.trim();
+      if (!["text/plain", "multipart/form-data", "application/x-www-form-urlencoded", "application/json"].includes(type ?? "")) throw new RequestError(415, "Unsupported Media Type");
+      // Only the dedicated POST route can bypass Redis, never a Server Action.
+      const logout = request.method === "POST" && pathname === "/auth/logout" && !request.headers.has("next-action");
+      if (!logout) {
+        await rateLimit("requests", requestIp(request.headers), 90, 60);
+        if (EXACT_SENSITIVE_PATHS.has(pathname)) await rateLimit("auth-requests", requestIp(request.headers), 12, 60);
+      }
+    } catch (error) {
+      const failure = error instanceof RequestError ? error : new RequestError(503, "Service temporarily unavailable.");
+      const blocked = new NextResponse(failure.message, { status: failure.status });
+      applyBaselineHeaders(blocked);
+      blocked.headers.set("Cache-Control", "no-store");
+      if (failure.status === 429) blocked.headers.set("Retry-After", String(failure.retryAfter));
+      return blocked;
+    }
+  }
+  const publicAsset = pathname.startsWith("/images/") || pathname.startsWith("/fonts/") ||
+    ["/favicon.ico", "/icon.svg", "/apple-touch-icon.png", "/social-card.png"].includes(pathname);
+  if (["GET", "HEAD"].includes(request.method) && publicAsset) {
+    const asset = NextResponse.next();
+    applyBaselineHeaders(asset);
+    return asset;
+  }
+  const nonce = randomBytes(24).toString("base64");
+  const policy = contentSecurityPolicy(nonce, request.nextUrl.protocol === "https:");
+  request.headers.set("x-nonce", nonce);
+  request.headers.set("x-kultura-pathname", pathname);
+  request.headers.set("Content-Security-Policy", policy);
   let response = NextResponse.next({ request });
 
   // Session refresh is only needed on authentication and privileged surfaces.
@@ -119,13 +157,12 @@ export async function proxy(request: NextRequest) {
   }
 
   applyBaselineHeaders(response);
+  response.headers.set("Content-Security-Policy", policy);
+  response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  response.headers.set("Cache-Control", "private, no-store");
   return response;
 }
 
 export const config = {
-  // Run on application routes so hostile XML bodies are rejected globally,
-  // while avoiding static assets and Next.js image/static delivery paths.
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|css|js|map|woff|woff2)$).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image).*)"],
 };

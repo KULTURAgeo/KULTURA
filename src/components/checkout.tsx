@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
 import { money } from "@/lib/catalog";
@@ -61,6 +61,8 @@ export function Checkout({
   const [testMessage, setTestMessage] = useState("");
   const [orderPending, startOrderTransition] = useTransition();
   const [orderMessage, setOrderMessage] = useState("");
+  const submitting = useRef(false);
+  const checkoutRequest = useRef<{ fingerprint: string; id: string } | null>(null);
   const [promoPending, startPromoTransition] = useTransition();
   const [promoInput, setPromoInput] = useState("");
   const [promoMessage, setPromoMessage] = useState("");
@@ -179,10 +181,7 @@ export function Checkout({
     cart.quote.lines.map((line) => ({
       productId: line.productId,
       variantId: line.variantId,
-      size: line.size,
-      color: line.color,
       quantity: line.quantity,
-      observedPrice: line.price,
     }));
 
   const applyPromo = () => {
@@ -232,23 +231,37 @@ export function Checkout({
   };
 
   const runUnpaidCheckout = () => {
-    if (!canCreateUnpaidOrder || !activeAddress) return;
+    if (!canCreateUnpaidOrder || !activeAddress || submitting.current) return;
+    submitting.current = true;
     setOrderMessage("");
     startOrderTransition(async () => {
-      const result = await createUnpaidOrder({
-        lines: checkoutLines(),
-        address: activeAddress,
-        promoCode: activePromoCode,
-      });
-
-      if (!result.ok || !result.orderId) {
-        setOrderMessage(result.message || "The order could not be created.");
-        return;
+      try {
+        const input = { lines: checkoutLines(), address: activeAddress, promoCode: activePromoCode };
+        // Store only a digest and random request ID, never delivery data or tokens.
+        const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(input)));
+        const fingerprint = Array.from(new Uint8Array(bytes), (b) => b.toString(16).padStart(2, "0")).join("");
+        let request = checkoutRequest.current;
+        try {
+          const saved = JSON.parse(sessionStorage.getItem("kultura.checkout.request") ?? "null");
+          if (saved?.fingerprint === fingerprint && typeof saved.id === "string") request = saved;
+        } catch { /* Storage may be disabled; in-memory retries still reuse the ID. */ }
+        if (!request || request.fingerprint !== fingerprint) request = { fingerprint, id: crypto.randomUUID() };
+        checkoutRequest.current = request;
+        try { sessionStorage.setItem("kultura.checkout.request", JSON.stringify(request)); } catch { /* Optional persistence. */ }
+        const result = await createUnpaidOrder({ ...input, requestId: request.id });
+        if (!result.ok || !result.orderId) {
+          setOrderMessage(result.message || "The order could not be created.");
+          return;
+        }
+        try { sessionStorage.removeItem("kultura.checkout.request"); } catch { /* Optional persistence. */ }
+        cart.clear();
+        router.push(`/order-confirmation/${result.orderId}`);
+        router.refresh();
+      } catch {
+        setOrderMessage("We could not confirm your order. Your bag is saved; please try again.");
+      } finally {
+        submitting.current = false;
       }
-
-      cart.clear();
-      router.push(`/order-confirmation/${result.orderId}`);
-      router.refresh();
     });
   };
 

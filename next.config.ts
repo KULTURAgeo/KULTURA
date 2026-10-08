@@ -4,13 +4,6 @@ import { siteUrl, isIndexable } from "./src/lib/site";
 const origin = process.env.SUPABASE_URL;
 if (process.env.VERCEL) siteUrl();
 
-const contentSecurityPolicy = [
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-  "object-src 'none'",
-].join("; ");
-
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Run the full TypeScript API checker and page workers in worker threads.
@@ -31,7 +24,6 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: [
-          { key: "Content-Security-Policy", value: contentSecurityPolicy },
           {
             key: "Strict-Transport-Security",
             value: "max-age=31536000",

@@ -1,7 +1,8 @@
 "use server";
+import { strictForm } from "@/lib/security/input";
 
 import { revalidatePath } from "next/cache";
-import { requireActor } from "@/lib/auth/guards";
+import { requireActionActor } from "@/lib/auth/guards";
 import { id, integer, text, version, InputError } from "@/lib/validation";
 import { safeFailure, type ActionState } from "@/lib/actions";
 import { invalidateStorefrontCatalog } from "@/lib/catalog/invalidate";
@@ -18,7 +19,8 @@ export async function saveCategory(
   data: FormData,
 ): Promise<ActionState> {
   try {
-    const { client } = await requireActor(true);
+    strictForm(data, ["id", "updated_at", "name", "slug", "description", "sort_position", "is_active"], []);
+    const { client } = await requireActionActor(true);
     const rawId = data.get("id");
     const categoryId = rawId ? id(rawId, "category") : null;
     const slug = text(data, "slug", 120);

@@ -6,17 +6,11 @@ import { CatalogGrid } from "@/components/catalog-grid";
 import { CatalogNotice } from "@/components/catalog-notice";
 import {
   getCategoryCatalog,
-  getShopCategories,
 } from "@/lib/catalog/repository";
 
-export const dynamic = "force-static";
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
-export async function generateStaticParams() {
-  const { categories, status } = await getShopCategories();
-  if (status !== "ready") return [];
-  return categories.map((category) => ({ category: category.slug }));
-}
+
 
 export async function generateMetadata({
   params,

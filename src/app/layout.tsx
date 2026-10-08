@@ -1,3 +1,6 @@
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
+import { unknownRootRoute } from "@/lib/security/routes";
 import { AuthSession } from "@/components/auth-session";
 import { StructuredData } from "@/components/structured-data";
 import { CookieConsent } from "@/components/cookie-consent";
@@ -49,11 +52,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const requestHeaders = await headers();
+  if (unknownRootRoute(requestHeaders.get("x-kultura-pathname"))) notFound();
+  const nonce = requestHeaders.get("x-nonce") ?? undefined;
   const origin = siteUrl();
   const organizationId = new URL("/#organization", origin).href;
   const websiteId = new URL("/#website", origin).href;
@@ -87,6 +95,7 @@ export default function RootLayout({
       <body>
         <StructuredData data={structuredData} />
         <CookieConsent
+          nonce={nonce}
           googleAnalyticsId={googleAnalyticsId}
           metaPixelId={metaPixelId}
         />

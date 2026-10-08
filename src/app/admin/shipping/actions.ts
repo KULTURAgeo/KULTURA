@@ -1,7 +1,8 @@
 "use server";
+import { strictForm } from "@/lib/security/input";
 
 import { revalidatePath } from "next/cache";
-import { requireActor } from "@/lib/auth/guards";
+import { requireActionActor } from "@/lib/auth/guards";
 import { safeFailure, type ActionState } from "@/lib/actions";
 import { InputError, price, text } from "@/lib/validation";
 
@@ -10,7 +11,8 @@ export async function saveShippingSettings(
   data: FormData,
 ): Promise<ActionState> {
   try {
-    const { client } = await requireActor(true);
+    strictForm(data, ["shipping_total", "free_shipping_enabled", "free_shipping_threshold"], []);
+    const { client } = await requireActionActor(true);
     const shippingTotal = price(text(data, "shipping_total", 20));
     const freeShippingEnabled = data.get("free_shipping_enabled") === "on";
     const thresholdRaw = text(data, "free_shipping_threshold", 20, false);

@@ -68,7 +68,7 @@ export default async function CheckoutPage() {
           email: user.email ?? "",
         }}
         shippingSettings={shippingSettings}
-        testCheckoutEnabled={profile.role === "admin"}
+        testCheckoutEnabled={profile.role === "admin" && process.env.ENABLE_TEST_CHECKOUT === "true" && process.env.VERCEL_ENV !== "production"}
       />
     </Container>
   );

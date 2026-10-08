@@ -1,4 +1,8 @@
 "use server";
+import { assertSameOrigin, protectAction } from "@/lib/security/request";
+import { headers } from "next/headers";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { strictForm } from "@/lib/security/input";
 import { revalidatePath } from "next/cache";
 import { createSessionClient } from "@/lib/supabase/session";
 import { siteOrigin } from "@/lib/supabase/config";
@@ -7,7 +11,10 @@ import { email, password, safeNext, InputError } from "@/lib/validation";
 import { safeFailure, AccessError, type ActionState } from "@/lib/actions";
 export async function authenticate(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
+        await protectAction("auth");
+        strictForm(data, ["mode", "email", "password", "confirm_password", "next"]);
         const mode = data.get("mode");
+        if (["login", "register", "forgot"].includes(String(mode))) await rateLimit("auth-account", email(data).toLowerCase(), 12, 900);
         const client = await createSessionClient(true);
         if (!client)
             throw new AccessError("unavailable");
@@ -50,6 +57,8 @@ export async function authenticate(_state: ActionState, data: FormData): Promise
 }
 export async function logout(): Promise<ActionState> {
     try {
+        // Signing out must remain available when the shared rate backend is down.
+        assertSameOrigin(new Headers(await headers()));
         const client = await createSessionClient(true);
         if (!client)
             throw new AccessError("unavailable");

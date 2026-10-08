@@ -1,5 +1,8 @@
 "use server";
-import { normalizeLines, quoteLines, type CartQuote } from "@/lib/cart/model";
+import { protectAction } from "@/lib/security/request";
+import { safeFailure } from "@/lib/actions";
+import { quoteLines, type CartQuote } from "@/lib/cart/model";
+import { cartRefreshLines } from "@/lib/security/input";
 import { getProductsByIds } from "@/lib/catalog/repository";
 export async function refreshCart(input: unknown): Promise<{
     ok: true;
@@ -8,7 +11,8 @@ export async function refreshCart(input: unknown): Promise<{
     ok: false;
     message: string;
 }> {
-    const lines = normalizeLines(input);
+    let lines;
+    try { await protectAction("cart"); lines = cartRefreshLines(input); } catch (error) { return {ok:false, message: safeFailure(error).message ?? "Please try again shortly."}; }
     if (!lines.length)
         return { ok: true, quote: { lines: [], subtotal: 0 } };
     const result = await getProductsByIds([...new Set(lines.map(line => line.productId))]);

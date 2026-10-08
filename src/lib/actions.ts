@@ -1,3 +1,4 @@
+import { RequestError } from "./security/rate-limit";
 import { InputError } from "./validation";
 export type ActionState = {
     ok?: boolean;
@@ -9,11 +10,13 @@ export class AccessError extends Error {
     constructor(public code: "unauthenticated" | "forbidden" | "unavailable") { super(code); }
 }
 export function safeFailure(error: unknown): ActionState {
+    if (error instanceof RequestError) return { ok: false, message: error.message };
     if (error instanceof InputError)
         return { ok: false, message: error.message };
     if (error instanceof AccessError)
         return { ok: false, message: error.code === "unauthenticated" ? "Please sign in again." : error.code === "forbidden" ? "You do not have permission to perform this action." : "This service is temporarily unavailable." };
     if (typeof error === "object" && error !== null && "code" in error) {
+        if (error.code === "PT429") return { ok: false, message: "Too many requests. Please try again later." };
         if (error.code === "23505")
             return { ok: false, message: "That slug, SKU, variant combination or default address already exists." };
         if (error.code === "40001" || error.code === "PGRST116")

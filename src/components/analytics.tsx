@@ -15,6 +15,7 @@ declare global {
 }
 
 type AnalyticsProps = {
+  nonce?: string;
   googleAnalyticsId?: string;
   metaPixelId?: string;
 };
@@ -30,14 +31,16 @@ type EcommerceItem = {
 };
 
 function pageLocation() {
-  return window.location.href;
+  return window.location.origin + window.location.pathname;
 }
 
 export function Analytics({
+  nonce,
   googleAnalyticsId,
   metaPixelId,
 }: AnalyticsProps) {
   const pathname = usePathname();
+  const privatePage = /^\/(?:auth|login|register|forgot-password|reset-password|account|admin|checkout|order-confirmation)(?:\/|$)/.test(pathname);
   const [googleReady, setGoogleReady] = useState(false);
   const [metaReady, setMetaReady] = useState(false);
 
@@ -51,6 +54,7 @@ export function Analytics({
   }, [analyticsReady]);
 
   useEffect(() => {
+    if (privatePage) return;
     if (googleReady && googleAnalyticsId && window.gtag) {
       window.gtag("event", "page_view", {
         page_location: pageLocation(),
@@ -61,31 +65,33 @@ export function Analytics({
     if (metaReady && metaPixelId && window.fbq) {
       window.fbq("track", "PageView");
     }
-  }, [pathname, googleReady, metaReady, googleAnalyticsId, metaPixelId]);
+  }, [privatePage, pathname, googleReady, metaReady, googleAnalyticsId, metaPixelId]);
+
+  if (privatePage) return null;
 
   return (
     <>
       {googleAnalyticsId ? (
         <>
-          <Script
+          <Script nonce={nonce}
             src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
             strategy="afterInteractive"
             onLoad={() => setGoogleReady(true)}
           />
-          <Script id="google-analytics" strategy="afterInteractive">
+          <Script nonce={nonce} id="google-analytics" strategy="afterInteractive">
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               window.gtag = gtag;
               gtag('js', new Date());
-              gtag('config', '${googleAnalyticsId}', { send_page_view: false });
+              gtag('config', '${googleAnalyticsId}', { send_page_view: false, page_location: window.location.origin + window.location.pathname, page_referrer: '' });
             `}
           </Script>
         </>
       ) : null}
 
       {metaPixelId ? (
-        <Script
+        <Script nonce={nonce}
           id="meta-pixel"
           strategy="afterInteractive"
           onLoad={() => setMetaReady(true)}
@@ -99,6 +105,7 @@ export function Analytics({
             t.src=v;s=b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
+            fbq('set', 'autoConfig', false, '${metaPixelId}');
             fbq('init', '${metaPixelId}');
           `}
         </Script>

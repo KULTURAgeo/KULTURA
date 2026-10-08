@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { pageMetadata, siteUrl } from "@/lib/site";
 import { isSearchIndexableProductSlug } from "@/lib/seo-indexing";
@@ -6,7 +7,6 @@ import {
   getCachedProductBySlug,
   getRelatedProducts,
 } from "@/lib/catalog/repository";
-import { getActiveProductSlugs } from "@/lib/catalog/static-params";
 import { CatalogNotice } from "@/components/catalog-notice";
 import { Container, SectionHeading } from "@/components/ui";
 import { ProductDetail } from "@/components/product-detail";
@@ -14,12 +14,8 @@ import { ProductCard } from "@/components/product-card";
 import { StructuredData } from "@/components/structured-data";
 import { RecentlyViewed } from "@/components/recently-viewed";
 
-export const revalidate = 300;
 
-export async function generateStaticParams() {
-  const slugs = await getActiveProductSlugs();
-  return slugs.map((slug) => ({ slug }));
-}
+
 
 export async function generateMetadata({
   params,

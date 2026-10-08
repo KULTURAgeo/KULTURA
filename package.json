@@ -15,11 +15,13 @@
     "test:phase3": "node --conditions=react-server --import ./scripts/typescript-loader.mjs scripts/test-phase3.mjs",
     "build:vercel": "node scripts/validate-production-env.mjs && next build",
     "test:production": "node --conditions=react-server --import ./scripts/typescript-loader.mjs scripts/test-production.mjs",
-    "check": "pnpm typecheck && pnpm lint && pnpm test:db && pnpm test:catalog && pnpm test:phase3 && pnpm test:production && pnpm test:auth && pnpm db:types:check && pnpm test:logos",
+    "check": "pnpm typecheck && pnpm lint && pnpm test:db && pnpm test:catalog && pnpm test:phase3 && pnpm test:production && pnpm test:auth && pnpm test:security && pnpm db:types:check && pnpm test:logos",
     "audit:secrets": "node scripts/audit-repository.mjs && node scripts/audit-client-bundle.mjs",
     "test:http": "node scripts/test-production-http.mjs",
     "test:auth": "node --conditions=react-server --import ./scripts/typescript-loader.mjs scripts/test-auth-session.mjs",
     "test:logos": "node scripts/test-logo-assets.mjs",
+    "test:security": "node --conditions=react-server --import ./scripts/typescript-loader.mjs scripts/test-security.mjs",
+    "audit:history": "node scripts/audit-git-history.mjs",
     "assets:logos": "node scripts/generate-logo-assets.mjs"
   },
   "dependencies": {

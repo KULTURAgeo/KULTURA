@@ -16,6 +16,7 @@ const Analytics = dynamic(
 );
 
 type CookieConsentProps = {
+  nonce?: string;
   googleAnalyticsId?: string;
   metaPixelId?: string;
 };
@@ -49,6 +50,7 @@ function setGoogleDisabled(
 }
 
 export function CookieConsent({
+  nonce,
   googleAnalyticsId,
   metaPixelId,
 }: CookieConsentProps) {
@@ -113,6 +115,7 @@ export function CookieConsent({
     <>
       {loaded && (preferences?.analytics || preferences?.marketing) ? (
         <Analytics
+          nonce={nonce}
           googleAnalyticsId={preferences.analytics ? googleAnalyticsId : undefined}
           metaPixelId={preferences.marketing ? metaPixelId : undefined}
         />

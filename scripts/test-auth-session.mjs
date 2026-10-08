@@ -6,12 +6,14 @@ import { resolve } from "node:path";
 import { writeFile } from "node:fs/promises";
 
 const cookieValues = new Map(), cookieWrites = [];
+globalThis.__authHeaders = new Headers({origin:"https://store.example.invalid",host:"store.example.invalid"});
+let redisMode = "healthy", redisRequests = 0;
 globalThis.__authJar = {
  getAll: () => [...cookieValues].map(([name,value]) => ({name,value})),
  set(name,value,options) { cookieWrites.push({name,value,options}); if(options.maxAge===0)cookieValues.delete(name);else cookieValues.set(name,value); }
 };
 registerHooks({resolve(specifier,context,next){
- if(specifier==="next/headers")return {shortCircuit:true,url:"data:text/javascript,export async function cookies(){return globalThis.__authJar}"};
+ if(specifier==="next/headers")return {shortCircuit:true,url:"data:text/javascript,export async function cookies(){return globalThis.__authJar}; export async function headers(){return globalThis.__authHeaders}"};
  if(specifier==="next/cache")return {shortCircuit:true,url:"data:text/javascript,export function revalidatePath(){}"};
  if(specifier==="next/navigation")return {shortCircuit:true,url:"data:text/javascript,export function redirect(url){throw Object.assign(new Error('redirect'),{redirectTo:url})}"};
  if(specifier==="next/server")return next("next/server.js",context);
@@ -22,6 +24,9 @@ process.env.SUPABASE_URL="https://auth-fixture.supabase.co";
 process.env.SUPABASE_PUBLISHABLE_KEY=["sb","publishable","AUTH_SESSION_FIXTURE"].join("_");
 process.env.SITE_URL="https://store.example.invalid";
 process.env.VERCEL="1";
+process.env.UPSTASH_REDIS_REST_URL="https://redis.example.invalid";
+process.env.UPSTASH_REDIS_REST_TOKEN="fixture";
+process.env.RATE_LIMIT_HMAC_KEY="security-tests-only-not-a-real-secret";
 const user={id:"10000000-0000-4000-8000-000000000001",aud:"authenticated",role:"authenticated",email:"session@example.invalid",app_metadata:{provider:"email"},user_metadata:{},created_at:new Date().toISOString()};
 const token=(expires=3600)=>[Buffer.from(JSON.stringify({alg:"HS256",typ:"JWT"})).toString("base64url"),Buffer.from(JSON.stringify({sub:user.id,aud:"authenticated",role:"authenticated",exp:Math.floor(Date.now()/1000)+expires})).toString("base64url"),"FIXTURE_SIGNATURE"].join(".");
 const session=(expires=3600)=>({access_token:token(expires),refresh_token:"FIXTURE_REFRESH",token_type:"bearer",expires_in:expires,expires_at:Math.floor(Date.now()/1000)+expires,user});
@@ -31,6 +36,13 @@ globalThis.fetch=async(input,init={})=>{
  const url=new URL(typeof input==="string"?input:input.url??input);
  requests.push({path:url.pathname,search:url.search,body:init.body});
  const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{"content-type":"application/json"}});
+ if(url.hostname==="redis.example.invalid"){
+  redisRequests++;
+  if(redisMode==="timeout")throw new DOMException("fixture timeout","TimeoutError");
+  if(redisMode==="unavailable")return json({error:"fixture unavailable"},503);
+  if(redisMode==="invalid")return json({result:"invalid"});
+  return json({result:[1,60]});
+ }
  if(url.pathname==="/auth/v1/token"){if(url.searchParams.get("grant_type")==="refresh_token")refreshCount++;return json(session());}
  if(url.pathname==="/auth/v1/user")return authFailure?json({message:"Unavailable"},503):json(user);
  if(url.pathname==="/auth/v1/signup")return json({user,session:null});
@@ -41,6 +53,7 @@ globalThis.fetch=async(input,init={})=>{
  throw new Error("Unexpected fixture request: "+url.pathname);
 };
 const {authenticate,logout}=await import("../src/app/auth/actions.ts");
+const {POST:logoutPost}=await import("../src/app/auth/logout/route.ts");
 const {requirePage}=await import("../src/lib/auth/guards.ts");
 const {proxy}=await import("../src/proxy.ts");
 const {NextRequest}=await import("next/server");
@@ -77,6 +90,59 @@ await check("Browser password sign-in is persisted for a new server request",asy
  assert.equal((await browser.auth.signInWithPassword({email:user.email,password:"fixture-password-123"})).error,null);
  assert.equal((await requirePage()).user.id,user.id);
 });
+
+for(const mode of ["healthy","timeout","unavailable","invalid","missing"]){
+ await check("Dedicated logout succeeds without Redis: "+mode,async()=>{
+  redisMode="healthy";
+  assert.equal((await authenticate({},form("login"))).ok,true);
+  redisMode=mode;
+  const token=process.env.UPSTASH_REDIS_REST_TOKEN;
+  if(mode==="missing")delete process.env.UPSTASH_REDIS_REST_TOKEN;
+  const count=redisRequests, before=requests.filter(r=>r.path==="/auth/v1/logout").length;
+  try{
+   const response=await proxy(new NextRequest(process.env.SITE_URL+"/auth/logout",{method:"POST",headers:{origin:process.env.SITE_URL,host:"store.example.invalid","content-type":"application/x-www-form-urlencoded","sec-fetch-site":"same-origin"},body:""}));
+   assert.equal(response.status,200);
+   const result=await logoutPost();
+   assert.equal(result.status,303);assert.equal(result.headers.get("location"),"/login");
+   assert.equal(await result.text(),"");
+   assert.equal(redisRequests,count,"Logout must never contact Redis");
+   assert.equal(requests.filter(r=>r.path==="/auth/v1/logout").length,before+1);
+   await assert.rejects(()=>requirePage(),e=>e.redirectTo==="/login?next=/account");
+  }finally{process.env.UPSTASH_REDIS_REST_TOKEN=token;redisMode="healthy";}
+ });
+}
+for(const [name,values] of [
+ ["invalid Origin",{origin:"https://evil.invalid"}],
+ ["missing Origin",{}],
+ ["cross-site",{origin:process.env.SITE_URL,"sec-fetch-site":"cross-site"}]
+]){
+ await check("Logout rejects "+name+" without signing out",async()=>{
+  assert.equal((await authenticate({},form("login"))).ok,true);
+  const before=requests.filter(r=>r.path==="/auth/v1/logout").length;
+  const saved=globalThis.__authHeaders;
+  globalThis.__authHeaders=new Headers({...values,host:"store.example.invalid"});
+  redisMode="timeout";
+  try{
+   const blocked=await proxy(new NextRequest(process.env.SITE_URL+"/auth/logout",{method:"POST",headers:{...values,"content-type":"application/x-www-form-urlencoded"},body:""}));
+   assert.equal(blocked.status,403);
+   assert.equal((await logout()).ok,false);
+   const result=await logoutPost();assert.equal(result.headers.get("location"),"/account?logout_error=1");
+   assert.equal(requests.filter(r=>r.path==="/auth/v1/logout").length,before);
+   assert.equal((await requirePage()).user.id,user.id);
+  }finally{globalThis.__authHeaders=saved;redisMode="healthy";}
+ });
+}
+await check("Login remains fail-closed for Redis timeout, unavailable and invalid response",async()=>{
+ for(const mode of ["timeout","unavailable","invalid"]){
+  redisMode=mode;
+  const before=requests.filter(r=>r.path==="/auth/v1/token").length;
+  const result=await authenticate({},form("login"));
+  assert.equal(result.ok,false);assert.equal(result.message,"This service is temporarily unavailable.");
+  assert.equal(requests.filter(r=>r.path==="/auth/v1/token").length,before);
+ }
+ redisMode="healthy";
+});
+
 await browser.auth.stopAutoRefresh();
 await check("Proxy refresh forwards rotated cookies to browser and downstream server",async()=>{
  cookieValues.clear();

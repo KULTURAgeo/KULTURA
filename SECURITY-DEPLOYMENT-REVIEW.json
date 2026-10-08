@@ -1,0 +1,1937 @@
+{
+  "branch": "security/production-hardening",
+  "base_branch": "main",
+  "changed_files": [
+    {
+      "path": ".env.example",
+      "purpose": "Document new private backend settings",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Adds Redis/HMAC, notification secret and sandbox flag.",
+      "rollback_notes": "Restore alongside code; never remove required live values before application rollback."
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "purpose": "Add reachable-history secret audit",
+      "risk_level": "LOW",
+      "behavior_changed": "Fetches full history and runs audit:history.",
+      "rollback_notes": "Restore previous workflow."
+    },
+    {
+      "path": ".gitignore",
+      "purpose": "Exclude QA logs",
+      "risk_level": "LOW",
+      "behavior_changed": "Ignores generated QA logs.",
+      "rollback_notes": "Restore ignore rules; does not delete artifacts."
+    },
+    {
+      "path": "next.config.ts",
+      "purpose": "Move CSP to nonce-aware proxy",
+      "risk_level": "HIGH",
+      "behavior_changed": "Removes previous static CSP; retains other headers and image restrictions.",
+      "rollback_notes": "Restore with proxy/layout together."
+    },
+    {
+      "path": "package.json",
+      "purpose": "Wire security verification commands",
+      "risk_level": "LOW",
+      "behavior_changed": "Adds test:security and audit:history; extends check. No package versions changed.",
+      "rollback_notes": "Restore scripts with CI."
+    },
+    {
+      "path": "qa/phase3-results.json",
+      "purpose": "Record regression evidence",
+      "risk_level": "LOW",
+      "behavior_changed": "Updates local test evidence only.",
+      "rollback_notes": "Restore previous evidence if reverting tests."
+    },
+    {
+      "path": "qa/production-http-results.json",
+      "purpose": "Record HTTP evidence",
+      "risk_level": "LOW",
+      "behavior_changed": "Records 29 compiled-build checks.",
+      "rollback_notes": "Evidence only."
+    },
+    {
+      "path": "qa/repository-secret-audit.json",
+      "purpose": "Record repository scan",
+      "risk_level": "LOW",
+      "behavior_changed": "Records 223 scanned text files.",
+      "rollback_notes": "Evidence only."
+    },
+    {
+      "path": "qa/secret-audit.json",
+      "purpose": "Record client boundary scan",
+      "risk_level": "LOW",
+      "behavior_changed": "Records 28 client chunks and additional secret boundaries.",
+      "rollback_notes": "Evidence only."
+    },
+    {
+      "path": "scripts/audit-client-bundle.mjs",
+      "purpose": "Detect private settings in client output",
+      "risk_level": "LOW",
+      "behavior_changed": "Adds private environment identifier checks.",
+      "rollback_notes": "Restore audit script."
+    },
+    {
+      "path": "scripts/test-auth-session.mjs",
+      "purpose": "Adapt auth integration tests",
+      "risk_level": "LOW",
+      "behavior_changed": "Mocks Origin and Redis alongside real SSR SDK. Tests dedicated logout proxy/route under healthy/failed/missing Redis and Origin rejection; login stays fail-closed.",
+      "rollback_notes": "Restore with auth implementation."
+    },
+    {
+      "path": "scripts/test-phase3.mjs",
+      "purpose": "Update database regression setup",
+      "risk_level": "LOW",
+      "behavior_changed": "Explicitly enables isolated test checkout and removes disallowed address owner input.",
+      "rollback_notes": "Test-only changes."
+    },
+    {
+      "path": "scripts/test-production-http.mjs",
+      "purpose": "Verify nonce and CSRF",
+      "risk_level": "LOW",
+      "behavior_changed": "Adds three security HTTP checks.",
+      "rollback_notes": "Restore tests if implementation reverted."
+    },
+    {
+      "path": "scripts/validate-production-env.mjs",
+      "purpose": "Validate deployment settings",
+      "risk_level": "HIGH",
+      "behavior_changed": "Requires Redis/HMAC; requires notification secret when providers configured; rejects production sandbox.",
+      "rollback_notes": "Coordinate with deployment settings; old app does not require Redis."
+    },
+    {
+      "path": "src/app/account/actions.ts",
+      "purpose": "Guard profile and address mutations",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Strict forms and Origin/IP/customer limits.",
+      "rollback_notes": "Restore with auth guards; DB quotas remain until DB rollback."
+    },
+    {
+      "path": "src/app/account/orders/[orderId]/actions.ts",
+      "purpose": "Guard return requests",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Strict return fields and protected customer action.",
+      "rollback_notes": "Restore with return RPC compatibility."
+    },
+    {
+      "path": "src/app/account/wishlist/actions.ts",
+      "purpose": "Guard wishlist state and writes",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Limits read action too; backend failure can return signed-out wishlist state.",
+      "rollback_notes": "Restore with shared guards."
+    },
+    {
+      "path": "src/app/admin/actions.ts",
+      "purpose": "Protect catalog, images, promos and fulfillment",
+      "risk_level": "HIGH",
+      "behavior_changed": "Strict forms and protected admin actions.",
+      "rollback_notes": "Restore application and affected RPC definitions coherently."
+    },
+    {
+      "path": "src/app/admin/categories/actions.ts",
+      "purpose": "Protect category changes",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Strict fields plus admin action guard.",
+      "rollback_notes": "Restore shared guard integration."
+    },
+    {
+      "path": "src/app/admin/inventory/actions.ts",
+      "purpose": "Protect stock changes",
+      "risk_level": "HIGH",
+      "behavior_changed": "Strict fields plus admin action guard.",
+      "rollback_notes": "Restore code; no inventory data rollback required."
+    },
+    {
+      "path": "src/app/admin/orders/page.tsx",
+      "purpose": "Handle repeated search parameters safely",
+      "risk_level": "LOW",
+      "behavior_changed": "Rejects array search/filter values instead of treating them as strings.",
+      "rollback_notes": "Restore page."
+    },
+    {
+      "path": "src/app/admin/products/new/actions.ts",
+      "purpose": "Protect product creation/upload",
+      "risk_level": "HIGH",
+      "behavior_changed": "Strict product/upload fields and admin action guard.",
+      "rollback_notes": "Restore with product RPC and common guards."
+    },
+    {
+      "path": "src/app/admin/returns/actions.ts",
+      "purpose": "Protect return review updates",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Strict fields and admin action guard.",
+      "rollback_notes": "Restore code."
+    },
+    {
+      "path": "src/app/admin/shipping/actions.ts",
+      "purpose": "Protect shipping settings changes",
+      "risk_level": "HIGH",
+      "behavior_changed": "Strict fields and admin action guard; no rate values changed.",
+      "rollback_notes": "Restore code without resetting shipping values."
+    },
+    {
+      "path": "src/app/auth/actions.ts",
+      "purpose": "Protect authentication requests",
+      "risk_level": "HIGH",
+      "behavior_changed": "Adds strict fields and Origin/IP/account limits to authentication; logout retains Origin checks but is explicitly exempt from Redis and keeps existing Supabase local signOut.",
+      "rollback_notes": "Restore with proxy; preserve SSR cookie implementation."
+    },
+    {
+      "path": "src/app/auth/callback/route.ts",
+      "purpose": "Restrict callback destination origin",
+      "risk_level": "HIGH",
+      "behavior_changed": "Uses configured or exact Vercel origin.",
+      "rollback_notes": "Restore callback origin logic with deployment configuration."
+    },
+    {
+      "path": "src/app/auth/confirm/route.ts",
+      "purpose": "Restrict email confirmation destination",
+      "risk_level": "HIGH",
+      "behavior_changed": "Uses configured or exact Vercel origin.",
+      "rollback_notes": "Restore confirmation origin logic."
+    },
+    {
+      "path": "src/app/cart/actions.ts",
+      "purpose": "Validate and rate-limit quote refresh",
+      "risk_level": "HIGH",
+      "behavior_changed": "Strict cart metadata/quantities; Redis failure blocks refresh.",
+      "rollback_notes": "Restore action validation/guard together."
+    },
+    {
+      "path": "src/app/checkout/actions.ts",
+      "purpose": "Protect promo quote and sandbox checkout",
+      "risk_level": "HIGH",
+      "behavior_changed": "Strict purchase lines, authenticated limits, production sandbox disabled.",
+      "rollback_notes": "Coordinate with DB sandbox and promo RPC definitions."
+    },
+    {
+      "path": "src/app/checkout/page.tsx",
+      "purpose": "Hide sandbox checkout unless explicitly allowed",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Requires non-production environment plus explicit sandbox flag.",
+      "rollback_notes": "Restore page only with intended sandbox policy."
+    },
+    {
+      "path": "src/app/checkout/unpaid-actions.ts",
+      "purpose": "Submit idempotent real orders",
+      "risk_level": "HIGH",
+      "behavior_changed": "Requires request UUID; calls checkout_submit_order instead of legacy RPC.",
+      "rollback_notes": "Restore legacy RPC permission before old application resumes checkout."
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "purpose": "Supply request nonce and early unknown-route rejection",
+      "risk_level": "HIGH",
+      "behavior_changed": "Forces dynamic HTML, reads proxy headers, supplies analytics nonce.",
+      "rollback_notes": "Restore with proxy/CSP and static route settings."
+    },
+    {
+      "path": "src/app/product/[slug]/page.tsx",
+      "purpose": "Make product HTML nonce-compatible",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Removes static generation path and forces dynamic rendering.",
+      "rollback_notes": "Restore static behavior with old CSP/layout."
+    },
+    {
+      "path": "src/app/shop/[category]/page.tsx",
+      "purpose": "Make category HTML nonce-compatible",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Removes static generation path and forces dynamic rendering.",
+      "rollback_notes": "Restore static behavior with old CSP/layout."
+    },
+    {
+      "path": "src/components/analytics.tsx",
+      "purpose": "Reduce private URL tracking and add nonces",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Omits query/hash, suppresses manual private page views, disables Meta autoConfig.",
+      "rollback_notes": "Restore tracking only with explicit privacy review; provider JS remains trusted."
+    },
+    {
+      "path": "src/components/checkout.tsx",
+      "purpose": "Protect against repeated submission",
+      "risk_level": "HIGH",
+      "behavior_changed": "Synchronous submission lock; hashed payload and request ID persistence; success-only cart clear and redirect.",
+      "rollback_notes": "Restore together with checkout action/RPC; preserve already-created orders."
+    },
+    {
+      "path": "src/components/cookie-consent.tsx",
+      "purpose": "Pass CSP nonce to consented analytics",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Adds nonce prop forwarding.",
+      "rollback_notes": "Restore with layout and analytics."
+    },
+    {
+      "path": "src/components/structured-data.tsx",
+      "purpose": "Nonce JSON-LD scripts",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Reads server request nonce; keeps JSON escaping.",
+      "rollback_notes": "Restore with CSP."
+    },
+    {
+      "path": "src/lib/actions.ts",
+      "purpose": "Expose safe rate-limit errors",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Handles RequestError and database PT429 without leaking SQL.",
+      "rollback_notes": "Restore with limiter consumers."
+    },
+    {
+      "path": "src/lib/admin/repository.ts",
+      "purpose": "Sanitize order search",
+      "risk_level": "LOW",
+      "behavior_changed": "Handles non-string input and removes underscore wildcard.",
+      "rollback_notes": "Restore search normalization."
+    },
+    {
+      "path": "src/lib/auth/guards.ts",
+      "purpose": "Add authenticated mutation guard",
+      "risk_level": "HIGH",
+      "behavior_changed": "Origin/IP protection followed by verified user/profile role and customer/admin budget.",
+      "rollback_notes": "Restore all consumers together."
+    },
+    {
+      "path": "src/lib/notifications/order-notifications.ts",
+      "purpose": "Send through backend-only notification RPCs",
+      "risk_level": "HIGH",
+      "behavior_changed": "Uses privileged server client and atomic channel claims before provider sends.",
+      "rollback_notes": "Restore old function bodies before restoring customer notification grants."
+    },
+    {
+      "path": "src/lib/supabase/database.types.ts",
+      "purpose": "Reflect new public RPC/claim columns",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Updates generated public database contract.",
+      "rollback_notes": "Restore only with compatible database/application rollback."
+    },
+    {
+      "path": "src/lib/validation.ts",
+      "purpose": "Reject control characters in text",
+      "risk_level": "LOW",
+      "behavior_changed": "Rejects control characters except allowed whitespace; password handling unchanged.",
+      "rollback_notes": "Restore validator if required."
+    },
+    {
+      "path": "src/proxy.ts",
+      "purpose": "Enforce mutation protection and document CSP",
+      "risk_level": "HIGH",
+      "behavior_changed": "Origin/content/size/IP limits, per-request nonce, private no-store HTML, confirmation session refresh. Dedicated POST /auth/logout without next-action is exempt only from Redis; Origin/content/size checks are retained.",
+      "rollback_notes": "Restore with layout/config/actions; effects are application-wide."
+    },
+    {
+      "path": "src/app/account/layout.tsx",
+      "purpose": "Route sign-out through logout-only POST endpoint",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Replaces inline Server Action form with POST /auth/logout; existing button, page authorization and success/error destinations unchanged.",
+      "rollback_notes": "Restore only with logout transport/proxy behavior together; earlier transport remains Redis-dependent."
+    },
+    {
+      "path": "qa/auth-session-results.json",
+      "purpose": "Record logout outage and Origin regression evidence",
+      "risk_level": "LOW",
+      "behavior_changed": "Records 27 real SSR SDK/simulated-provider auth checks.",
+      "rollback_notes": "Evidence only."
+    }
+  ],
+  "new_files": [
+    {
+      "path": "SECURITY-HARDENING.md",
+      "purpose": "Human-readable implementation and release report",
+      "risk_level": "LOW",
+      "behavior_changed": "Review/evidence only; no runtime behavior.",
+      "rollback_notes": "May remove during a later authorized cleanup; not required for runtime rollback."
+    },
+    {
+      "path": "qa/git-history-secret-audit.json",
+      "purpose": "Reachable history audit evidence",
+      "risk_level": "LOW",
+      "behavior_changed": "Review/evidence only; no runtime behavior.",
+      "rollback_notes": "May remove during a later authorized cleanup; not required for runtime rollback."
+    },
+    {
+      "path": "qa/security-audit-all.json",
+      "purpose": "Full dependency audit evidence",
+      "risk_level": "LOW",
+      "behavior_changed": "Review/evidence only; no runtime behavior.",
+      "rollback_notes": "May remove during a later authorized cleanup; not required for runtime rollback."
+    },
+    {
+      "path": "qa/security-audit-production.json",
+      "purpose": "Production dependency audit evidence",
+      "risk_level": "LOW",
+      "behavior_changed": "Review/evidence only; no runtime behavior.",
+      "rollback_notes": "May remove during a later authorized cleanup; not required for runtime rollback."
+    },
+    {
+      "path": "qa/security-changed-files.txt",
+      "purpose": "Pre-review change manifest",
+      "risk_level": "LOW",
+      "behavior_changed": "Review/evidence only; no runtime behavior.",
+      "rollback_notes": "May remove during a later authorized cleanup; not required for runtime rollback."
+    },
+    {
+      "path": "qa/security-results.json",
+      "purpose": "55 security checks evidence",
+      "risk_level": "LOW",
+      "behavior_changed": "Review/evidence only; no runtime behavior.",
+      "rollback_notes": "May remove during a later authorized cleanup; not required for runtime rollback."
+    },
+    {
+      "path": "scripts/audit-git-history.mjs",
+      "purpose": "Heuristic Git text-blob secret scanner",
+      "risk_level": "LOW",
+      "behavior_changed": "Heuristic Git text-blob secret scanner",
+      "rollback_notes": "May remove during a later authorized cleanup; not required for runtime rollback."
+    },
+    {
+      "path": "scripts/test-security.mjs",
+      "purpose": "Executable SQL, validation, CSRF, CSP and limiter tests",
+      "risk_level": "LOW",
+      "behavior_changed": "Executable SQL, validation, CSRF, CSP and limiter tests Tests exact logout exemption and real checkout/admin fail-closed behavior.",
+      "rollback_notes": "May remove during a later authorized cleanup; not required for runtime rollback."
+    },
+    {
+      "path": "src/lib/notifications/client.ts",
+      "purpose": "Server-only privileged notification client",
+      "risk_level": "HIGH",
+      "behavior_changed": "Server-only privileged notification client",
+      "rollback_notes": "Remove only after restoring all importing application code and compatible database behavior."
+    },
+    {
+      "path": "src/lib/security/csp.ts",
+      "purpose": "Conditional nonce-based CSP generator",
+      "risk_level": "HIGH",
+      "behavior_changed": "Conditional nonce-based CSP generator",
+      "rollback_notes": "Remove only after restoring all importing application code and compatible database behavior."
+    },
+    {
+      "path": "src/lib/security/input.ts",
+      "purpose": "Strict cart/object/form validators",
+      "risk_level": "HIGH",
+      "behavior_changed": "Strict cart/object/form validators",
+      "rollback_notes": "Remove only after restoring all importing application code and compatible database behavior."
+    },
+    {
+      "path": "src/lib/security/origin.ts",
+      "purpose": "Callback origin allowlist",
+      "risk_level": "HIGH",
+      "behavior_changed": "Callback origin allowlist",
+      "rollback_notes": "Remove only after restoring all importing application code and compatible database behavior."
+    },
+    {
+      "path": "src/lib/security/rate-limit.ts",
+      "purpose": "Atomic Redis/HMAC limiter with fail-closed production behavior",
+      "risk_level": "HIGH",
+      "behavior_changed": "Atomic Redis/HMAC limiter with fail-closed production behavior",
+      "rollback_notes": "Remove only after restoring all importing application code and compatible database behavior."
+    },
+    {
+      "path": "src/lib/security/request.ts",
+      "purpose": "Origin checking, trusted Vercel IP identification and action protection",
+      "risk_level": "HIGH",
+      "behavior_changed": "Origin checking, trusted Vercel IP identification and action protection",
+      "rollback_notes": "Remove only after restoring all importing application code and compatible database behavior."
+    },
+    {
+      "path": "src/lib/security/routes.ts",
+      "purpose": "Root route allowlist to preserve early 404 responses",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Root route allowlist to preserve early 404 responses",
+      "rollback_notes": "Remove only after restoring all importing application code and compatible database behavior."
+    },
+    {
+      "path": "supabase/migrations/20261007000100_security_hardening.sql",
+      "purpose": "Transactional database hardening and promo backfill",
+      "risk_level": "HIGH",
+      "behavior_changed": "Transactional database hardening and promo backfill",
+      "rollback_notes": "No supplied tested down migration; use captured definitions/ACLs and coordinated rollback; preserve new data."
+    },
+    {
+      "path": "supabase/verify-security.sql",
+      "purpose": "Read-only hosted security schema/ACL verification",
+      "risk_level": "LOW",
+      "behavior_changed": "Read-only hosted security schema/ACL verification",
+      "rollback_notes": "May remove during a later authorized cleanup; not required for runtime rollback."
+    },
+    {
+      "path": "SECURITY-DEPLOYMENT-REVIEW.json",
+      "purpose": "Machine-readable security deployment review updated only for logout isolation facts.",
+      "risk_level": "LOW",
+      "behavior_changed": "Review/evidence only; no runtime behavior.",
+      "rollback_notes": "May remove during a later authorized cleanup; not required for runtime rollback."
+    },
+    {
+      "path": "src/app/auth/logout/route.ts",
+      "purpose": "Dedicated logout-only POST endpoint",
+      "risk_level": "MEDIUM",
+      "behavior_changed": "Calls existing logout; returns 303 to existing success/error destination and private no-store; exports only POST.",
+      "rollback_notes": "Remove only with matching form/proxy rollback; no database change."
+    }
+  ],
+  "database": {
+    "migration_filenames": [
+      "supabase/migrations/20261007000100_security_hardening.sql"
+    ],
+    "affected_tables": [
+      {
+        "name": "private.request_limits",
+        "operation": "CREATE",
+        "columns": [
+          "customer_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE",
+          "scope text NOT NULL",
+          "window_start timestamptz NOT NULL",
+          "attempts integer NOT NULL CHECK(attempts>0)"
+        ],
+        "primary_key": [
+          "customer_id",
+          "scope"
+        ],
+        "rls_enabled": true
+      },
+      {
+        "name": "private.checkout_requests",
+        "operation": "CREATE",
+        "columns": [
+          "customer_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE",
+          "request_id uuid NOT NULL",
+          "payload jsonb NOT NULL",
+          "order_id uuid NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE",
+          "created_at timestamptz NOT NULL DEFAULT now()"
+        ],
+        "primary_key": [
+          "customer_id",
+          "request_id"
+        ],
+        "rls_enabled": true
+      },
+      {
+        "name": "private.checkout_settings",
+        "operation": "ALTER",
+        "changes": [
+          "Enable RLS",
+          "Add test_checkout_enabled boolean NOT NULL DEFAULT false"
+        ],
+        "shipping_values_changed": false
+      },
+      {
+        "name": "public.notification_outbox",
+        "operation": "ALTER",
+        "changes": [
+          "Add email_claimed_at timestamptz nullable",
+          "Add sms_claimed_at timestamptz nullable"
+        ]
+      },
+      {
+        "name": "public.promo_codes",
+        "operation": "UPDATE",
+        "changes": [
+          "Set used_count to greatest(existing count, historical matching non-test order count) on every row",
+          "Existing set_updated_at trigger updates timestamps on every promo row"
+        ]
+      },
+      {
+        "name": "public.orders",
+        "operation": "ADD_TRIGGERS",
+        "changes": [
+          "Test-order insertion guard",
+          "Transactional event queuing on insertion/status changes"
+        ]
+      },
+      {
+        "name": "public.addresses",
+        "operation": "ADD_TRIGGER",
+        "changes": [
+          "Customer write budget and insertion quota"
+        ]
+      },
+      {
+        "name": "public.wishlist_items",
+        "operation": "ADD_TRIGGER",
+        "changes": [
+          "Insertion budget/quota"
+        ]
+      },
+      {
+        "name": "public.profiles",
+        "operation": "ADD_TRIGGER",
+        "changes": [
+          "Customer update budget"
+        ]
+      }
+    ],
+    "affected_functions_rpcs": [
+      {
+        "signature": "private.customer_rate_limit(text,integer,integer)",
+        "operation": "NEW",
+        "purpose": "Transactional fixed-window customer budget, PT429 on exhaustion"
+      },
+      {
+        "signature": "public.checkout_submit_order(uuid,jsonb,jsonb,text)",
+        "operation": "NEW",
+        "purpose": "Strict validation, canonical cart lock order, profile serialization, replay record, atomic promo use, trusted legacy order creator"
+      },
+      {
+        "signature": "public.checkout_create_unpaid_order(jsonb,jsonb,text)",
+        "operation": "ACL_ONLY",
+        "purpose": "Legacy function body retained for trusted wrapper; customer execution revoked"
+      },
+      {
+        "signature": "public.checkout_quote_promo(text,integer)",
+        "operation": "REPLACE",
+        "purpose": "Validated quote plus 60/hour customer budget"
+      },
+      {
+        "signature": "private.guard_test_order()",
+        "operation": "NEW",
+        "purpose": "Reject test insertion unless private setting explicitly enabled"
+      },
+      {
+        "signature": "public.notification_prepare(uuid,text)",
+        "operation": "REPLACE",
+        "purpose": "Backend-only queue preparation with actual order-state checks"
+      },
+      {
+        "signature": "public.notification_record_delivery(uuid,text,text)",
+        "operation": "REPLACE",
+        "purpose": "Backend-only delivery status recording"
+      },
+      {
+        "signature": "public.notification_claim(uuid,text)",
+        "operation": "NEW",
+        "purpose": "Atomic claim only for pending/unclaimed channel"
+      },
+      {
+        "signature": "private.queue_order_notification()",
+        "operation": "NEW",
+        "purpose": "Queue order/status events; skip test orders"
+      },
+      {
+        "signature": "private.assert_object_fields(jsonb,text[])",
+        "operation": "NEW",
+        "purpose": "Strict object keys, scalar values and 64 KiB bound"
+      },
+      {
+        "signature": "public.customer_save_address(uuid,jsonb)",
+        "operation": "REPLACE",
+        "purpose": "Strict fields; existing owner/default-address behavior retained"
+      },
+      {
+        "signature": "public.admin_save_product(uuid,timestamptz,jsonb,uuid[])",
+        "operation": "REPLACE",
+        "purpose": "Strict product fields; admin/version checks retained"
+      },
+      {
+        "signature": "public.admin_save_promo(uuid,timestamptz,jsonb)",
+        "operation": "REPLACE",
+        "purpose": "Strict promo fields; admin/version checks retained"
+      },
+      {
+        "signature": "public.customer_create_return_request(uuid,text,text,text,jsonb)",
+        "operation": "REPLACE",
+        "purpose": "Strict request/items, ownership/eligibility checks, customer budget"
+      },
+      {
+        "signature": "private.limit_customer_writes()",
+        "operation": "NEW",
+        "purpose": "300/minute write budget; 50-address and 500-wishlist insertion quotas"
+      }
+    ],
+    "affected_rls_policies": {
+      "named_policies_created": [],
+      "named_policies_modified": [],
+      "named_policies_deleted": [],
+      "tables_rls_enabled": [
+        "private.request_limits",
+        "private.checkout_requests",
+        "private.checkout_settings"
+      ],
+      "existing_public_policies": "Retained unchanged; no new customer policies on private tables.",
+      "force_rls_added": false
+    },
+    "affected_grants_acls": [
+      {
+        "objects": [
+          "private.request_limits",
+          "private.checkout_requests"
+        ],
+        "action": "REVOKE ALL",
+        "roles": [
+          "PUBLIC",
+          "anon",
+          "authenticated"
+        ]
+      },
+      {
+        "objects": [
+          "private.customer_rate_limit(text,integer,integer)",
+          "private.guard_test_order()",
+          "private.queue_order_notification()",
+          "private.limit_customer_writes()"
+        ],
+        "action": "REVOKE ALL",
+        "roles": [
+          "PUBLIC",
+          "anon",
+          "authenticated"
+        ]
+      },
+      {
+        "objects": [
+          "private.assert_object_fields(jsonb,text[])"
+        ],
+        "action": "REVOKE ALL from PUBLIC/anon; GRANT EXECUTE to authenticated",
+        "roles": [
+          "PUBLIC",
+          "anon",
+          "authenticated"
+        ]
+      },
+      {
+        "objects": [
+          "public.checkout_create_unpaid_order(jsonb,jsonb,text)"
+        ],
+        "action": "REVOKE ALL",
+        "roles": [
+          "PUBLIC",
+          "anon",
+          "authenticated"
+        ]
+      },
+      {
+        "objects": [
+          "public.checkout_submit_order(uuid,jsonb,jsonb,text)"
+        ],
+        "action": "REVOKE ALL from PUBLIC/anon; GRANT EXECUTE to authenticated",
+        "roles": [
+          "PUBLIC",
+          "anon",
+          "authenticated"
+        ]
+      },
+      {
+        "objects": [
+          "public.notification_prepare(uuid,text)",
+          "public.notification_record_delivery(uuid,text,text)",
+          "public.notification_claim(uuid,text)"
+        ],
+        "action": "REVOKE ALL from PUBLIC/anon/authenticated; GRANT EXECUTE to service_role",
+        "roles": [
+          "PUBLIC",
+          "anon",
+          "authenticated",
+          "service_role"
+        ]
+      },
+      {
+        "objects": [
+          "public.checkout_quote_promo(text,integer)",
+          "public.customer_save_address(uuid,jsonb)",
+          "public.admin_save_product(uuid,timestamptz,jsonb,uuid[])",
+          "public.admin_save_promo(uuid,timestamptz,jsonb)",
+          "public.customer_create_return_request(uuid,text,text,text,jsonb)"
+        ],
+        "action": "Existing ACLs retained by CREATE OR REPLACE",
+        "roles": []
+      }
+    ],
+    "triggers": [
+      {
+        "name": "orders_guard_test",
+        "table": "public.orders",
+        "timing": "BEFORE INSERT",
+        "function": "private.guard_test_order()"
+      },
+      {
+        "name": "orders_queue_notification",
+        "table": "public.orders",
+        "timing": "AFTER INSERT OR UPDATE OF payment_status,fulfillment_status",
+        "function": "private.queue_order_notification()"
+      },
+      {
+        "name": "addresses_write_limit",
+        "table": "public.addresses",
+        "timing": "BEFORE INSERT OR UPDATE",
+        "function": "private.limit_customer_writes()"
+      },
+      {
+        "name": "wishlist_write_limit",
+        "table": "public.wishlist_items",
+        "timing": "BEFORE INSERT",
+        "function": "private.limit_customer_writes()"
+      },
+      {
+        "name": "profiles_write_limit",
+        "table": "public.profiles",
+        "timing": "BEFORE UPDATE",
+        "function": "private.limit_customer_writes()"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "request_limits_pkey",
+        "table": "private.request_limits",
+        "columns": [
+          "customer_id",
+          "scope"
+        ],
+        "implicit": true
+      },
+      {
+        "name": "checkout_requests_pkey",
+        "table": "private.checkout_requests",
+        "columns": [
+          "customer_id",
+          "request_id"
+        ],
+        "implicit": true
+      }
+    ],
+    "data_changes": {
+      "migration_inserts_existing_business_records": false,
+      "migration_updates": [
+        "All promo used_count and updated_at values are subject to update",
+        "Existing checkout settings acquire test_checkout_enabled=false",
+        "Existing outbox rows acquire null claim columns"
+      ],
+      "migration_deletes": false,
+      "runtime_inserts": [
+        "Request counters",
+        "Checkout idempotency payloads",
+        "Notification events",
+        "Existing order/item/address/product/promo/return writes through retained workflows"
+      ],
+      "runtime_updates": [
+        "Promo usage",
+        "Delivery claim/status",
+        "Request budgets",
+        "Existing authorized business updates"
+      ],
+      "runtime_deletes": "No new bulk deletion workflow; existing product-save RPC still replaces that product's collection links. New FK cascades remove related private records when a customer/order is deleted.",
+      "unexpected_rewrite_warning": "Not purely additive: historical promo backfill may exhaust codes, violate promo_uses_valid and refresh all promo timestamps."
+    },
+    "idempotent": false,
+    "transactional": true,
+    "verification_script": "supabase/verify-security.sql",
+    "verification_expectation": "Every passed value true; recorded PGlite result does not establish hosted production state.",
+    "prerequisites": [
+      "All 16 preceding repository migrations or verified equivalent hosted schema",
+      "Supabase auth.users/auth.uid, anon/authenticated/service_role roles and existing private schema",
+      "Existing profiles/orders/order_items/products/variants/categories/promos/addresses/wishlist/returns/outbox and helper functions",
+      "Owner-level SQL migration privileges",
+      "New table/function/trigger/column names not already installed",
+      "No promo preflight constraint violations",
+      "Backup and rehearsed application/database cutover"
+    ],
+    "preflight_sql": "SELECT p.id,p.code,p.used_count,p.max_uses,h.order_count,greatest(p.used_count::bigint,h.order_count) AS proposed_used_count,p.max_uses IS NOT NULL AND greatest(p.used_count::bigint,h.order_count)>p.max_uses AS would_violate_constraint FROM public.promo_codes p CROSS JOIN LATERAL (SELECT count(*) AS order_count FROM public.orders o WHERE NOT o.is_test AND o.promo_code_snapshot=p.code) h ORDER BY p.code;",
+    "rollback_prerequisites": [
+      "Capture the eight previous function bodies/ACLs",
+      "Capture checkout-settings RLS state and promo counts/timestamps",
+      "Freeze writes during cutover",
+      "Have previous application deployment available",
+      "Rehearse compatibility rollback on staging"
+    ],
+    "backup_requirements": [
+      "Recoverable current Supabase database backup/PITR or equivalent tested snapshot",
+      "Export affected function definitions, ownership, ACLs, RLS flags/policies and promo counters",
+      "Record cutover time and preserve orders accepted after migration"
+    ],
+    "storage_configuration_changed": false,
+    "auth_profile_creation_trigger_changed": false,
+    "rollback_status": "No supplied/tested down migration; transaction failure rolls back before commit. Committed migration requires coordinated compatibility rollback or backup restoration."
+  },
+  "auth": {
+    "signup": "Same Supabase signUp/confirmation flow; strict fields, IP/account budgets and exact Origin checks added. Emails use SITE_URL.",
+    "login": "Same signInWithPassword, safe next target and reload behavior; guarded by Redis/IP/account limits.",
+    "logout": "Existing Supabase signOut({scope:'local'}) and cookie clearing retained. Account sign-out form posts to dedicated /auth/logout; exact Origin/same-site checks remain in proxy and logout. No Redis call for this route or logout function; success still redirects /login, failure /account?logout_error=1.",
+    "session_refresh": "SSR cookie persistence retained; proxy refresh applies to sensitive paths including order-confirmation; verified actor still calls getUser and loads profile.",
+    "email_confirmation": "PKCE/token-hash GET flows retained; response origin restricted to SITE_URL or exact Vercel hosts.",
+    "password_reset": "Recovery email and authenticated password update retained; reset action protected; successful update signs out globally. GET recovery exchange remains outside mutation limiter.",
+    "redirects": "Existing safeNext retained; arbitrary request host no longer accepted as callback origin.",
+    "admin_authorization": "Verified user and database profile.role=admin required; new action limiter follows role check.",
+    "legitimate_users_guaranteed_unblocked": false,
+    "failure_cases": [
+      "Redis outage/missing settings blocks login/signup/reset mutations but not the dedicated logout flow.",
+      "Shared-IP and shared normalized-email budgets can affect legitimate users",
+      "Unlisted alias or incorrect SITE_URL rejects actions or sends callbacks to wrong environment",
+      "Strict React form metadata compatibility requires hosted browser testing"
+    ],
+    "evidence": "27 auth integration checks with real SSR SDK and simulated provider/cookie transport, including dedicated logout proxy/route, Redis outage isolation, Origin rejection and persisted session removal; hosted flows not proven.",
+    "logout_redis_behavior": {
+      "redis_available": "Existing Supabase local signOut succeeds and clears session; logout does not query Redis.",
+      "redis_unavailable": "Timeout, unavailable/invalid Redis response or missing Redis configuration does not prevent logout; no Redis-generated 503 or details returned.",
+      "invalid_origin": "Rejected before signOut; proxy returns 403 and direct logout function returns a safe failure.",
+      "cross_site": "Sec-Fetch-Site cross-site rejected before signOut; session remains intact."
+    }
+  },
+  "checkout": {
+    "cart": "Persisted browser cart unchanged; refresh now validates metadata and depends on Redis. Failed refresh keeps saved items.",
+    "quantity": "Integer 1..99; at most 50 lines; duplicate variants rejected; exact accepted quantities persisted.",
+    "pricing": "Database product price/currency is authoritative; client price/totals excluded from purchase payload.",
+    "promo_codes": "Existing resolver reused; promo row locked; accepted real order consumes one use atomically; identical replay does not. Unpaid/cancelled usage is retained. Historical backfill risk exists.",
+    "shipping": "Existing private shipping_total/free_shipping_threshold used; no shipping price changes. Null/unconfigured shipping rejects checkout.",
+    "order_creation": "New authenticated checkout_submit_order wraps existing trusted order insertion and snapshots; ownership remains enforced.",
+    "duplicate_checkout_idempotency": "Synchronous client lock; SHA-256 input fingerprint plus UUID in memory/sessionStorage; database key(customer_id,request_id) returns original order for identical payload and rejects changed payload. Different IDs/tabs remain distinct purchases.",
+    "unpaid_orders": {
+      "payment_status": "pending",
+      "fulfillment_status": "unfulfilled",
+      "is_test": false,
+      "paid_at": null,
+      "payment_provider_added": false
+    },
+    "inventory_checks": "Active category/product/variant and stock validated under product/variant locks. No reservation/decrement; cumulative pending orders can exceed inventory.",
+    "completion": "Only successful persisted response clears cart and pushes /order-confirmation/[orderId], then refreshes. Failed request preserves cart/form; notification timeouts can delay success response.",
+    "limitations": [
+      "No explicit reconfirmation when authoritative price/shipping/promo changes after displayed quote",
+      "Reload retry persistence unavailable when sessionStorage disabled",
+      "Hosted browser success/failure/replay not yet tested",
+      "Old RPC revocation requires coordinated release"
+    ]
+  },
+  "admin": {
+    "authorization": "requireActionActor(true) applies Origin/IP, verified getUser/profile role and admin budget; existing RLS and RPC admin guards retained.",
+    "protected_operations": [
+      "Product create/save/archive",
+      "Variant and inventory writes",
+      "Image upload/edit/delete/reorder",
+      "Categories",
+      "Promo codes",
+      "Shipping settings",
+      "Fulfillment transitions",
+      "Return review"
+    ],
+    "legitimate_access": "Local role checks passed; actual hosted forms/uploads unproven. Redis outages/quotas/strict unexpected fields may block legitimate mutations.",
+    "customer_direct_action_access": "Requests are callable but normal customers cannot successfully pass admin role guard; direct SQL/REST operations remain subject to RLS/admin RPC checks.",
+    "search": "Repeated search parameters handled defensively; underscore wildcard removed."
+  },
+  "rate_limiting": {
+    "backend": "Upstash-compatible HTTPS Redis REST with atomic Lua INCR/EXPIRE/TTL; private PostgreSQL budgets for selected direct writes/RPCs.",
+    "required_variables": [
+      "UPSTASH_REDIS_REST_URL",
+      "UPSTASH_REDIS_REST_TOKEN",
+      "RATE_LIMIT_HMAC_KEY"
+    ],
+    "thresholds": [
+      {
+        "scope": "proxy mutations except dedicated POST /auth/logout without next-action",
+        "identity": "IP",
+        "limit": 90,
+        "window_seconds": 60
+      },
+      {
+        "scope": "login/register/forgot/reset page mutations",
+        "identity": "IP",
+        "limit": 12,
+        "window_seconds": 60
+      },
+      {
+        "scope": "auth action",
+        "identity": "IP",
+        "limit": 12,
+        "window_seconds": 60
+      },
+      {
+        "scope": "login/register/forgot shared account scope",
+        "identity": "normalized email",
+        "limit": 12,
+        "window_seconds": 900
+      },
+      {
+        "scope": "general protected actions",
+        "identity": "IP",
+        "limit": 90,
+        "window_seconds": 60
+      },
+      {
+        "scope": "cart refresh",
+        "identity": "IP",
+        "limit": 90,
+        "window_seconds": 60
+      },
+      {
+        "scope": "wishlist state lookup",
+        "identity": "IP",
+        "limit": 90,
+        "window_seconds": 60
+      },
+      {
+        "scope": "authenticated customer actions",
+        "identity": "user ID",
+        "limit": 60,
+        "window_seconds": 60
+      },
+      {
+        "scope": "administrator actions",
+        "identity": "user ID",
+        "limit": 120,
+        "window_seconds": 60
+      },
+      {
+        "scope": "database checkout",
+        "identity": "customer ID",
+        "limit": 10,
+        "window_seconds": 3600
+      },
+      {
+        "scope": "database promo quotes",
+        "identity": "customer ID",
+        "limit": 60,
+        "window_seconds": 3600
+      },
+      {
+        "scope": "database return requests",
+        "identity": "customer ID",
+        "limit": 20,
+        "window_seconds": 3600
+      },
+      {
+        "scope": "database profile/address/wishlist writes",
+        "identity": "customer ID excluding admins",
+        "limit": 300,
+        "window_seconds": 60
+      }
+    ],
+    "quotas": {
+      "addresses_per_customer": 50,
+      "wishlist_items_per_customer": 500
+    },
+    "protected_endpoints_actions": [
+      "Proxy POST/PUT/PATCH/DELETE excluding Next static/image matcher paths",
+      "Authentication mutations except logout",
+      "Account/profile/address/return/wishlist actions",
+      "Cart refresh",
+      "Wishlist state lookup",
+      "Promo/test/real checkout",
+      "Administrator mutation actions",
+      "Selected direct database RPCs/triggers"
+    ],
+    "production_failure_mode": "FAIL_CLOSED",
+    "development_fallback": "In-memory expiring counters only when not NODE_ENV=production and not VERCEL=1 with incomplete Redis settings.",
+    "redis_outage": "Four-second Redis timeout; invalid/missing configuration or bad response yields 503/action error. Proxy limit exhaustion yields 429 with Retry-After. Dedicated logout is exempt and never contacts Redis.",
+    "ordinary_browsing": "GET/HEAD page reads do not invoke Redis; cart/wishlist POST-based reads can degrade while pages remain available.",
+    "shared_ip": "Proxy/IP budgets are shared by NAT users; missing trusted Vercel IP falls into unknown bucket; non-Vercel host uses shared local identity.",
+    "privacy": "HMAC identities in expiring Redis keys, namespace VERCEL_ENV or NODE_ENV; raw IP/email not stored in limiter keys.",
+    "database_limitations": "Budgets roll back with failed transactions; invalid direct RPC abuse still needs provider protections. Admin/null-auth bypass applies to customer-write trigger, not all budgets.",
+    "customer_error_transport": "Proxy returns HTTP status; caught Server Action failures use normal action-result messages, not necessarily HTTP 429.",
+    "logout_exception": "Only POST /auth/logout without a next-action header skips proxy Redis budgets, after Origin/content/size validation. It dispatches only logout. The logout function retains assertSameOrigin and existing Supabase signOut but has no Redis call. Other methods, paths and Server Action requests remain fail-closed."
+  },
+  "csrf_origin": {
+    "protected_methods": [
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE"
+    ],
+    "protected_actions": [
+      "authenticate",
+      "logout",
+      "refreshCart",
+      "getWishlistState",
+      "Account/profile/address/wishlist/return mutations",
+      "Checkout promo/test/unpaid submissions",
+      "Admin mutations"
+    ],
+    "allowed_origins": [
+      "new URL(SITE_URL).origin",
+      "https://${VERCEL_URL}",
+      "https://${VERCEL_BRANCH_URL}",
+      "Outside Vercel only: localhost/127.0.0.1/[::1] origin matching Host"
+    ],
+    "preview_behavior": "Exact provider deployment/branch hosts allowed. Preview SITE_URL and Supabase callbacks must point to isolated staging; arbitrary aliases not automatically allowed.",
+    "production_behavior": "Canonical SITE_URL allowed; additional aliases/www variants need validation or canonical redirects. Native Next Origin/Host checks still apply.",
+    "failure_cases": [
+      "Missing/null/malformed Origin",
+      "Origin string not equal to its normalized origin",
+      "Origin not allowlisted",
+      "Sec-Fetch-Site cross-site",
+      "Unapproved content type",
+      "Declared Content-Length invalid or above 4 MiB",
+      "Redis outage/exhaustion"
+    ],
+    "content_types_allowed": [
+      "text/plain",
+      "multipart/form-data",
+      "application/x-www-form-urlencoded",
+      "application/json"
+    ],
+    "get_exceptions": "PKCE/email-token callbacks remain GET and rely on one-time credentials; not general mutation endpoints.",
+    "future_integrations": "Webhook/server-to-server mutations without Origin cannot use these endpoints unchanged.",
+    "logout": "Still protected in both proxy and logout function. Redis exemption does not bypass Origin or Sec-Fetch-Site checks."
+  },
+  "csp_headers": {
+    "production_directives": [
+      "default-src 'self'",
+      "script-src 'self' 'nonce-${nonce}' 'strict-dynamic'",
+      "script-src-attr 'none'",
+      "style-src 'self' 'unsafe-inline'",
+      "style-src-elem 'self' 'nonce-${nonce}'",
+      "style-src-attr 'unsafe-inline'",
+      "img-src 'self' data: blob: ${SUPABASE_ORIGIN}${GA_IMAGE_SOURCES}${META_IMAGE_SOURCES}",
+      "font-src 'self'",
+      "connect-src 'self' ${SUPABASE_ORIGIN}${GA_CONNECT_SOURCES}${META_CONNECT_SOURCES}",
+      "frame-src ${META_ENABLED ? 'https://www.facebook.com' : \"'none'\"}",
+      "media-src 'self'",
+      "worker-src 'self' blob:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "upgrade-insecure-requests (HTTPS only)"
+    ],
+    "conditional_sources": {
+      "SUPABASE_ORIGIN": "new URL(SUPABASE_URL).origin or omitted if unconfigured",
+      "GA_ENABLED": "GOOGLE_ANALYTICS_ID matches /^G-[A-Z0-9]+$/",
+      "META_ENABLED": "META_PIXEL_ID matches /^\\d+$/",
+      "GA_IMAGE_SOURCES": [
+        "https://www.google-analytics.com"
+      ],
+      "META_IMAGE_SOURCES": [
+        "https://www.facebook.com"
+      ],
+      "GA_CONNECT_SOURCES": [
+        "https://www.google-analytics.com",
+        "https://region1.google-analytics.com",
+        "https://analytics.google.com",
+        "https://www.googletagmanager.com"
+      ],
+      "META_CONNECT_SOURCES": [
+        "https://www.facebook.com",
+        "https://connect.facebook.net"
+      ]
+    },
+    "script_urls": [
+      "https://www.googletagmanager.com/gtag/js?id=<public-id>",
+      "https://connect.facebook.net/en_US/fbevents.js"
+    ],
+    "script_authorization": "Nonce-bearing scripts and strict-dynamic trust propagation; external host names are not explicitly in script-src.",
+    "images": "Same-origin, data/blob, configured Supabase origin and conditional tracking pixels. Next Image remotePatterns restricts product storage path /storage/v1/object/public/product-images/**.",
+    "fonts": "Same-origin only.",
+    "api_connections": "Same-origin, configured Supabase HTTPS origin and conditional analytics origins; Resend/Twilio/Redis run server-side and are outside browser CSP.",
+    "baseline_headers": {
+      "Strict-Transport-Security": "max-age=31536000",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "X-Permitted-Cross-Domain-Policies": "none",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
+      "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(self)"
+    },
+    "document_headers": {
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Cache-Control": "private, no-store"
+    },
+    "sensitive_headers": {
+      "Referrer-Policy": "no-referrer",
+      "Pragma": "no-cache",
+      "Expires": "0",
+      "X-Robots-Tag": "noindex, nofollow"
+    },
+    "indexing": "Site-wide X-Robots-Tag noindex,nofollow when isIndexable false; Preview remains noindex.",
+    "exceptions": "Static assets and early rejected requests do not receive every document header. Next static/image routes excluded from proxy.",
+    "development_differences": [
+      "script-src unsafe-eval",
+      "style-src-elem unsafe-inline",
+      "connect-src ws: wss:"
+    ],
+    "compatibility_limits": [
+      "Live GA/Meta regional/automatic endpoints and navigation-time nonces unverified",
+      "Realtime WSS not allowed in production; no current Realtime integration identified",
+      "No broad Vercel toolbar/external font/embed allowlist",
+      "Third-party JS loaded with consent remains trusted even after navigating to private pages",
+      "Dynamic/no-store HTML increases rendering cost/latency; shared catalog data caching retained"
+    ]
+  },
+  "environment_variables": {
+    "variables": [
+      {
+        "name": "SITE_URL",
+        "category": "existing_application",
+        "secret": false,
+        "required_local": true,
+        "required_preview": true,
+        "required_production": true,
+        "purpose": "Exact canonical HTTPS origin, auth email callbacks and notification links.",
+        "failure_behavior_if_missing": "Local fallback exists but explicit local URL is needed for reliable callbacks; missing on Vercel fails site/build validation.",
+        "required_condition": null
+      },
+      {
+        "name": "SUPABASE_URL",
+        "category": "existing_application",
+        "secret": false,
+        "required_local": true,
+        "required_preview": true,
+        "required_production": true,
+        "purpose": "Supabase API/storage origin; used in CSP and image allowlists.",
+        "failure_behavior_if_missing": "Catalog/auth backend unavailable; deployment validation fails.",
+        "required_condition": null
+      },
+      {
+        "name": "SUPABASE_PUBLISHABLE_KEY",
+        "category": "existing_application",
+        "secret": false,
+        "required_local": true,
+        "required_preview": true,
+        "required_production": true,
+        "purpose": "Intentionally public Supabase browser/session key.",
+        "failure_behavior_if_missing": "Backend unavailable; deployment validation fails. Privileged keys are rejected.",
+        "required_condition": null
+      },
+      {
+        "name": "UPSTASH_REDIS_REST_URL",
+        "category": "new_required",
+        "secret": false,
+        "required_local": false,
+        "required_preview": true,
+        "required_production": true,
+        "purpose": "Exact HTTPS Redis REST endpoint for atomic rate limiting.",
+        "failure_behavior_if_missing": "Development may use memory; production/Preview build validation fails and protected runtime requests fail closed.",
+        "required_condition": null
+      },
+      {
+        "name": "UPSTASH_REDIS_REST_TOKEN",
+        "category": "new_required",
+        "secret": true,
+        "required_local": false,
+        "required_preview": true,
+        "required_production": true,
+        "purpose": "Redis EVAL/INCR/EXPIRE/TTL authorization.",
+        "failure_behavior_if_missing": "Development may use memory if incomplete configuration; production protected requests fail closed.",
+        "required_condition": null
+      },
+      {
+        "name": "RATE_LIMIT_HMAC_KEY",
+        "category": "new_required",
+        "secret": true,
+        "required_local": false,
+        "required_preview": true,
+        "required_production": true,
+        "purpose": "At least 32 random characters; HMAC-hashes IP/email/customer limiter identities.",
+        "failure_behavior_if_missing": "Production protected requests fail closed; deployment validation fails. Invalid configured length also fails closed.",
+        "required_condition": null
+      },
+      {
+        "name": "SUPABASE_SECRET_KEY",
+        "category": "new_conditional",
+        "secret": true,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Backend-only notification RPC client; required whenever notification providers are enabled.",
+        "failure_behavior_if_missing": "Without providers it is optional and events remain queued; configured Resend/Twilio without this key fails deployment validation.",
+        "required_condition": "Required in any environment with RESEND_API_KEY or TWILIO_AUTH_TOKEN configured."
+      },
+      {
+        "name": "ENABLE_TEST_CHECKOUT",
+        "category": "new_optional",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Explicit sandbox opt-in in non-production plus private DB setting.",
+        "failure_behavior_if_missing": "Sandbox disabled; production true is rejected.",
+        "required_condition": null
+      },
+      {
+        "name": "NODE_ENV",
+        "category": "framework_managed",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Selects production limiter behavior and development-only CSP allowances.",
+        "failure_behavior_if_missing": "Framework normally supplies it; outside Vercel absence could select memory fallback, so custom production launch must set production correctly.",
+        "required_condition": "Provided by platform/framework, not a manually provisioned secret."
+      },
+      {
+        "name": "VERCEL",
+        "category": "platform_managed",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Identifies trusted Vercel forwarding headers, HTTPS cookies and production limiter behavior.",
+        "failure_behavior_if_missing": "Local/non-Vercel behavior; on Vercel it must be provider-supplied.",
+        "required_condition": "Provided by platform/framework, not a manually provisioned secret."
+      },
+      {
+        "name": "VERCEL_ENV",
+        "category": "platform_managed",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Rate-key namespace, production sandbox prohibition and indexing environment.",
+        "failure_behavior_if_missing": "Falls back to NODE_ENV namespace; Vercel must supply it correctly.",
+        "required_condition": "Provided by platform/framework, not a manually provisioned secret."
+      },
+      {
+        "name": "VERCEL_URL",
+        "category": "platform_managed",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Exact deployment origin allowed for callbacks and mutations.",
+        "failure_behavior_if_missing": "That deployment-origin exception is unavailable; SITE_URL still works.",
+        "required_condition": "Provided by platform/framework, not a manually provisioned secret."
+      },
+      {
+        "name": "VERCEL_BRANCH_URL",
+        "category": "platform_managed",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Exact branch Preview origin allowed for callbacks and mutations.",
+        "failure_behavior_if_missing": "Branch alias is not automatically allowed unless it equals another allowed origin.",
+        "required_condition": "Provided by platform/framework, not a manually provisioned secret."
+      },
+      {
+        "name": "GOOGLE_ANALYTICS_ID",
+        "category": "existing_optional_public",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Validated public GA4 measurement ID; enables conditional CSP destinations.",
+        "failure_behavior_if_missing": "GA is not loaded and its conditional CSP origins are omitted.",
+        "required_condition": null
+      },
+      {
+        "name": "META_PIXEL_ID",
+        "category": "existing_optional_public",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Validated public numeric Pixel ID; enables Meta script and CSP destinations.",
+        "failure_behavior_if_missing": "Meta is not loaded and its conditional CSP origins are omitted.",
+        "required_condition": null
+      },
+      {
+        "name": "GOOGLE_SITE_VERIFICATION",
+        "category": "existing_optional_public",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Search Console metadata verification identifier.",
+        "failure_behavior_if_missing": "Verification meta tag omitted.",
+        "required_condition": null
+      },
+      {
+        "name": "SITE_INDEXABLE",
+        "category": "existing_optional_public",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Explicit public indexing opt-in subject to production environment.",
+        "failure_behavior_if_missing": "Site remains noindex.",
+        "required_condition": null
+      },
+      {
+        "name": "RESEND_API_KEY",
+        "category": "existing_optional_provider",
+        "secret": true,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Transactional email provider authorization; enabling requires backend Supabase secret.",
+        "failure_behavior_if_missing": "Email sending remains unconfigured/queued.",
+        "required_condition": "Required only for the selected email/SMS integration."
+      },
+      {
+        "name": "NOTIFICATION_EMAIL_FROM",
+        "category": "existing_optional_provider",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Verified transactional email sender, required with Resend.",
+        "failure_behavior_if_missing": "Email sending remains unconfigured/queued.",
+        "required_condition": "Required only for the selected email/SMS integration."
+      },
+      {
+        "name": "TWILIO_ACCOUNT_SID",
+        "category": "existing_optional_provider",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "SMS account identifier; required if SMS enabled.",
+        "failure_behavior_if_missing": "SMS sending remains unconfigured/queued.",
+        "required_condition": "Required only for the selected email/SMS integration."
+      },
+      {
+        "name": "TWILIO_AUTH_TOKEN",
+        "category": "existing_optional_provider",
+        "secret": true,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "SMS provider credential; enabling requires backend Supabase secret.",
+        "failure_behavior_if_missing": "SMS sending remains unconfigured/queued.",
+        "required_condition": "Required only for the selected email/SMS integration."
+      },
+      {
+        "name": "TWILIO_FROM",
+        "category": "existing_optional_provider",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "SMS sender; one of this or Messaging Service SID is required for SMS.",
+        "failure_behavior_if_missing": "SMS remains unconfigured unless Messaging Service SID is set.",
+        "required_condition": "Required only for the selected email/SMS integration."
+      },
+      {
+        "name": "TWILIO_MESSAGING_SERVICE_SID",
+        "category": "existing_optional_provider",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Alternative SMS sender service identifier.",
+        "failure_behavior_if_missing": "SMS remains unconfigured unless TWILIO_FROM is set.",
+        "required_condition": "Required only for the selected email/SMS integration."
+      },
+      {
+        "name": "ENABLE_EXPERIMENTAL_COREPACK",
+        "category": "existing_build_setting",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Documented Vercel setting to honor pinned pnpm; not read by application security code.",
+        "failure_behavior_if_missing": "Pinned package-manager selection needs verification in build environment.",
+        "required_condition": null
+      },
+      {
+        "name": "GIT_BINARY",
+        "category": "new_optional_test_setting",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Override Git executable for history audit.",
+        "failure_behavior_if_missing": "Scanner uses git from PATH; scanner fails if unavailable.",
+        "required_condition": null
+      },
+      {
+        "name": "QA_BASE_URL",
+        "category": "existing_optional_test_setting",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Target of production HTTP tests.",
+        "failure_behavior_if_missing": "Tests default to local development URL; set explicitly for the intended local build.",
+        "required_condition": null
+      },
+      {
+        "name": "PLAYWRIGHT_MODULE",
+        "category": "documented_legacy_test_setting",
+        "secret": false,
+        "required_local": false,
+        "required_preview": false,
+        "required_production": false,
+        "purpose": "Existing optional browser-test configuration documented in env example; not used by new security runtime.",
+        "failure_behavior_if_missing": "No effect on application security runtime.",
+        "required_condition": null
+      }
+    ],
+    "required_boolean_semantics": "Booleans identify manually required configuration for normal operation. Conditional provider requirements and automatically supplied platform variables are described in required_condition. Local means development; next start uses production limiter rules.",
+    "new_required_names": [
+      "UPSTASH_REDIS_REST_URL",
+      "UPSTASH_REDIS_REST_TOKEN",
+      "RATE_LIMIT_HMAC_KEY"
+    ],
+    "new_conditional_names": [
+      "SUPABASE_SECRET_KEY"
+    ],
+    "new_optional_names": [
+      "ENABLE_TEST_CHECKOUT"
+    ],
+    "no_secret_values_included": true,
+    "no_next_public_secrets": true
+  },
+  "dependencies": {
+    "added_packages": [],
+    "removed_packages": [],
+    "updated_packages": [],
+    "lockfile_changed": false,
+    "reason": "Only package scripts and CI checks changed in this security diff. Earlier main dependency updates are excluded.",
+    "known_remaining_advisories": [
+      {
+        "package": "braces",
+        "version": "3.0.3",
+        "severity": "HIGH",
+        "id": "GHSA-vfj7-8cjw-p6xm",
+        "description": "Stack-exhaustion denial of service through deeply nested patterns",
+        "path": "eslint-config-next > @next/eslint-plugin-next > fast-glob > micromatch > braces",
+        "development_only": true,
+        "affects_production_runtime": "No demonstrated storefront runtime exposure; development/build processing may be affected.",
+        "recorded_audit_patched_range": ">=3.0.4",
+        "patch_availability": "Earlier registry lookup found no matching version; not rechecked during this review."
+      }
+    ],
+    "recorded_production_advisories": 0,
+    "audit_freshness": "Recorded local evidence; no new registry audit run for this review."
+  },
+  "tests": {
+    "evidence_only": false,
+    "new_tests_run_for_review": false,
+    "commands_run": [
+      "pnpm check",
+      "pnpm build",
+      "node scripts/test-production-http.mjs with QA_BASE_URL set to compiled local build",
+      "node scripts/audit-repository.mjs",
+      "node scripts/audit-client-bundle.mjs",
+      "pnpm audit --prod --json",
+      "pnpm audit --json"
+    ],
+    "suites": [
+      {
+        "command": "test:db",
+        "passed": 63,
+        "failed": 0
+      },
+      {
+        "command": "test:catalog",
+        "passed": 13,
+        "failed": 0
+      },
+      {
+        "command": "test:phase3",
+        "passed": 46,
+        "failed": 0
+      },
+      {
+        "command": "test:production",
+        "passed": 14,
+        "failed": 0
+      },
+      {
+        "command": "test:auth",
+        "passed": 27,
+        "failed": 0
+      },
+      {
+        "command": "test:security",
+        "passed": 55,
+        "failed": 0
+      }
+    ],
+    "automated_passed": 218,
+    "automated_failed": 0,
+    "http_test_count": 29,
+    "http_failed": 0,
+    "security_test_count": 55,
+    "security_failed": 0,
+    "build_status": "PASSED_LOCAL_NEXT_BUILD_INCLUDING_AUTH_LOGOUT_ROUTE",
+    "typescript_status": "PASSED",
+    "lint_status": "PASSED",
+    "generated_types_status": "PASSED",
+    "logo_asset_checks": "PASSED",
+    "vercel_build_with_real_environment": "NOT_RUN",
+    "hosted_migrations": "NOT_APPLIED_BY_THIS_WORK",
+    "secret_scans": {
+      "repository_text_files": 223,
+      "client_chunks": 28,
+      "reachable_history_text_blobs": 438,
+      "findings": 0,
+      "limitation": "Heuristic scans, not proof of absence. Native PowerShell equivalent used for history because Node child-process Git execution was EPERM.",
+      "scope": "Prior evidence, not rerun for logout task."
+    },
+    "browser_observed": [
+      "Compiled homepage and both globe scenes",
+      "Navigation and lazy cart drawer",
+      "Empty catalog state",
+      "Mobile login layout",
+      "Safe failure with backend unavailable",
+      "No observed CSP errors on checked surfaces"
+    ],
+    "untested_hosted_flows": [
+      "Actual production promo backfill dataset",
+      "Hosted Supabase Auth and PostgREST",
+      "Multi-connection checkout/promo races and deadlocks",
+      "Full authenticated checkout success/failure/replay",
+      "Every strict admin form and image upload",
+      "Live Redis across Vercel instances and outage recovery",
+      "Custom/Preview origin and cookie behavior",
+      "Actual Resend/Twilio sending and interrupted claim recovery",
+      "Consented GA/Meta automatic events and navigation-time CSP",
+      "Dynamic rendering load/cost",
+      "Rollback execution"
+    ],
+    "execution_limit": "Automatic approval review rejected special authenticated browser fixture invocation because required execution approval was unavailable; it was not bypassed.",
+    "evidence_paths": [
+      "qa/security-check.log",
+      "qa/security-build.log",
+      "qa/security-results.json",
+      "qa/auth-session-results.json",
+      "qa/production-http-results.json",
+      "qa/security-audit-all.json",
+      "qa/security-audit-production.json",
+      "qa/git-history-secret-audit.json"
+    ],
+    "new_tests_run_for_logout_task": true,
+    "current_task_commands": [
+      "pnpm typecheck",
+      "pnpm lint",
+      "pnpm test:auth",
+      "pnpm test:security",
+      "pnpm test:production",
+      "pnpm check",
+      "pnpm build"
+    ],
+    "current_task_status": "All seven requested commands passed: typecheck, lint, test:auth (27), test:security (55), test:production (14), check (218 automated checks plus type generation/logo checks), build.",
+    "http_results_scope": "29 HTTP checks belong to earlier pre-logout compiled build; not rerun in this task.",
+    "logout_test_matrix": {
+      "A": "Healthy Redis: dedicated proxy/route succeeds; no Redis calls; session cleared.",
+      "B": "Redis timeout fixture: logout succeeds without calling Redis.",
+      "C": "503, malformed Redis result and missing Redis token: logout succeeds without Redis.",
+      "D": "Invalid and missing Origin: proxy 403 and direct handler failure; no signOut.",
+      "E": "cross-site Sec-Fetch-Site: rejected, session retained.",
+      "F": "Login action fails closed on timeout/unavailable/invalid Redis.",
+      "G": "Checkout proxy and real createUnpaidOrder action fail closed before Supabase work.",
+      "H": "Admin proxy and real saveShippingSettings action fail closed before Supabase work.",
+      "bypass": "Forged next-action, PUT or alternate logout path cannot use exemption."
+    }
+  },
+  "manual_smoke_tests": [
+    "1. Create isolated staging Supabase and Redis; confirm no production database, provider recipients or credentials are connected.",
+    "2. Verify existing migration sequence, capture function/ACL/RLS/promo backups and take a recoverable database snapshot.",
+    "3. Run promo preflight SQL; stop on any would_violate_constraint=true and approve unpaid/cancelled promo consumption policy.",
+    "4. Configure exact staging SITE_URL, Supabase URL/public key, Redis URL/token/HMAC and Supabase callback allowlist; keep sandbox disabled for real unpaid-order tests.",
+    "5. Apply existing prerequisite migrations only to a fresh staging project, then the security migration once; run supabase/verify-security.sql and require all checks true.",
+    "6. Build/deploy isolated Preview under separate authorization; verify canonical, deployment and branch-origin requests work and foreign/missing Origin mutations fail.",
+    "7. Register/confirm two test customers; login, refresh account, logout, request/reset password; inspect secure cookie persistence and safe redirects.",
+    "8. Confirm customer cannot access admin pages/actions, other customer orders/addresses, private tables, privileged notification RPCs or payment/price writes.",
+    "9. Add quantity 2 or 3 of an available variant; inspect cart subtotal, promo discount, configured shipping and final total.",
+    "10. Submit unpaid order; verify exact snapshots, pending/unfulfilled state, one order, success-only cart clear and confirmation/history ownership.",
+    "11. Retry same request ID after simulated lost response; verify same order and one promo use. Changed payload with same ID must fail.",
+    "12. Test insufficient stock, expired/exhausted promo, invalid fields and backend failure; preserve cart/customer fields. Test concurrent last-use promo submissions.",
+    "13. Exercise product/variant/category/inventory/promo/shipping/image/fulfillment/return admin forms and stale-version conflicts.",
+    "14. Test Redis shared budgets, NAT/shared-IP behavior, 429 Retry-After and outage/recovery. Login/checkout/admin/cart must remain fail-closed, ordinary GET pages remain available, and dedicated POST logout must succeed without Redis while foreign/cross-site logout fails.",
+    "15. Verify desktop/mobile navigation, both logos, cart drawer, consented GA/Meta and client navigation with no unexpected CSP violations or secret-bearing client chunks.",
+    "16. Configure test email/SMS recipients; verify backend claim and single delivery, pending events without providers and manual reconciliation of interrupted/failed sends.",
+    "17. Rehearse rollback with a post-migration order; preserve orders/usage, restore saved function bodies and ACLs, then previous code; verify auth/admin/checkout.",
+    "18. Record hosted results and assess rendering latency/cost before requesting production approval."
+  ],
+  "deployment_blockers": [
+    "Hosted promo preflight not run; historical counts may exceed max_uses and abort the complete migration.",
+    "Unpaid/cancelled-order promo usage policy and timestamp rewriting require explicit business acceptance.",
+    "Redis/HMAC configuration and fail-closed outage behavior for other protected actions remain unvalidated on hosted infrastructure; the local Redis/logout blocker is resolved.",
+    "Old checkout RPC revocation makes database/app cutover incompatible; maintenance and matching code release not rehearsed.",
+    "No complete tested rollback SQL exists; saved live definitions/ACLs and backup must be prepared.",
+    "Hosted auth/session, complete checkout, strict admin forms and direct API ownership checks remain unproven.",
+    "Live CSP/analytics and exact production/Preview origin compatibility remain unproven.",
+    "Notification backend key/provider behavior and interrupted claim recovery must be verified if notifications are required."
+  ],
+  "migration_order": [
+    {
+      "order": 1,
+      "path": "supabase/migrations/20260923000100_commerce_schema.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 2,
+      "path": "supabase/migrations/20260923000200_row_level_security.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 3,
+      "path": "supabase/migrations/20260924000100_admin_authorization.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 4,
+      "path": "supabase/migrations/20260924000200_product_storage.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 5,
+      "path": "supabase/migrations/20260924000300_customer_address.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 6,
+      "path": "supabase/migrations/20260926000100_vercel_upload_limit.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 7,
+      "path": "supabase/migrations/20260927000100_admin_fulfillment.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 8,
+      "path": "supabase/migrations/20260927000200_test_checkout.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 9,
+      "path": "supabase/migrations/20260927000300_promo_codes.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 10,
+      "path": "supabase/migrations/20260930000200_unpaid_checkout.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 11,
+      "path": "supabase/migrations/20260930000300_shipping_settings_admin.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 12,
+      "path": "supabase/migrations/20260930000400_admin_categories.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 13,
+      "path": "supabase/migrations/20260930000500_wishlist.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 14,
+      "path": "supabase/migrations/20260930000600_order_notifications.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 15,
+      "path": "supabase/migrations/20260930000700_return_requests.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 16,
+      "path": "supabase/migrations/20261001000100_query_performance_indexes.sql",
+      "action": "Existing prerequisite: verify installed on existing hosted project; apply in order only on fresh staging. Do not blindly replay."
+    },
+    {
+      "order": 17,
+      "path": "supabase/migrations/20261007000100_security_hardening.sql",
+      "action": "Apply once after prerequisites; then run supabase/verify-security.sql."
+    }
+  ],
+  "rollback_plan": {
+    "code_rollback": {
+      "target_commit": "52b15fd262755ae7ae51bbb88b7c5853d4b7f0b6",
+      "status": "Available reference, not executed",
+      "steps": [
+        "Freeze customer/admin writes",
+        "Execute rehearsed database compatibility rollback",
+        "Restore previous application deployment",
+        "Verify auth/admin/checkout before reopening"
+      ],
+      "warning": "Vercel-only rollback fails checkout while legacy RPC permission remains revoked."
+    },
+    "database_rollback": {
+      "status": "PLAN_ONLY_NOT_COMPLETE_EXECUTABLE_SCRIPT",
+      "transaction_failure": "Before COMMIT failure rolls back schema/data changes atomically.",
+      "compatibility_steps": [
+        "Drop five newly added triggers under maintenance",
+        "Restore seven replaced function bodies from pre-migration captures",
+        "Restore captured ACLs for all eight affected existing functions, including legacy checkout",
+        "Revoke customer/public/anon execution on new checkout_submit_order",
+        "Keep added private tables/outbox columns and newly accepted orders intact",
+        "Retain/reconcile promo usage if post-migration orders exist"
+      ],
+      "sql_framework": "BEGIN;\nDROP TRIGGER IF EXISTS orders_guard_test ON public.orders;\nDROP TRIGGER IF EXISTS orders_queue_notification ON public.orders;\nDROP TRIGGER IF EXISTS addresses_write_limit ON public.addresses;\nDROP TRIGGER IF EXISTS wishlist_write_limit ON public.wishlist_items;\nDROP TRIGGER IF EXISTS profiles_write_limit ON public.profiles;\n-- REQUIRED: insert captured previous function definitions and restore exact ACLs here; this template alone is incomplete.\nREVOKE ALL ON FUNCTION public.checkout_submit_order(uuid,jsonb,jsonb,text) FROM PUBLIC, anon, authenticated;\nCOMMIT;"
+    },
+    "required_saved_function_definitions": [
+      "public.checkout_create_unpaid_order(jsonb,jsonb,text)",
+      "public.checkout_quote_promo(text,integer)",
+      "public.notification_prepare(uuid,text)",
+      "public.notification_record_delivery(uuid,text,text)",
+      "public.customer_save_address(uuid,jsonb)",
+      "public.admin_save_product(uuid,timestamptz,jsonb,uuid[])",
+      "public.admin_save_promo(uuid,timestamptz,jsonb)",
+      "public.customer_create_return_request(uuid,text,text,text,jsonb)"
+    ],
+    "function_backup_method": "Before migration export pg_get_functiondef(oid), function identity, owner and proacl for each listed public function. Legacy checkout body is unchanged but its ACL must be captured.",
+    "acl_grant_backup": "Capture actual explicit and default-expanded grants, including PUBLIC, anon, authenticated, service_role and any custom roles. Restore function bodies before former customer notification grants; never grant customers access to the new backend-only bodies.",
+    "rls_backup": "Capture relrowsecurity/relforcerowsecurity and policies for private.checkout_settings and affected tables. Compatibility rollback may leave added restrictive RLS; exact reversal must use actual prior state.",
+    "promo_counter_backup": "Export public.promo_codes id,code,used_count,max_uses,updated_at and record cutover time; keep snapshot outside repository. Do not blindly restore if new orders accepted.",
+    "backup_requirements": [
+      "Current recoverable database snapshot/PITR",
+      "Function/ACL/RLS exports",
+      "Promo counters/timestamps",
+      "Known previous application deployment"
+    ],
+    "known_rollback_limitations": [
+      "No tested down migration supplied",
+      "New orders must be preserved; full database restore can lose post-cutover activity",
+      "Exact old counts/timestamps cannot be inferred after migration without backup",
+      "Compatibility rollback leaves additive schema and private records",
+      "Dropping new tables would discard idempotency data",
+      "Old application/functions restore earlier security weaknesses",
+      "Notification sends cannot be undone by SQL",
+      "Migration cannot simply be rerun after partial manual rollback"
+    ],
+    "bootstrap_allowed": false
+  },
+  "preview_recommendation": "SAFE_TO_PREVIEW",
+  "production_recommendation": "NOT_SAFE_TO_PRODUCTION",
+  "remaining_risks": [
+    "Preview recommendation is conditional on isolated staging resources, prerequisites and no production data; it is not deployment authorization.",
+    "Local main is stale; effective base is origin/main and HEAD at 52b15fd262755ae7ae51bbb88b7c5853d4b7f0b6.",
+    "No hosted configuration, database or deployment was changed or verified live for this review.",
+    "Potential promo backfill constraint failure and all-row timestamp changes",
+    "Unpaid pending orders do not reserve stock; payment/reservation lifecycle remains missing",
+    "Redis dependency can deny legitimate shared-IP users for other protected actions; dedicated logout no longer depends on Redis.",
+    "Direct public Supabase Auth API needs provider rate limits; CAPTCHA integration and in-app admin MFA remain absent",
+    "Transactional database counters do not retain rejected attempts",
+    "Privileged notification secret increases backend credential sensitivity; keep it server-only",
+    "Notification claims lack automatic retry/recovery worker",
+    "Private checkout payload retention/cleanup not implemented",
+    "Per-request nonce/no-store HTML has unmeasured Vercel performance/cost impact",
+    "Consented third-party analytics remains trusted; live account settings unverified",
+    "One high development-only dependency advisory remains",
+    "History/client secret scans are heuristic",
+    "Full authenticated browser fixture was blocked by automatic execution approval; no workaround attempted",
+    "Logout still depends on Supabase signOut availability; this change removes Redis dependency only. Hosted dedicated-route smoke test remains required."
+  ],
+  "logout_safety_task": {
+    "scope": "Logout-only Redis independence",
+    "baseline_head": "52b15fd262755ae7ae51bbb88b7c5853d4b7f0b6",
+    "baseline_status": [
+      " M .env.example",
+      " M .github/workflows/ci.yml",
+      " M .gitignore",
+      " M next.config.ts",
+      " M package.json",
+      " M qa/phase3-results.json",
+      " M qa/production-http-results.json",
+      " M qa/repository-secret-audit.json",
+      " M qa/secret-audit.json",
+      " M scripts/audit-client-bundle.mjs",
+      " M scripts/test-auth-session.mjs",
+      " M scripts/test-phase3.mjs",
+      " M scripts/test-production-http.mjs",
+      " M scripts/validate-production-env.mjs",
+      " M src/app/account/actions.ts",
+      " M src/app/account/orders/[orderId]/actions.ts",
+      " M src/app/account/wishlist/actions.ts",
+      " M src/app/admin/actions.ts",
+      " M src/app/admin/categories/actions.ts",
+      " M src/app/admin/inventory/actions.ts",
+      " M src/app/admin/orders/page.tsx",
+      " M src/app/admin/products/new/actions.ts",
+      " M src/app/admin/returns/actions.ts",
+      " M src/app/admin/shipping/actions.ts",
+      " M src/app/auth/actions.ts",
+      " M src/app/auth/callback/route.ts",
+      " M src/app/auth/confirm/route.ts",
+      " M src/app/cart/actions.ts",
+      " M src/app/checkout/actions.ts",
+      " M src/app/checkout/page.tsx",
+      " M src/app/checkout/unpaid-actions.ts",
+      " M src/app/layout.tsx",
+      " M src/app/product/[slug]/page.tsx",
+      " M src/app/shop/[category]/page.tsx",
+      " M src/components/analytics.tsx",
+      " M src/components/checkout.tsx",
+      " M src/components/cookie-consent.tsx",
+      " M src/components/structured-data.tsx",
+      " M src/lib/actions.ts",
+      " M src/lib/admin/repository.ts",
+      " M src/lib/auth/guards.ts",
+      " M src/lib/notifications/order-notifications.ts",
+      " M src/lib/supabase/database.types.ts",
+      " M src/lib/validation.ts",
+      " M src/proxy.ts",
+      "?? SECURITY-DEPLOYMENT-REVIEW.json",
+      "?? SECURITY-HARDENING.md",
+      "?? qa/git-history-secret-audit.json",
+      "?? qa/security-audit-all.json",
+      "?? qa/security-audit-production.json",
+      "?? qa/security-changed-files.txt",
+      "?? qa/security-results.json",
+      "?? scripts/audit-git-history.mjs",
+      "?? scripts/test-security.mjs",
+      "?? src/lib/notifications/client.ts",
+      "?? src/lib/security/",
+      "?? supabase/migrations/20261007000100_security_hardening.sql",
+      "?? supabase/verify-security.sql"
+    ],
+    "application_files": [
+      "src/app/auth/actions.ts",
+      "src/app/account/layout.tsx",
+      "src/app/auth/logout/route.ts",
+      "src/proxy.ts"
+    ],
+    "test_files": [
+      "scripts/test-auth-session.mjs",
+      "scripts/test-security.mjs"
+    ],
+    "result_files": [
+      "qa/auth-session-results.json",
+      "qa/security-results.json"
+    ],
+    "review_file": "SECURITY-DEPLOYMENT-REVIEW.json",
+    "database_changes": false,
+    "migration_changes": false,
+    "hosted_migration_execution": false,
+    "deployment_push_merge": false,
+    "threshold_changes": false,
+    "preview_recommendation_changed": false,
+    "production_recommendation_changed": false,
+    "blocker_status": "RESOLVED_IN_LOCAL_IMPLEMENTATION_AND_TESTS",
+    "logout_redis_behavior": {
+      "redis_available": "Existing Supabase local signOut succeeds and clears session; logout does not query Redis.",
+      "redis_unavailable": "Timeout, unavailable/invalid Redis response or missing Redis configuration does not prevent logout; no Redis-generated 503 or details returned.",
+      "invalid_origin": "Rejected before signOut; proxy returns 403 and direct logout function returns a safe failure.",
+      "cross_site": "Sec-Fetch-Site cross-site rejected before signOut; session remains intact."
+    },
+    "baseline_hashes": {
+      "src/proxy.ts": "9F8F5B6A5A0937D7AA7A18F61056D621B1357D7617829EA67C3A674BBA768CC2",
+      "src/app/auth/actions.ts": "7B4389867BC56186CC8893CFAA5DDB5A1B45DCD75D96AC670D631DBCB2AB3603",
+      "qa/auth-session-results.json": "BD674E4651DEE2C91843906EE5CDD778AD4E293D1BC6A781C0BE4A4790C996CD",
+      "scripts/test-security.mjs": "1C3CF6555DB5AD90F723DBA94ECF397739B31E2A04DED012A9CCF4199765B22A",
+      "SECURITY-DEPLOYMENT-REVIEW.json": "8B29013746E3C390E87AA6A45BF39EC7E21795EAFB797146A48ED8802851F09D",
+      "scripts/test-auth-session.mjs": "219341E10D0EB9152341AAA4081622FA1C0531060E411B75D570C1EBFCBAB92E",
+      "qa/security-results.json": "A451889DF27DFBE7E7A0D113F291C7D0182F4572BC775591ACFEDB9EA3829870",
+      "src/app/account/layout.tsx": "EAFCD83050DB98AE8AA0BFFC06133F8E6EC77B4F1A403CBE3ACEF15D3FD6C327"
+    },
+    "line_changes": [
+      {
+        "path": "scripts/test-auth-session.mjs",
+        "added_lines": 64,
+        "removed_lines": 2
+      },
+      {
+        "path": "scripts/test-security.mjs",
+        "added_lines": 33,
+        "removed_lines": 0
+      },
+      {
+        "path": "src/app/auth/actions.ts",
+        "added_lines": 4,
+        "removed_lines": 2
+      },
+      {
+        "path": "src/proxy.ts",
+        "added_lines": 6,
+        "removed_lines": 2
+      },
+      {
+        "path": "src/app/account/layout.tsx",
+        "added_lines": 1,
+        "removed_lines": 9
+      },
+      {
+        "path": "src/app/auth/logout/route.ts",
+        "added_lines": 13,
+        "removed_lines": 0
+      }
+    ],
+    "tests_passed": true,
+    "database_test_scope": "Requested pnpm check ran existing database tests in disposable PGlite only; no hosted Supabase migration was run and no migration file changed.",
+    "remaining_risks": [
+      "Supabase availability still required for existing signOut flow",
+      "Hosted Vercel POST logout smoke test remains unproven",
+      "Existing production blockers remain; recommendations unchanged"
+    ]
+  }
+}

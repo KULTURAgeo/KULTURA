@@ -41,6 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 /qa/*.png
+/qa/*.log
 !.env.example
 
 /supabase/.temp/
