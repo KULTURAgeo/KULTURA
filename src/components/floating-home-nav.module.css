@@ -44,7 +44,6 @@
   height: calc(100% - 2px);
   object-fit: contain;
   flex-shrink: 0;
-  mix-blend-mode: screen;
 }
 
 .shop {

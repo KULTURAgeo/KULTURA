@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" role="img" aria-label="KULTURA chrome oval logo">
+<defs>
+<linearGradient id="rim" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e8f4ff"/><stop offset=".24" stop-color="#64717f"/><stop offset=".45" stop-color="#ffffff"/><stop offset=".65" stop-color="#98a3af"/><stop offset="1" stop-color="#eff7ff"/></linearGradient>
+<linearGradient id="chrome" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".32" stop-color="#e2e8ef"/><stop offset=".52" stop-color="#7f8d99"/><stop offset=".66" stop-color="#ffffff"/><stop offset="1" stop-color="#c5d0d9"/></linearGradient>
+</defs>
+<ellipse cx="320" cy="110" rx="303" ry="87" fill="none" stroke="url(#rim)" stroke-width="9"/>
+<ellipse cx="320" cy="110" rx="297" ry="81" fill="none" stroke="#ffffff" stroke-width="2" opacity=".45"/>
+<text x="320" y="145" text-anchor="middle" font-family="Arial Black,Arial,Helvetica,sans-serif" font-style="italic" font-weight="900" font-size="105" textLength="535" lengthAdjust="spacingAndGlyphs" fill="url(#chrome)" stroke="#b6cad7" stroke-width="1.2" paint-order="stroke fill">KULTURA</text>
+</svg>
