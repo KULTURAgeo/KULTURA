@@ -69,7 +69,7 @@ export function FloatingHomeNav() {
     <nav ref={navRef} className={styles.nav} aria-label="KULTURA quick navigation">
       <Link ref={brandRef} href="/" className={styles.brand} aria-label="KULTURA home">
         <Image
-          src="/images/kultura-chrome-nav.webp"
+          src="/images/kultura-chrome-oval-nav.webp"
           alt=""
           width={240}
           height={86}
