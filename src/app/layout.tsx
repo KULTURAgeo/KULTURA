@@ -32,8 +32,8 @@ export const metadata: Metadata = {
     ? { google: googleSiteVerification }
     : undefined,
   icons: {
-    icon: [{ url: "/icon.svg?v=kultura-globe-20261009", type: "image/svg+xml" }],
-    shortcut: "/icon.svg?v=kultura-globe-20261009",
+    icon: [{ url: "/icon.svg?v=kultura-globe-bold-20261009", type: "image/svg+xml" }],
+    shortcut: "/icon.svg?v=kultura-globe-bold-20261009",
     apple: "/apple-touch-icon.png",
   },
   twitter: { card: "summary_large_image", images: ["/social-card.png"] },
