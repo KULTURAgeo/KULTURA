@@ -28,14 +28,19 @@
 
 .brand {
   width: 142px;
-  gap: 9px;
-  color: #090909;
-  background: rgba(255,255,252,.94);
-  border: 1px solid rgba(0,0,0,.13);
+  gap: 0;
+  color: #e5e7eb;
+  background: #000;
+  border: 1px solid rgba(255,255,255,.24);
   backdrop-filter: blur(16px);
 }
 
-.brand span { font-size: 19px; }
+.brandLogo {
+  display: block;
+  width: calc(100% - 10px);
+  height: calc(100% - 2px);
+  object-fit: contain;
+}
 
 .shop {
   width: 96px;

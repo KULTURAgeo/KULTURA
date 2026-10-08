@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 import styles from "./floating-home-nav.module.css";
 
@@ -66,9 +67,16 @@ export function FloatingHomeNav() {
 
   return (
     <nav ref={navRef} className={styles.nav} aria-label="KULTURA quick navigation">
-      <Link ref={brandRef} href="/" className={styles.brand}>
-        <span aria-hidden="true">✳</span>
-        KULTURA
+      <Link ref={brandRef} href="/" className={styles.brand} aria-label="KULTURA home">
+        <Image
+          src="/images/kultura-chrome-nav.webp"
+          alt=""
+          width={240}
+          height={86}
+          className={styles.brandLogo}
+          priority
+          unoptimized
+        />
       </Link>
       <Link ref={shopRef} href="/shop" className={styles.shop}>SHOP</Link>
       <span ref={tagRef} className={styles.tag}>STREETWEAR / GEORGIA</span>
