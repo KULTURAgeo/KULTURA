@@ -31,7 +31,11 @@ export const metadata: Metadata = {
   verification: googleSiteVerification
     ? { google: googleSiteVerification }
     : undefined,
-  icons: { icon: "/icon.svg", apple: "/apple-touch-icon.png" },
+  icons: {
+    icon: [{ url: "/icon.svg?v=kultura-globe-20261009", type: "image/svg+xml" }],
+    shortcut: "/icon.svg?v=kultura-globe-20261009",
+    apple: "/apple-touch-icon.png",
+  },
   twitter: { card: "summary_large_image", images: ["/social-card.png"] },
   openGraph: {
     title: "KULTURA — Step Into Kultura",
