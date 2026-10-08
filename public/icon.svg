@@ -8,16 +8,16 @@
       <stop offset="1" stop-color="#FFFFFF"/>
     </linearGradient>
   </defs>
-  <g stroke="url(#silver)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+  <g stroke="url(#silver)" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round">
     <ellipse cx="32" cy="32" rx="29.5" ry="18"/>
     <path d="M32 14v36"/>
     <path d="M3 32h58"/>
     <path d="M30.7 14.3C20.3 17.8 15 24.3 15 32s5.3 14.2 15.7 17.7"/>
     <path d="M33.3 14.3C43.7 17.8 49 24.3 49 32s-5.3 14.2-15.7 17.7"/>
-    <path d="M12 21.8C21 25.5 43 25.5 52 21.8" stroke-width="2.7"/>
-    <path d="M12 42.2C21 38.5 43 38.5 52 42.2" stroke-width="2.7"/>
+    <path d="M12 21.8C21 25.5 43 25.5 52 21.8" stroke-width="2.3"/>
+    <path d="M12 42.2C21 38.5 43 38.5 52 42.2" stroke-width="2.3"/>
   </g>
-  <g stroke="#FFFFFF" stroke-width="1.1" stroke-linecap="round" opacity=".75">
+  <g stroke="#FFFFFF" stroke-width="0.9" stroke-linecap="round" opacity=".75">
     <path d="M4.5 27c3-10 14-12.6 26-12.6"/>
     <path d="M33.5 49.4C47 48.7 57 43 60.6 34"/>
     <path d="M32 15v34"/>
