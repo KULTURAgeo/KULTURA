@@ -109,7 +109,11 @@ export async function proxy(request: NextRequest) {
               }),
           },
         });
-        await client.auth.getClaims();
+        // The proxy refreshes cookies, but NEVER grants access based on
+        // getSession(). Page and action guards still verify getUser() and
+        // fetch the current role from the database on every protected request.
+        // Avoid duplicate Auth verification during routine navigation.
+        await client.auth.getSession();
       }
     } catch {
       // Page/action authorization still verifies identity and fails closed.

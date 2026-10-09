@@ -78,6 +78,19 @@ await check("Browser password sign-in is persisted for a new server request",asy
  assert.equal((await requirePage()).user.id,user.id);
 });
 await browser.auth.stopAutoRefresh();
+await check("Proxy avoids a second Auth user lookup with fresh cookies",async()=>{
+ cookieValues.clear();
+ const fresh=session();
+ cookieValues.set("sb-auth-fixture-auth-token","base64-"+Buffer.from(JSON.stringify(fresh)).toString("base64url"));
+ const request=new NextRequest("https://store.example.invalid/admin",{headers:{cookie:[...cookieValues].map(([k,v])=>k+"="+v).join("; ")}});
+ const callsBefore=requests.filter(r=>r.path==="/auth/v1/user").length;
+ const response=await proxy(request);
+ const callsAfter=requests.filter(r=>r.path==="/auth/v1/user").length;
+ assert.equal(callsAfter,callsBefore);
+ assert.match(response.headers.get("cache-control"),/no-store/);
+ assert.equal((await requirePage()).user.id,user.id);
+ await assert.rejects(()=>requirePage(true),e=>e.redirectTo==="/account?restricted=1");
+});
 await check("Proxy refresh forwards rotated cookies to browser and downstream server",async()=>{
  cookieValues.clear();
  const expired=session(-60);
