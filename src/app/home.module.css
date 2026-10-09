@@ -677,3 +677,22 @@
   .floatCard,
   .orbitHeading { transition: none; }
 }
+
+/* The motion-led homepage normally uses warm paper tones. When visitors select
+   dark mode, keep the artwork as-is but flip every text-based section. */
+:global(html[data-theme="dark"]) .home,
+:global(html[data-theme="dark"]) .home .hero,
+:global(html[data-theme="dark"]) .home .demoTrack,
+:global(html[data-theme="dark"]) .home .demoSticky,
+:global(html[data-theme="dark"]) .home .bothSection,
+:global(html[data-theme="dark"]) .home .gallerySection {
+  background: #0b0b0b;
+  color: #f3f1eb;
+}
+:global(html[data-theme="dark"]) .home .socials a {
+  color: #f3f1eb;
+  border-bottom-color: rgba(255,255,255,.45);
+}
+:global(html[data-theme="dark"]) .home .bothSection h2 em {
+  -webkit-text-stroke-color: #f1f1ed;
+}
