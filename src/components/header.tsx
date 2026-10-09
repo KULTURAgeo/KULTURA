@@ -11,10 +11,19 @@ type Wave = {
   left: number;
   top: number;
   width: number;
+  travel: number;
   delays: number[];
 };
 
 const THEME_KEY = "kultura-theme";
+// Small, uneven sound peaks form a compact pulse instead of a continuous line.
+// Only one SVG element is animated (GPU transform); these bars never animate individually.
+const soundPeaks = [
+  3, 5, 4, 7, 5, 11, 8, 15, 9, 18, 12, 25,
+  17, 29, 14, 24, 34, 18, 29, 38, 23, 32,
+  16, 27, 12, 21, 15, 26, 11, 17, 8, 13,
+  5, 9, 4, 6, 3,
+];
 const links = [
   { href: "/shop", label: "SHOP" },
   { href: "/drops", label: "DROPS" },
@@ -88,18 +97,21 @@ export function Header() {
       const toX = last.left + last.width / 2 - host.left;
       const origin = next === "dark" ? fromX : toX;
       const destination = next === "dark" ? toX : fromX;
+      const soundWidth = 180;
       const delays = Array.from(navRef.current.querySelectorAll(".theme-nav-letter"), (letter) => {
         const bounds = letter.getBoundingClientRect();
         const position = bounds.left + bounds.width / 2 - host.left;
         const progress = Math.max(0, Math.min(1, (position - origin) / (destination - origin)));
-        return Math.round(60 + 900 * progress);
+        return Math.round(80 + 940 * progress);
       });
       setWave({
         key: Date.now(),
         direction: next === "dark" ? "to-dark" : "to-light",
-        left: Math.min(fromX, toX),
-        top: nav.bottom - host.top + 8,
-        width: Math.max(40, Math.abs(toX - fromX)),
+        // Render just a travelling packet: nothing connects the two controls.
+        left: origin - soundWidth / 2,
+        top: nav.bottom - host.top + 6,
+        width: soundWidth,
+        travel: destination - origin,
         delays,
       });
       waveTimer.current = setTimeout(() => setWave(null), 1250);
@@ -172,14 +184,18 @@ export function Header() {
               left: wave.left,
               top: wave.top,
               width: wave.width,
-            }}
-            viewBox="0 0 1000 80" preserveAspectRatio="none">
-            <path className="theme-wave-glow"
-              d="M0 42 C65 42 65 11 120 39 S207 70 258 40 S347 10 400 39 S490 68 544 39 S640 10 697 41 S794 68 849 39 S952 30 1000 41"
-              pathLength="1000" />
-            <path className="theme-wave-stroke"
-              d="M0 42 C65 42 65 11 120 39 S207 70 258 40 S347 10 400 39 S490 68 544 39 S640 10 697 41 S794 68 849 39 S952 30 1000 41"
-              pathLength="1000" />
+              "--soundwave-travel": `${wave.travel}px`,
+            } as CSSProperties}
+            viewBox="0 0 180 80" preserveAspectRatio="xMidYMid meet">
+            {soundPeaks.map((peak, index) => (
+              <rect key={index}
+                x={index * 4.8 + 1.2}
+                y={40 - peak / 2}
+                width="2.8"
+                height={peak}
+                rx="1.4"
+              />
+            ))}
           </svg>
         ) : null}
       </header>

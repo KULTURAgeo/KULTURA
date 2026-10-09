@@ -71,43 +71,39 @@ html.theme-animating .checkout-summary-inner {
   outline: 2px solid var(--foreground);
   outline-offset: 3px;
 }
+/* Invisible at rest. Only a short sound-wave pulse crosses the menu
+   during an actual theme change; no permanent line or connecting rail. */
+.theme-header { border-bottom: none; }
 .theme-wave-track {
   position: absolute;
   height: 80px;
   pointer-events: none;
-  transform: translateY(-50%);
-  overflow: visible;
   z-index: 3;
   opacity: 0;
-  animation: kultura-wave-fade 1.15s linear both;
+  overflow: visible;
+  will-change: transform, opacity;
+  color: #bfc6d0;
+  filter: drop-shadow(0 0 5px rgba(188, 204, 222, .40));
+  animation:
+    kultura-soundwave-travel 1.12s linear both,
+    kultura-soundwave-appear 1.12s ease-in-out both;
 }
-.theme-wave-track path {
-  fill: none;
-  vector-effect: non-scaling-stroke;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  animation: kultura-wave-draw 1.05s cubic-bezier(.22,.53,.38,1) both;
+.theme-wave-track rect { fill: currentColor; }
+html[data-theme="light"] .theme-wave-track {
+  color: #484e57;
+  filter: drop-shadow(0 0 4px rgba(60, 72, 92, .24));
 }
-.theme-wave-stroke { stroke: #b7bdc5; stroke-width: 2.1; }
-.theme-wave-glow { stroke: #cad4de; stroke-width: 8; opacity: .26; filter: blur(5px); }
-[data-theme="light"] .theme-wave-stroke { stroke: #52565c; }
-[data-theme="light"] .theme-wave-glow { stroke: #777d86; }
-.theme-header[data-wave-direction="to-light"] .theme-wave-track path {
-  transform-box: fill-box;
-  transform-origin: center;
-  transform: scaleX(-1);
+@keyframes kultura-soundwave-travel {
+  from { transform: translate3d(0, -50%, 0); }
+  to { transform: translate3d(var(--soundwave-travel), -50%, 0); }
+}
+@keyframes kultura-soundwave-appear {
+  0%, 100% { opacity: 0; }
+  12%, 79% { opacity: 1; }
+  90% { opacity: .45; }
 }
 .theme-header[data-wave-direction] .theme-nav-letter {
   animation: kultura-letter-ripple .42s ease-out var(--wave-delay) both;
-}
-@keyframes kultura-wave-draw { to { stroke-dashoffset: 0; } }
-@keyframes kultura-wave-fade {
-  0% { opacity: 0; }
-  11% { opacity: 1; }
-  65% { opacity: 1; }
-  100% { opacity: 0; }
 }
 @keyframes kultura-letter-ripple {
   0%,100% { transform: translateY(0) rotate(0); }
