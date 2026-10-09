@@ -134,8 +134,6 @@ export function HomeMotion({
         const phoneHeight = Math.max(phone.offsetHeight, 1);
         const globeWidth = Math.max(phoneLogo?.offsetWidth ?? 64, 1);
         const globeHeight = Math.max(phoneLogo?.offsetHeight ?? 26, 1);
-        const globeX = (phoneLogo?.offsetLeft ?? (phoneWidth - globeWidth) / 2)
-          + globeWidth / 2 - phoneWidth / 2;
         const globeY = (phoneLogo?.offsetTop ?? phoneHeight * 0.91)
           + globeHeight / 2 - phoneHeight / 2;
 
