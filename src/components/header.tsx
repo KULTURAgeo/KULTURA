@@ -101,7 +101,7 @@ export function Header() {
       root.style.setProperty(`--theme-${word}-delay`, `${delayAt(rect.left + rect.width / 2)}ms`);
     }
 
-    const nextRipple = reduced ? null : { direction, delays };
+    const nextRipple: TextRipple | null = reduced ? null : { direction, delays };
     const applyTheme = () => {
       root.dataset.theme = next;
       flushSync(() => {
