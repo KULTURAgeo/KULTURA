@@ -152,6 +152,8 @@
   border-radius: var(--demo-radius, 30px);
   overflow: hidden;
   background: #365843;
+  /* Zoom the backdrop alone while the globe grows. Phone remains unscaled. */
+  transform-origin: center center;
   will-change: inset, border-radius, transform;
 }
 

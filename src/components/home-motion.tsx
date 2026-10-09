@@ -198,6 +198,18 @@ export function HomeMotion({
           // to the reference, before that SAME button becomes the new page.
           const portalEntry = smooth(range(p, 0.852, 0.881));
           const buttonGrow = smooth(range(p, 0.868, 0.936));
+          // The real phone stays at its settled scale. As ONLY the globe
+          // expands, the photograph and grid behind it drift closer, giving
+          // the sensation of entering the button without re-zooming the phone.
+          // Tie both to one scroll progress value for exact sync and rewind.
+          const backdropScale = mix(
+            1,
+            viewportWidth < 720 ? 1.22 : 1.30,
+            buttonGrow,
+          );
+          const backdropLift = mix(0, -16, buttonGrow);
+          demoBackdrop.style.transform =
+            `translate3d(0, ${backdropLift}px, 0) scale(${backdropScale})`;
           const portalGrow = smooth(range(p, 0.938, 0.992));
           const sceneIn = smooth(range(p, 0.970, 0.998));
           const panelWidth = Math.min(
