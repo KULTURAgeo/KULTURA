@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const adminLinks = [
   { href: "/admin", label: "OVERVIEW" },
@@ -15,32 +14,31 @@ const adminLinks = [
   { href: "/admin/shipping", label: "SHIPPING" },
 ] as const;
 
+const warmDestinations = new Set(["/admin/products", "/admin/orders"]);
+
 export function AdminNavigation() {
-  const router = useRouter();
+  const [warm, setWarm] = useState(false);
+  const [requested, setRequested] = useState<string[]>([]);
 
   useEffect(() => {
-    // Prefetch a few common destinations only after the page is idle;
-    // keep bandwidth-limited users and hidden tabs out of this work.
+    // Allow the current page to settle before fetching dynamic admin data.
+    // Never eagerly run expensive queries for users in data-saver mode.
     const connection = (navigator as Navigator & {
       connection?: { saveData?: boolean };
     }).connection;
     if (connection?.saveData) return;
 
-    const timeouts: number[] = [];
-    const initial = window.setTimeout(() => {
-      if (document.visibilityState !== "visible") return;
-      ["/admin/products", "/admin/orders", "/admin/inventory"].forEach((href, index) => {
-        timeouts.push(window.setTimeout(() => {
-          if (document.visibilityState === "visible") router.prefetch(href);
-        }, index * 1200));
-      });
-    }, 1800);
+    const timer = window.setTimeout(() => {
+      if (document.visibilityState === "visible") setWarm(true);
+    }, 2400);
+    return () => window.clearTimeout(timer);
+  }, []);
 
-    return () => {
-      window.clearTimeout(initial);
-      timeouts.forEach((timeout) => window.clearTimeout(timeout));
-    };
-  }, [router]);
+  const requestPrefetch = (href: string) => {
+    setRequested((current) =>
+      current.includes(href) ? current : [...current, href],
+    );
+  };
 
   return (
     <nav className="account-nav" aria-label="Administration">
@@ -48,9 +46,12 @@ export function AdminNavigation() {
         <Link
           key={href}
           href={href}
-          prefetch={false}
-          onMouseEnter={() => router.prefetch(href)}
-          onFocus={() => router.prefetch(href)}
+          // Explicit true, unlike router.prefetch(), includes dynamic page
+          // content and not only the shared loading boundary.
+          prefetch={(warm && warmDestinations.has(href)) || requested.includes(href)}
+          onMouseEnter={() => requestPrefetch(href)}
+          onFocus={() => requestPrefetch(href)}
+          onTouchStart={() => requestPrefetch(href)}
         >
           {label}
         </Link>
