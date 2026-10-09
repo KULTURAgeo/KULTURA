@@ -292,7 +292,7 @@ export default async function Home() {
         <p className={styles.bothEyebrow}>KULTURA / CATEGORIES</p>
         <h2>FASHION OR KULTURA?<br /><em>BOTH.</em></h2>
         <p className={styles.bothLead}>Choose the piece. Keep the attitude.</p>
-        <Link href="/shop" className={styles.cta}>SHOP KULTURA ↗</Link>
+        <Link href="/shop" className={styles.cta}>CATEGORIES</Link>
       </section>
 
       <section className={styles.gallerySection}>
