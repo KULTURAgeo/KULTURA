@@ -114,7 +114,6 @@ export function Header() {
     window.dispatchEvent(new Event("kultura-theme-change"));
   };
 
-  let offset = 0;
   return (
     <>
       <div className="announcement">INDEPENDENT SPIRIT. EVERYDAY UNIFORM.</div>
@@ -132,9 +131,8 @@ export function Header() {
           </button>
         </div>
         <nav ref={navRef} className="desktop-nav theme-nav" aria-label="Main navigation">
-          {links.map(({ href, label }) => {
-            const start = offset;
-            offset += label.length;
+          {links.map(({ href, label }, linkIndex) => {
+            const start = links.slice(0, linkIndex).reduce((count, link) => count + link.label.length, 0);
             return (
               <Link key={href} href={href} aria-label={label}>
                 {Array.from(label).map((char, index) => {
