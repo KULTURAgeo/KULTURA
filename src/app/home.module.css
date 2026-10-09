@@ -648,6 +648,7 @@
   .demoBackdrop { inset: var(--demo-inset-mobile, 12px); }
   .demoGrid { background-size: 38px 38px; }
   .phone { width: 178px; }
+  .phoneViewport { backface-visibility: hidden; }
   .phoneFrame { border-width: 6px; border-radius: 31px; }
   .demoCaption { left: 14px; right: 14px; font-size: 6px; }
 

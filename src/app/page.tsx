@@ -104,7 +104,7 @@ export default async function Home() {
               </div>
               <div className={styles.phoneLabel}>FEATURED / DROP 001</div>
 
-              <div className={styles.phoneViewport}>
+              <div className={styles.phoneViewport} data-phone-viewport>
                 {phoneSlides.map((product, index) => (
                   <div
                     className={styles.phoneSlide}
