@@ -92,13 +92,20 @@ export function Header() {
       return delayAt(rect.left + rect.width / 2);
     });
 
-    // Native View Transitions animate each word separately as the wipe reaches
-    // its on-screen position; the letter-level ripple is a fallback for older browsers.
+    // The old label stays opaque underneath the incoming label throughout
+    // the wipe. Clip only the NEW label along the same moving boundary as
+    // the rest of the page, so the word cannot fade to near-invisible.
     for (const link of Array.from(nav?.querySelectorAll<HTMLAnchorElement>("a") ?? [])) {
       const word = link.getAttribute("data-theme-word");
       if (!word) continue;
       const rect = link.getBoundingClientRect();
-      root.style.setProperty(`--theme-${word}-delay`, `${delayAt(rect.left + rect.width / 2)}ms`);
+      const viewportWidth = Math.max(1, window.innerWidth);
+      const entryX = next === "dark" ? rect.left : viewportWidth - rect.right;
+      const duration = Math.max(16, Math.round((rect.width / viewportWidth) * WIPE_MS));
+      const start = Math.max(0, Math.round((entryX / viewportWidth) * WIPE_MS));
+      root.style.setProperty(`--theme-${word}-delay`, `${start}ms`);
+      root.style.setProperty(`--theme-${word}-duration`, `${duration}ms`);
+      root.style.setProperty(`--theme-${word}-ripple-delay`, `${Math.max(0, start - 125)}ms`);
     }
 
     const nextRipple: TextRipple | null = reduced ? null : { direction, delays };

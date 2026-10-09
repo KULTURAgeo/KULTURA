@@ -98,46 +98,63 @@ html.theme-animating .checkout-summary-inner {
   from { clip-path: inset(0 0 0 100%); }
   to { clip-path: inset(0 0 0 0); }
 }
-/* Never animate a View Transition *group*'s transform. The browser owns
-   that transform to keep named snapshots at their original page position.
-   Animating it moved SHOP / DROPS / ABOUT to viewport (0, 0). Instead ripple
-   the image-pair *inside* each group, retaining centred navigation geometry. */
+/* Keep each named word at its original centred geometry. Never animate
+   the view-transition-group position: the browser manages its layout.
+   The old label stays visible. The incoming label is clipped and revealed
+   at exactly the time the directional full-page wipe crosses the word. */
 :root[data-theme-direction]::view-transition-image-pair(kultura-nav-shop) {
-  animation: kultura-menu-ripple .38s ease-out var(--theme-shop-delay, 360ms) both;
+  animation: kultura-menu-ripple .38s ease-out var(--theme-shop-ripple-delay, 360ms) both;
 }
 :root[data-theme-direction]::view-transition-image-pair(kultura-nav-drops) {
-  animation: kultura-menu-ripple .38s ease-out var(--theme-drops-delay, 440ms) both;
+  animation: kultura-menu-ripple .38s ease-out var(--theme-drops-ripple-delay, 440ms) both;
 }
 :root[data-theme-direction]::view-transition-image-pair(kultura-nav-about) {
-  animation: kultura-menu-ripple .38s ease-out var(--theme-about-delay, 530ms) both;
+  animation: kultura-menu-ripple .38s ease-out var(--theme-about-ripple-delay, 530ms) both;
 }
-/* Swap the text snapshot at the instant the theme wipe reaches each word,
-   so white text is never displayed against the old light background. */
-:root[data-theme-direction]::view-transition-old(kultura-nav-shop) {
-  animation: kultura-word-old .01ms steps(1,end) calc(var(--theme-shop-delay, 360ms) + 125ms) both;
-}
-:root[data-theme-direction]::view-transition-old(kultura-nav-drops) {
-  animation: kultura-word-old .01ms steps(1,end) calc(var(--theme-drops-delay, 440ms) + 125ms) both;
-}
+:root[data-theme-direction]::view-transition-old(kultura-nav-shop),
+:root[data-theme-direction]::view-transition-old(kultura-nav-drops),
 :root[data-theme-direction]::view-transition-old(kultura-nav-about) {
-  animation: kultura-word-old .01ms steps(1,end) calc(var(--theme-about-delay, 530ms) + 125ms) both;
+  animation: none;
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+:root[data-theme-direction]::view-transition-new(kultura-nav-shop),
+:root[data-theme-direction]::view-transition-new(kultura-nav-drops),
+:root[data-theme-direction]::view-transition-new(kultura-nav-about) {
+  opacity: 1;
+  mix-blend-mode: normal;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
 }
 :root[data-theme-direction]::view-transition-new(kultura-nav-shop) {
-  animation: kultura-word-new .01ms steps(1,end) calc(var(--theme-shop-delay, 360ms) + 125ms) both;
+  animation-duration: var(--theme-shop-duration, 45ms);
+  animation-delay: var(--theme-shop-delay, 360ms);
 }
 :root[data-theme-direction]::view-transition-new(kultura-nav-drops) {
-  animation: kultura-word-new .01ms steps(1,end) calc(var(--theme-drops-delay, 440ms) + 125ms) both;
+  animation-duration: var(--theme-drops-duration, 52ms);
+  animation-delay: var(--theme-drops-delay, 440ms);
 }
 :root[data-theme-direction]::view-transition-new(kultura-nav-about) {
-  animation: kultura-word-new .01ms steps(1,end) calc(var(--theme-about-delay, 530ms) + 125ms) both;
+  animation-duration: var(--theme-about-duration, 50ms);
+  animation-delay: var(--theme-about-delay, 530ms);
 }
-@keyframes kultura-word-old {
-  from { opacity: 1; }
-  to { opacity: 0; }
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-nav-shop),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-nav-drops),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-nav-about) {
+  animation-name: kultura-word-reveal-left;
 }
-@keyframes kultura-word-new {
-  from { opacity: 0; }
-  to { opacity: 1; }
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-nav-shop),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-nav-drops),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-nav-about) {
+  animation-name: kultura-word-reveal-right;
+}
+@keyframes kultura-word-reveal-left {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes kultura-word-reveal-right {
+  from { clip-path: inset(0 0 0 100%); }
+  to { clip-path: inset(0 0 0 0); }
 }
 @keyframes kultura-menu-ripple {
   0%, 100% { transform: translateY(0) skewX(0); }
