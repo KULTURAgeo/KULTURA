@@ -11,6 +11,7 @@ type Wave = {
   left: number;
   top: number;
   width: number;
+  delays: number[];
 };
 
 const THEME_KEY = "kultura-theme";
@@ -19,7 +20,6 @@ const links = [
   { href: "/drops", label: "DROPS" },
   { href: "/about", label: "ABOUT" },
 ] as const;
-const characterCount = links.reduce((count, link) => count + link.label.length, 0);
 
 function SunIcon() {
   return (
@@ -86,12 +86,21 @@ export function Header() {
       const nav = navRef.current.getBoundingClientRect();
       const fromX = first.left + first.width / 2 - host.left;
       const toX = last.left + last.width / 2 - host.left;
+      const origin = next === "dark" ? fromX : toX;
+      const destination = next === "dark" ? toX : fromX;
+      const delays = Array.from(navRef.current.querySelectorAll(".theme-nav-letter"), (letter) => {
+        const bounds = letter.getBoundingClientRect();
+        const position = bounds.left + bounds.width / 2 - host.left;
+        const progress = Math.max(0, Math.min(1, (position - origin) / (destination - origin)));
+        return Math.round(60 + 900 * progress);
+      });
       setWave({
         key: Date.now(),
         direction: next === "dark" ? "to-dark" : "to-light",
         left: Math.min(fromX, toX),
         top: nav.bottom - host.top + 8,
         width: Math.max(40, Math.abs(toX - fromX)),
+        delays,
       });
       waveTimer.current = setTimeout(() => setWave(null), 1250);
     } else {
@@ -137,9 +146,7 @@ export function Header() {
               <Link key={href} href={href} aria-label={label}>
                 {Array.from(label).map((char, index) => {
                   const order = start + index;
-                  const delay = wave?.direction === "to-light"
-                    ? 130 + (characterCount - order - 1) * 52
-                    : 130 + order * 52;
+                  const delay = wave?.delays[order] ?? 0;
                   return (
                     <span key={index} aria-hidden="true" className="theme-nav-letter"
                       style={{ "--wave-delay": `${delay}ms` } as CSSProperties}>
