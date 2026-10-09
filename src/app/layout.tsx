@@ -11,6 +11,7 @@ import { Footer } from "@/components/footer";
 import "./globals.css";
 import "./phase3.css";
 import "./commerce-polish.css";
+import "./theme.css";
 
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 const googleAnalyticsId = /^G-[A-Z0-9]+$/.test(
@@ -87,7 +88,10 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: "try { var theme = localStorage.getItem(\"kultura-theme\"); document.documentElement.dataset.theme = theme === \"light\" ? \"light\" : \"dark\"; } catch { document.documentElement.dataset.theme = \"dark\"; }" }} />
+      </head>
       <body>
         <StructuredData data={structuredData} />
         <CookieConsent
