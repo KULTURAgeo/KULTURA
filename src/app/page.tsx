@@ -58,7 +58,6 @@ export default async function Home() {
     <HomeMotion className={styles.home}>
       <section className={styles.hero} data-hero>
         <div className={styles.heroInner} data-hero-copy>
-          <p className={styles.eyebrow}>INDEPENDENT STREETWEAR / GEORGIA</p>
           <h1>STEP INTO KULTURA</h1>
           <p className={styles.heroLead}>
             Clothing with presence. Strong silhouettes, restrained detail and movement at the center.
