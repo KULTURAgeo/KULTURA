@@ -189,6 +189,32 @@ export default async function Home() {
             }}
           >
             <div
+              data-phone-portal-accent
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                width: "min(420px, 58vw)",
+                height: 62,
+                transform: "translate(-50%, -50%)",
+                borderRadius: 16,
+                background: "#c9ff4b",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 0 25px rgba(201,255,75,.20)",
+                pointerEvents: "none",
+                opacity: 0,
+                zIndex: 1,
+              }}
+            >
+              <span style={{ position: "relative", width: 82, height: 40, borderRadius: 999, background: "#0b0b0b", overflow: "hidden" }}>
+                <Image src="/images/kultura-globe-phone.webp" alt="" fill unoptimized loading="eager" sizes="82px" style={{ objectFit: "contain", padding: "4px 6px" }} />
+              </span>
+            </div>
+
+            <div
               data-scene-logo
               style={{
                 position: "absolute",
