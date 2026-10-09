@@ -194,3 +194,17 @@
     margin-top: 0;
   }
 }
+
+:global(html[data-theme="light"]) .shell {
+  background: #fffefa;
+  border-color: #d4d1ca;
+}
+:global(html[data-theme="light"]) .step:not(:last-child)::after { background: #c9c7c0; }
+:global(html[data-theme="light"]) .dot { background: #fffefa; color: #666; }
+:global(html[data-theme="light"]) .current .dot { color: #1b1b1b; border-color: #1b1b1b; }
+:global(html[data-theme="light"]) .eyebrow,
+:global(html[data-theme="light"]) .notice,
+:global(html[data-theme="light"]) .copy small,
+:global(html[data-theme="light"]) .complete .copy small { color: #65625f; }
+:global(html[data-theme="light"]) .problemNotice,
+:global(html[data-theme="light"]) .exception { color: #9c3c36; }

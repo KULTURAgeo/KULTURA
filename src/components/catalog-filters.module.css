@@ -179,3 +179,14 @@
     gap: 4px;
   }
 }
+
+:global(html[data-theme="light"]) .filterPanel { background: #fffefa; }
+:global(html[data-theme="light"]) .filterCount,
+:global(html[data-theme="light"]) .stockToggle,
+:global(html[data-theme="light"]) .clearButton {
+  color: #222;
+  border-color: #bdbab2;
+}
+:global(html[data-theme="light"]) .clearButton:hover:not(:disabled) {
+  background: #e8e6df;
+}

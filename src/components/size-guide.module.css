@@ -87,3 +87,10 @@
   color: #999;
   font-size: 12px;
 }
+
+:global(html[data-theme="light"]) .trigger { color: #222; }
+:global(html[data-theme="light"]) .modal { background: #fffefa; border-color: #c5c1ba; }
+:global(html[data-theme="light"]) .close { color: #191919; border-color: #aaa; }
+:global(html[data-theme="light"]) .table th,
+:global(html[data-theme="light"]) .table td { border-color: #d5d2cb; }
+:global(html[data-theme="light"]) .note { color: #666; }

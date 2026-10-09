@@ -186,3 +186,26 @@
   .trendBarTrack { height: 110px; }
   .trendDay span { display: none; }
 }
+
+:global(html[data-theme="light"]) .metric,
+:global(html[data-theme="light"]) .panel,
+:global(html[data-theme="light"]) .inventory div {
+  background: #fffefa;
+  border-color: #d5d1c9;
+  color: #171717;
+}
+:global(html[data-theme="light"]) .inventory {
+  background: #d5d1c9;
+  border-color: #d5d1c9;
+}
+:global(html[data-theme="light"]) .trendBarTrack {
+  background: #e8e6df;
+  border-color: #d3d0c9;
+}
+:global(html[data-theme="light"]) .trendBar { background: #292929; }
+:global(html[data-theme="light"]) .seller { border-color: #d1cec7; }
+:global(html[data-theme="light"]) .metric small,
+:global(html[data-theme="light"]) .rank,
+:global(html[data-theme="light"]) .trendDay span,
+:global(html[data-theme="light"]) .trendDay small,
+:global(html[data-theme="light"]) .trendTotals small { color: #66635e; }

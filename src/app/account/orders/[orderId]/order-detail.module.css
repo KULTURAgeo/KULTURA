@@ -477,3 +477,11 @@
     font-size: 11px;
   }
 }
+
+:global(html[data-theme="light"]) .itemCopy :global(.muted),
+:global(html[data-theme="light"]) .itemCopy :global(.eyebrow) { color: #5d5d59; }
+:global(html[data-theme="light"]) .detailsField textarea {
+  background: #fff;
+  color: #181818;
+  border-color: #aaa69e;
+}
