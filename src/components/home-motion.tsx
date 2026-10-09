@@ -198,19 +198,21 @@ export function HomeMotion({
           // to the reference, before that SAME button becomes the new page.
           const portalEntry = smooth(range(p, 0.852, 0.881));
           const buttonGrow = smooth(range(p, 0.868, 0.936));
-          // The real phone stays at its settled scale. As ONLY the globe
-          // expands, the photograph and grid behind it drift closer, giving
-          // the sensation of entering the button without re-zooming the phone.
-          // Tie both to one scroll progress value for exact sync and rewind.
-          const backdropScale = mix(
-            1,
-            viewportWidth < 720 ? 1.22 : 1.30,
-            buttonGrow,
-          );
-          const backdropLift = mix(0, -16, buttonGrow);
+          const portalGrow = smooth(range(p, 0.938, 0.992));
+
+          // Keep the BACKDROP moving all the way through the globe's portal
+          // reveal, not just until the button reaches its wide pill shape.
+          // Overlap the second movement with the first to avoid a freeze
+          // near p=.936. The phone itself retains its settled scale.
+          // Everything is progress-based, including reverse scrolling.
+          const backdropDive = smooth(range(p, 0.922, 0.992));
+          const backdropScale =
+            mix(1, viewportWidth < 720 ? 1.22 : 1.30, buttonGrow)
+            * mix(1, viewportWidth < 720 ? 1.34 : 1.43, backdropDive);
+          const backdropLift =
+            mix(0, -16, buttonGrow) + mix(0, -22, backdropDive);
           demoBackdrop.style.transform =
             `translate3d(0, ${backdropLift}px, 0) scale(${backdropScale})`;
-          const portalGrow = smooth(range(p, 0.938, 0.992));
           const sceneIn = smooth(range(p, 0.970, 0.998));
           const panelWidth = Math.min(
             viewportWidth * 0.88, phoneWidth * scale * 0.86,
@@ -282,7 +284,9 @@ export function HomeMotion({
             card.style.transformOrigin = "center center";
           });
 
-          const backdropOut = smooth(range(p, 0.970, 0.999));
+          // Let the camera motion remain visible behind the portal until
+          // the transition has almost completely filled the viewport.
+          const backdropOut = smooth(range(p, 0.990, 0.999));
           demoBackdrop.style.opacity = String(1 - backdropOut * 0.97);
         } else {
           demoBackdrop.style.opacity = "1";
