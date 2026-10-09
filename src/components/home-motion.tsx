@@ -124,12 +124,15 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-radius", `${radius}px`);
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
-        // 1. Enter the pinned frame. 2. Zoom into the PHONE SCREEN while its
-        // products scroll. 3. Pan down and focus the small globe at the bottom.
-        // 4. Expand the next scene from that globe, not from the screen edge.
+        // Non-overlapping scroll chapters:
+        // [0.02-0.15] phone enters; [0.17-0.37] zoom ends at the product frame.
+        // [0.41-0.73] only product slides scroll INSIDE that fixed-size frame.
+        // [0.77-0.89] camera travels to the bottom globe.
+        // [0.905-0.985] the next scene grows out of the globe.
+        // These phases are reversible when the visitor scrolls upward.
         const entry = smooth(range(p, 0.02, 0.15));
-        const screenZoom = smooth(range(p, 0.17, 0.42));
-        const globeFocus = smooth(range(p, 0.61, 0.795));
+        const screenZoom = smooth(range(p, 0.17, 0.37));
+        const globeFocus = smooth(range(p, 0.77, 0.89));
 
         // offsetWidth/offsetTop are local (unscaled) measurements. Unlike a
         // transformed getBoundingClientRect(), they remain stable on each tick.
@@ -148,12 +151,15 @@ export function HomeMotion({
         const globeY = (phoneLogo?.offsetTop ?? phoneHeight * 0.91)
           + globeHeight / 2 - phoneHeight / 2;
 
-        // Enough scale to make the actual product image fill the view, not
-        // merely enlarge the phone's outer bezel.
-        const screenTarget = Math.min(6.2, Math.max(
-          2.3,
-          viewportWidth / innerWidth * 1.06,
-          viewportHeight / innerHeight * 1.06,
+        // Stop at the reference frame: the inner product image is prominent
+        // while its rounded edges and a little phone bezel remain visible.
+        // "cover the whole viewport" was too much zoom and hid the frame.
+        const targetWidth = viewportWidth * (viewportWidth < 720 ? 0.87 : 0.58);
+        const targetHeight = viewportHeight * 0.89;
+        const screenTarget = Math.max(1, Math.min(
+          3.6,
+          targetWidth / innerWidth,
+          targetHeight / innerHeight,
         ));
         const globeTarget = Math.min(5.2, Math.max(
           3.0,
@@ -165,14 +171,16 @@ export function HomeMotion({
         const scale = enterScale * mix(screenScale, globeTarget, globeFocus);
         const panX = -mix(screenX * scale * screenZoom, globeX * scale, globeFocus);
         const panY = -mix(screenY * scale * screenZoom, globeY * scale, globeFocus);
-        const phoneFade = smooth(range(p, 0.915, 0.973));
+        const phoneFade = smooth(range(p, 0.972, 0.999));
         phone.style.transform = `translate3d(calc(-50% + ${panX}px), calc(-50% + ${entryOffset + panY}px), 0) scale(${scale})`;
         phone.style.opacity = String(entry * (1 - phoneFade));
 
         // The content inside the screen really moves vertically as the
         // visitor scrolls. Each full-height product slide follows its neighbour
         // smoothly instead of only cross-fading a stationary still image.
-        const slidePosition = smooth(range(p, 0.27, 0.585))
+        // Do NOT change camera scale/position in this interval. The page
+        // scroll controls only the internal product feed until its last slide.
+        const slidePosition = range(p, 0.41, 0.73)
           * Math.max(phoneSlides.length - 1, 0);
         phoneSlides.forEach((slide, index) => {
           const distance = index - slidePosition;
@@ -181,10 +189,10 @@ export function HomeMotion({
           slide.style.zIndex = String(10 + phoneSlides.length - index);
         });
 
-        const globeEmphasis = mix(1, 1.18, smooth(range(p, 0.71, 0.82)));
+        const globeEmphasis = mix(1, 1.18, smooth(range(p, 0.84, 0.91)));
         if (phoneLogo) {
           phoneLogo.style.transform = `scale(${globeEmphasis})`;
-          phoneLogo.style.opacity = String(1 - smooth(range(p, 0.82, 0.90)));
+          phoneLogo.style.opacity = String(1 - smooth(range(p, 0.915, 0.965)));
           phoneLogo.style.zIndex = "20";
         }
 
@@ -192,9 +200,9 @@ export function HomeMotion({
           // Match the rectangular globe's screen-space position after the
           // camera pan. Expanding this clipped region produces a continuous
           // globe -> full-screen scene zoom, including when scrolling backwards.
-          const portalEntry = smooth(range(p, 0.788, 0.819));
-          const portalGrow = smooth(range(p, 0.818, 0.966));
-          const sceneIn = smooth(range(p, 0.875, 0.965));
+          const portalEntry = smooth(range(p, 0.905, 0.930));
+          const portalGrow = smooth(range(p, 0.925, 0.985));
+          const sceneIn = smooth(range(p, 0.940, 0.990));
           const globeCx = viewportWidth / 2 + panX + globeX * scale;
           const globeCy = viewportHeight / 2 + entryOffset + panY + globeY * scale;
           const portalWidth = globeWidth * scale * globeEmphasis;
@@ -209,28 +217,28 @@ export function HomeMotion({
           phoneTransition.style.clipPath = `inset(${mix(insetTop, 0, portalGrow)}px ${mix(insetRight, 0, portalGrow)}px ${mix(insetBottom, 0, portalGrow)}px ${mix(insetLeft, 0, portalGrow)}px round ${mix(portalRadius, 0, portalGrow)}px)`;
 
           if (sceneLogo) {
-            const logoIn = smooth(range(p, 0.82, 0.927));
-            const logoSettle = smooth(range(p, 0.815, 0.95));
+            const logoIn = smooth(range(p, 0.925, 0.981));
+            const logoSettle = smooth(range(p, 0.925, 0.987));
             const logoY = mix(viewportHeight * 0.035, 0, logoSettle);
             sceneLogo.style.opacity = String(logoIn);
             sceneLogo.style.transform = `translate(-50%, calc(-50% + ${logoY}px)) scale(${mix(.18, 1, logoSettle)})`;
           }
 
           if (transitionScene) {
-            const sceneTravel = smooth(range(p, 0.875, 0.995));
+            const sceneTravel = smooth(range(p, 0.942, 0.995));
             transitionScene.style.opacity = String(sceneIn);
             transitionScene.style.transform = `translate3d(0, ${mix(12, -8, sceneTravel)}px, 0) scale(${mix(.99, 1, sceneTravel)})`;
             transitionScene.style.willChange = "transform, opacity";
           }
 
           if (transitionCenter) {
-            const centerGrow = smooth(range(p, 0.88, 0.970));
+            const centerGrow = smooth(range(p, 0.946, 0.994));
             transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.36, 1, centerGrow)})`;
           }
 
           transitionFloats.forEach((card, index) => {
-            const start = 0.885 + index * 0.013;
-            const end = 0.970 + index * 0.007;
+            const start = 0.935 + index * 0.010;
+            const end = 0.984 + index * 0.004;
             const local = smooth(range(p, start, Math.min(end, 0.995)));
 
             // Each card begins over the central product and fans out to its final slot.
@@ -245,7 +253,7 @@ export function HomeMotion({
             card.style.transformOrigin = "center center";
           });
 
-          const backdropOut = smooth(range(p, 0.875, 0.952));
+          const backdropOut = smooth(range(p, 0.930, 0.990));
           demoBackdrop.style.opacity = String(1 - backdropOut * 0.97);
         } else {
           demoBackdrop.style.opacity = "1";
@@ -253,7 +261,7 @@ export function HomeMotion({
 
         if (demoCaption) {
           const enterCaption = smooth(range(p, 0.10, 0.18));
-          const leaveCaption = 1 - smooth(range(p, 0.55, 0.65));
+          const leaveCaption = 1 - smooth(range(p, 0.37, 0.45));
           demoCaption.style.opacity = String(enterCaption * leaveCaption);
         }
       }
