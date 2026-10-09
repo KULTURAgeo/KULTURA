@@ -77,9 +77,9 @@ export function HomeMotion({
     const transitionFloats = Array.from(node.querySelectorAll<HTMLElement>("[data-transition-float]"));
 
     if (demoTrack) {
-      // More pinned scroll distance gives the camera enough time to zoom
-      // the entire phone toward the viewer, rather than sliding it upwards.
-      demoTrack.style.height = reduced ? "100svh" : "420svh";
+      // Extra sticky scroll distance is for the in-phone feed and the globe
+      // handoff, not for making the phone itself larger.
+      demoTrack.style.height = "420svh";
     }
 
     if (phoneTransition) {
@@ -124,26 +124,18 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-radius", `${radius}px`);
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
-        // Non-overlapping scroll chapters:
-        // [0.02-0.15] phone enters; [0.17-0.37] zoom ends at the product frame.
-        // [0.41-0.73] only product slides scroll INSIDE that fixed-size frame.
-        // [0.77-0.89] camera travels to the bottom globe.
-        // [0.905-0.985] the next scene grows out of the globe.
-        // These phases are reversible when the visitor scrolls upward.
-        const entry = smooth(range(p, 0.02, 0.15));
-        const screenZoom = smooth(range(p, 0.17, 0.37));
+        // Scroll chapters never scale the phone beyond its first settled size:
+        // [0.02-0.17] enter/settle, [0.25-0.74] scroll only the inner product feed,
+        // [0.77-0.89] pan the *fixed-size* phone up until the globe is centred,
+        // [0.905-0.985] open the fullscreen scene from that globe.
+        // All transformations derive from scroll progress and work in reverse.
+        const entry = smooth(range(p, 0.02, 0.17));
         const globeFocus = smooth(range(p, 0.77, 0.89));
 
         // offsetWidth/offsetTop are local (unscaled) measurements. Unlike a
         // transformed getBoundingClientRect(), they remain stable on each tick.
         const phoneWidth = Math.max(phone.offsetWidth, 1);
         const phoneHeight = Math.max(phone.offsetHeight, 1);
-        const innerWidth = Math.max(phoneViewport?.offsetWidth ?? phoneWidth * 0.88, 1);
-        const innerHeight = Math.max(phoneViewport?.offsetHeight ?? phoneHeight * 0.65, 1);
-        const screenX = (phoneViewport?.offsetLeft ?? phoneWidth * 0.05)
-          + innerWidth / 2 - phoneWidth / 2;
-        const screenY = (phoneViewport?.offsetTop ?? phoneHeight * 0.16)
-          + innerHeight / 2 - phoneHeight / 2;
         const globeWidth = Math.max(phoneLogo?.offsetWidth ?? 64, 1);
         const globeHeight = Math.max(phoneLogo?.offsetHeight ?? 26, 1);
         const globeX = (phoneLogo?.offsetLeft ?? (phoneWidth - globeWidth) / 2)
@@ -151,36 +143,28 @@ export function HomeMotion({
         const globeY = (phoneLogo?.offsetTop ?? phoneHeight * 0.91)
           + globeHeight / 2 - phoneHeight / 2;
 
-        // Stop at the reference frame: the inner product image is prominent
-        // while its rounded edges and a little phone bezel remain visible.
-        // "cover the whole viewport" was too much zoom and hid the frame.
-        const targetWidth = viewportWidth * (viewportWidth < 720 ? 0.87 : 0.58);
-        const targetHeight = viewportHeight * 0.89;
-        const screenTarget = Math.max(1, Math.min(
-          3.6,
-          targetWidth / innerWidth,
-          targetHeight / innerHeight,
-        ));
-        const globeTarget = Math.min(5.2, Math.max(
-          3.0,
-          viewportWidth / globeWidth * 0.30,
-        ));
+        // Preserve the phone's ORIGINAL settled scale. Fit smaller windows if
+        // needed, but never zoom into the product image or magnify the globe.
+        const settledScale = Math.min(
+          1,
+          (viewportHeight * 0.96) / phoneHeight,
+          (viewportWidth * 0.90) / phoneWidth,
+        );
         const entryOffset = mix(viewportHeight * 0.68, 0, entry);
-        const enterScale = mix(0.70, 1, entry);
-        const screenScale = Math.exp(Math.log(screenTarget) * screenZoom);
-        const scale = enterScale * mix(screenScale, globeTarget, globeFocus);
-        const panX = -mix(screenX * scale * screenZoom, globeX * scale, globeFocus);
-        const panY = -mix(screenY * scale * screenZoom, globeY * scale, globeFocus);
+        const scale = mix(0.70 * settledScale, settledScale, entry);
+
+        // The camera stays parked during all product changes. After the last
+        // item, only its position moves upward to place the globe in the
+        // viewport centre. No additional scale is applied.
+        const panX = -globeX * scale * globeFocus;
+        const panY = -globeY * scale * globeFocus;
         const phoneFade = smooth(range(p, 0.972, 0.999));
         phone.style.transform = `translate3d(calc(-50% + ${panX}px), calc(-50% + ${entryOffset + panY}px), 0) scale(${scale})`;
         phone.style.opacity = String(entry * (1 - phoneFade));
 
-        // The content inside the screen really moves vertically as the
-        // visitor scrolls. Each full-height product slide follows its neighbour
-        // smoothly instead of only cross-fading a stationary still image.
-        // Do NOT change camera scale/position in this interval. The page
-        // scroll controls only the internal product feed until its last slide.
-        const slidePosition = range(p, 0.41, 0.73)
+        // Keep the entire phone stationary while the customer scrolls through
+        // full-height product cards clipped inside the phone viewport.
+        const slidePosition = range(p, 0.25, 0.74)
           * Math.max(phoneSlides.length - 1, 0);
         phoneSlides.forEach((slide, index) => {
           const distance = index - slidePosition;
