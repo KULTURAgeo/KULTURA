@@ -5,7 +5,10 @@ import { useRef, useState } from "react";
 import { useCart } from "./cart-provider";
 import { Icon } from "./ui";
 
-export function HeaderInteractions() {
+export function HeaderInteractions({ theme, onThemeChange }: {
+  theme: "light" | "dark";
+  onThemeChange: (theme: "light" | "dark") => void;
+}) {
   const cart = useCart();
   const dialog = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
@@ -81,6 +84,16 @@ export function HeaderInteractions() {
             </Link>
           ))}
         </nav>
+        <div className="mobile-theme-choice" role="group" aria-label="Color theme">
+          <button type="button" aria-pressed={theme === "light"}
+            onClick={() => { onThemeChange("light"); close(); }}>
+            ☀ LIGHT
+          </button>
+          <button type="button" aria-pressed={theme === "dark"}
+            onClick={() => { onThemeChange("dark"); close(); }}>
+            ☾ DARK
+          </button>
+        </div>
         <p className="eyebrow">STEP INTO KULTURA</p>
       </dialog>
     </>

@@ -157,7 +157,7 @@ export function Header() {
             aria-pressed={theme === "dark"} onClick={() => setMode("dark")}>
             <MoonIcon />
           </button>
-          <HeaderInteractions />
+          <HeaderInteractions theme={theme} onThemeChange={setMode} />
         </div>
         {wave ? (
           <svg key={wave.key} className="theme-wave-track" aria-hidden="true"
