@@ -216,9 +216,57 @@ html[data-theme="light"] .cookie-consent .button { background: #d3d3d5; color: #
   .theme-header .wordmark { font-size: 23px; }
   .theme-header { padding-inline: 12px; }
 }
-@media (max-width: 520px) {
-  .theme-header .theme-light-trigger { display: none; }
+/* On portrait phones, keep the store actions on their original top row
+   and put BOTH theme choices on a small, fully visible second row. */
+.theme-mode-label { display: none; }
+@media (max-width: 600px) {
+  .theme-header {
+    height: 118px;
+    min-height: 118px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0;
+    padding-inline: 12px;
+  }
+  .theme-header .theme-header-left,
+  .theme-header .theme-header-right {
+    position: static;
+    height: 68px;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+  }
+  .theme-header .theme-header-right { margin-left: auto; }
+  .theme-header .theme-light-trigger,
+  .theme-header .theme-dark-trigger {
+    position: absolute;
+    top: 73px;
+    bottom: auto;
+    width: auto;
+    min-width: 102px;
+    height: 38px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    gap: 10px;
+    border-radius: 999px;
+  }
+  .theme-header .theme-light-trigger { left: 12px; }
+  .theme-header .theme-dark-trigger { right: 12px; }
+  .theme-header .theme-mode-label {
+    display: inline;
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: .13em;
+  }
+  .theme-header .theme-mode-button svg { width: 19px; height: 19px; }
+  .theme-header .theme-wave-track { z-index: 2; }
 }
+
 @media (max-width: 355px) {
   .theme-header .wordmark { font-size: 20px; }
   .theme-header .icon-button { width: 34px; }

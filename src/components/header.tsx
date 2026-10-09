@@ -87,18 +87,18 @@ export function Header() {
     if (themeTimer.current) clearTimeout(themeTimer.current);
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!reduced && headerRef.current && navRef.current &&
-      sunRef.current && moonRef.current && window.innerWidth > 767) {
+    if (!reduced && headerRef.current && sunRef.current && moonRef.current) {
       const host = headerRef.current.getBoundingClientRect();
       const first = sunRef.current.getBoundingClientRect();
       const last = moonRef.current.getBoundingClientRect();
-      const nav = navRef.current.getBoundingClientRect();
+      const desktopNav = window.innerWidth > 767 ? navRef.current : null;
+      const nav = desktopNav?.getBoundingClientRect();
       const fromX = first.left + first.width / 2 - host.left;
       const toX = last.left + last.width / 2 - host.left;
       const origin = next === "dark" ? fromX : toX;
       const destination = next === "dark" ? toX : fromX;
-      const soundWidth = 180;
-      const delays = Array.from(navRef.current.querySelectorAll(".theme-nav-letter"), (letter) => {
+      const soundWidth = desktopNav ? 180 : 90;
+      const delays = Array.from(desktopNav?.querySelectorAll(".theme-nav-letter") ?? [], (letter) => {
         const bounds = letter.getBoundingClientRect();
         const position = bounds.left + bounds.width / 2 - host.left;
         const progress = Math.max(0, Math.min(1, (position - origin) / (destination - origin)));
@@ -109,7 +109,9 @@ export function Header() {
         direction: next === "dark" ? "to-dark" : "to-light",
         // Render just a travelling packet: nothing connects the two controls.
         left: origin - soundWidth / 2,
-        top: nav.bottom - host.top + 6,
+        top: nav
+          ? nav.bottom - host.top + 6
+          : (first.top + first.height / 2 + last.top + last.height / 2) / 2 - host.top,
         width: soundWidth,
         travel: destination - origin,
         delays,
@@ -149,6 +151,7 @@ export function Header() {
             aria-label="Switch to light mode" title="Light mode"
             aria-pressed={theme === "light"} onClick={() => setMode("light")}>
             <SunIcon />
+            <span className="theme-mode-label">LIGHT</span>
           </button>
         </div>
         <nav ref={navRef} className="desktop-nav theme-nav" aria-label="Main navigation">
@@ -175,6 +178,7 @@ export function Header() {
             aria-label="Switch to dark mode" title="Dark mode"
             aria-pressed={theme === "dark"} onClick={() => setMode("dark")}>
             <MoonIcon />
+            <span className="theme-mode-label">DARK</span>
           </button>
           <HeaderInteractions theme={theme} onThemeChange={setMode} />
         </div>
