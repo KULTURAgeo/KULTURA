@@ -84,8 +84,7 @@ export default async function Home() {
 
       <section className={styles.demoTrack} data-demo-track>
         <div className={styles.demoSticky}>
-          <div className={styles.demoCamera} data-demo-camera>
-            <div className={styles.demoBackdrop} data-demo-backdrop>
+          <div className={styles.demoBackdrop} data-demo-backdrop>
             <Image src={campaignImage} alt="" fill sizes="100vw" />
             <div className={styles.demoShade} />
             <div className={styles.demoGrid} />
@@ -168,7 +167,6 @@ export default async function Home() {
                 <span style={{ justifySelf: "end" }}>01</span>
               </div>
             </div>
-          </div>
           </div>
 
           <div

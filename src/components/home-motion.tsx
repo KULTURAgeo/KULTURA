@@ -65,7 +65,6 @@ export function HomeMotion({
     const heroCopy = node.querySelector<HTMLElement>("[data-hero-copy]");
     const demoTrack = node.querySelector<HTMLElement>("[data-demo-track]");
     const demoBackdrop = node.querySelector<HTMLElement>("[data-demo-backdrop]");
-    const demoCamera = node.querySelector<HTMLElement>("[data-demo-camera]");
     const phone = node.querySelector<HTMLElement>("[data-phone]");
     const phoneLogo = node.querySelector<HTMLElement>("[data-phone-logo]");
     const phoneSlides = Array.from(node.querySelectorAll<HTMLElement>("[data-phone-slide]"));
@@ -78,8 +77,8 @@ export function HomeMotion({
     const transitionFloats = Array.from(node.querySelectorAll<HTMLElement>("[data-transition-float]"));
 
     if (demoTrack) {
-      // Extra sticky scroll distance is for the in-phone feed and the globe
-      // handoff, not for making the phone itself larger.
+      // Sticky runway for the in-phone feed, globe enlargement and handoff.
+      // The phone never gets a second zoom after the feed completes.
       demoTrack.style.height = "460svh";
     }
 
@@ -125,9 +124,9 @@ export function HomeMotion({
         demoBackdrop.style.setProperty("--demo-radius", `${radius}px`);
         demoBackdrop.style.setProperty("--demo-bg-scale", String(mix(1.08, 1.015, expand)));
 
-        // Scroll chapters, each reversible: entry -> controlled zoom ->
-        // internal product feed -> bottom globe focus -> expanding globe
-        // button -> full-screen scene. Keep stages from overlapping.
+        // Reversible chapters: phone entry -> modest initial zoom -> products
+        // scroll within the stationary phone -> vertical reposition only ->
+        // enlarge ONLY the globe button -> reveal next fullscreen scene.
         const entry = smooth(range(p, 0.02, 0.16));
         const zoom = smooth(range(p, 0.19, 0.37));
 
@@ -156,26 +155,14 @@ export function HomeMotion({
         const scale = mix(initialScale * 0.82, initialScale, entry)
           * mix(1, zoomTarget / initialScale, zoom);
         const entryOffset = mix(viewportHeight * 0.62, 0, entry);
-        // Once the product feed ends the *whole* scene moves toward the globe.
-        // Never scroll/move the phone alone: it stays the same size throughout
-        // all product cards, then shares a camera dolly with the background.
-        const dolly = smooth(range(p, 0.76, 0.925));
-        const dive = smooth(range(p, 0.929, 0.976));
-        const cameraTarget = Math.min(5.25, Math.max(
-          2.65,
-          viewportWidth * (viewportWidth < 720 ? 0.68 : 0.34) / (globeWidth * scale),
-        ));
-        const cameraScale = Math.exp(Math.log(cameraTarget) * dolly)
-          * mix(1, 1.52, dive);
-        const cameraPanX = -globeX * scale * cameraScale * dolly;
-        const cameraPanY = -globeY * scale * cameraScale * dolly;
-        if (demoCamera) {
-          demoCamera.style.transform =
-            `translate3d(${cameraPanX}px, ${cameraPanY}px, 0) scale(${cameraScale})`;
-        }
-
-        const phoneFade = smooth(range(p, 0.972, 0.997));
-        phone.style.transform = `translate3d(-50%, calc(-50% + ${entryOffset}px), 0) scale(${scale})`;
+        // The product feed finishes at p=.73. DO NOT ZOOM THE PHONE AGAIN.
+        // The phone only moves up until its bottom globe is at screen centre.
+        // No background zoom or camera transform occurs in this chapter.
+        const globeApproach = smooth(range(p, 0.74, 0.84));
+        const phonePanY = -globeY * scale * globeApproach;
+        const phoneFade = smooth(range(p, 0.969, 0.997));
+        phone.style.transform =
+          `translate3d(-50%, calc(-50% + ${entryOffset + phonePanY}px), 0) scale(${scale})`;
         phone.style.opacity = String(entry * (1 - phoneFade));
 
         // Keep the entire phone stationary while the customer scrolls through
@@ -189,69 +176,88 @@ export function HomeMotion({
           slide.style.zIndex = String(10 + phoneSlides.length - index);
         });
 
-        const globeEmphasis = mix(1, 1.09, smooth(range(p, 0.87, 0.938)));
+        const globeEmphasis = 1;
         if (phoneLogo) {
           phoneLogo.style.transform = `scale(${globeEmphasis})`;
-          phoneLogo.style.opacity = String(1 - smooth(range(p, 0.940, 0.982)));
+          phoneLogo.style.opacity = String(1 - smooth(range(p, 0.85, 0.89)));
           phoneLogo.style.zIndex = "20";
         }
 
         if (phoneTransition) {
-          // Expand first into a recognisable pill/button, then into the
-          // next full-screen scene. Everything starts at the real globe position.
-          // Meet the REAL globe only after the whole backdrop has zoomed.
-          // The portal is a continuation of the camera move, not a pop-up.
-          const portalEntry = smooth(range(p, 0.924, 0.943));
-          const buttonGrow = smooth(range(p, 0.941, 0.963));
-          const portalGrow = smooth(range(p, 0.964, 0.996));
-          const sceneIn = smooth(range(p, 0.979, 0.999));
-          const globeCx = viewportWidth / 2 + cameraPanX
-            + globeX * scale * cameraScale;
-          const globeCy = viewportHeight / 2 + cameraPanY
-            + (entryOffset + globeY * scale) * cameraScale;
-          const startWidth = globeWidth * scale * cameraScale * globeEmphasis;
-          const startHeight = globeHeight * scale * cameraScale * globeEmphasis;
-          const panelWidth = Math.min(560, viewportWidth * 0.75);
-          const panelHeight = Math.min(128, viewportHeight * 0.21);
-          const portalWidth = mix(startWidth, Math.max(startWidth, panelWidth), buttonGrow);
-          const portalHeight = mix(startHeight, Math.max(startHeight, panelHeight), buttonGrow);
+          // Anchor the portal to the real, rendered globe's screen position.
+          // The phone itself and the photograph remain at their fixed sizes.
+          // The current frame's rect is stable before portal entry because
+          // the globe approach ends at p=.84.
+          const globeRect = phoneLogo?.getBoundingClientRect();
+          const globeCx = globeRect
+            ? globeRect.left + globeRect.width / 2 : viewportWidth / 2;
+          const globeCy = globeRect
+            ? globeRect.top + globeRect.height / 2 : viewportHeight / 2;
+          const globePhysicalWidth = globeRect?.width ?? globeWidth * scale;
+          const globePhysicalHeight = globeRect?.height ?? globeHeight * scale;
+
+          // The globe icon becomes a wide button inside the phone, similar
+          // to the reference, before that SAME button becomes the new page.
+          const portalEntry = smooth(range(p, 0.852, 0.881));
+          const buttonGrow = smooth(range(p, 0.868, 0.936));
+          const portalGrow = smooth(range(p, 0.938, 0.992));
+          const sceneIn = smooth(range(p, 0.970, 0.998));
+          const panelWidth = Math.min(
+            viewportWidth * 0.88, phoneWidth * scale * 0.86,
+          );
+          const panelHeight = Math.min(
+            viewportHeight * 0.17,
+            Math.max(globePhysicalHeight * 1.7, 48),
+          );
+          const portalWidth = mix(globePhysicalWidth, panelWidth, buttonGrow);
+          const portalHeight = mix(globePhysicalHeight, panelHeight, buttonGrow);
           const insetLeft = Math.max(0, globeCx - portalWidth / 2);
           const insetRight = Math.max(0, viewportWidth - globeCx - portalWidth / 2);
           const insetTop = Math.max(0, globeCy - portalHeight / 2);
           const insetBottom = Math.max(0, viewportHeight - globeCy - portalHeight / 2);
-          const portalRadius = Math.min(portalHeight / 2, 32);
+          const portalRadius = mix(
+            Math.min(globePhysicalHeight / 2, 24), 17, buttonGrow,
+          );
+
           phoneTransition.style.opacity = String(portalEntry);
-          phoneTransition.style.clipPath = `inset(${mix(insetTop, 0, portalGrow)}px ${mix(insetRight, 0, portalGrow)}px ${mix(insetBottom, 0, portalGrow)}px ${mix(insetLeft, 0, portalGrow)}px round ${mix(portalRadius, 0, portalGrow)}px)`;
+          phoneTransition.style.clipPath =
+            `inset(${mix(insetTop, 0, portalGrow)}px ${mix(insetRight, 0, portalGrow)}px ${mix(insetBottom, 0, portalGrow)}px ${mix(insetLeft, 0, portalGrow)}px round ${mix(portalRadius, 0, portalGrow)}px)`;
 
           if (portalAccent) {
-            const accentIn = smooth(range(p, 0.948, 0.965));
-            const accentOut = 1 - smooth(range(p, 0.977, 0.990));
+            // Keep the bright panel attached to the actual globe (NOT at the
+            // centre of the screen while the globe is still elsewhere).
+            portalAccent.style.left = `${globeCx}px`;
+            portalAccent.style.top = `${globeCy}px`;
+            portalAccent.style.width = `${panelWidth}px`;
+            portalAccent.style.height = `${panelHeight}px`;
+            const accentIn = smooth(range(p, 0.873, 0.926));
+            const accentOut = 1 - smooth(range(p, 0.956, 0.980));
             portalAccent.style.opacity = String(accentIn * accentOut);
           }
 
           if (sceneLogo) {
-            const logoIn = smooth(range(p, 0.968, 0.993));
-            const logoSettle = smooth(range(p, 0.968, 0.996));
+            const logoIn = smooth(range(p, 0.955, 0.991));
+            const logoSettle = smooth(range(p, 0.953, 0.994));
             const logoY = mix(viewportHeight * 0.035, 0, logoSettle);
             sceneLogo.style.opacity = String(logoIn);
             sceneLogo.style.transform = `translate(-50%, calc(-50% + ${logoY}px)) scale(${mix(.18, 1, logoSettle)})`;
           }
 
           if (transitionScene) {
-            const sceneTravel = smooth(range(p, 0.981, 0.999));
+            const sceneTravel = smooth(range(p, 0.974, 0.999));
             transitionScene.style.opacity = String(sceneIn);
             transitionScene.style.transform = `translate3d(0, ${mix(12, -8, sceneTravel)}px, 0) scale(${mix(.99, 1, sceneTravel)})`;
             transitionScene.style.willChange = "transform, opacity";
           }
 
           if (transitionCenter) {
-            const centerGrow = smooth(range(p, 0.983, 0.999));
+            const centerGrow = smooth(range(p, 0.978, 0.999));
             transitionCenter.style.transform = `translate(-50%, -50%) scale(${mix(.36, 1, centerGrow)})`;
           }
 
           transitionFloats.forEach((card, index) => {
-            const start = 0.979 + index * 0.004;
-            const end = 0.993 + index * 0.001;
+            const start = 0.966 + index * 0.006;
+            const end = 0.990 + index * 0.002;
             const local = smooth(range(p, start, Math.min(end, 0.995)));
 
             // Each card begins over the central product and fans out to its final slot.
@@ -266,7 +272,7 @@ export function HomeMotion({
             card.style.transformOrigin = "center center";
           });
 
-          const backdropOut = smooth(range(p, 0.976, 0.999));
+          const backdropOut = smooth(range(p, 0.970, 0.999));
           demoBackdrop.style.opacity = String(1 - backdropOut * 0.97);
         } else {
           demoBackdrop.style.opacity = "1";
