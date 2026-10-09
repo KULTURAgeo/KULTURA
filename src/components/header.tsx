@@ -3,27 +3,17 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { HeaderInteractions } from "./header-interactions";
+import { flushSync } from "react-dom";
 
 type Theme = "light" | "dark";
-type Wave = {
-  key: number;
+type TextRipple = {
   direction: "to-light" | "to-dark";
-  left: number;
-  top: number;
-  width: number;
-  travel: number;
   delays: number[];
 };
 
 const THEME_KEY = "kultura-theme";
-// Small, uneven sound peaks form a compact pulse instead of a continuous line.
-// Only one SVG element is animated (GPU transform); these bars never animate individually.
-const soundPeaks = [
-  3, 5, 4, 7, 5, 11, 8, 15, 9, 18, 12, 25,
-  17, 29, 14, 24, 34, 18, 29, 38, 23, 32,
-  16, 27, 12, 21, 15, 26, 11, 17, 8, 13,
-  5, 9, 4, 6, 3,
-];
+const WIPE_MS = 1000;
+
 const links = [
   { href: "/shop", label: "SHOP" },
   { href: "/drops", label: "DROPS" },
@@ -51,13 +41,11 @@ function MoonIcon() {
 
 export function Header() {
   const [theme, setTheme] = useState<Theme>("dark");
-  const [wave, setWave] = useState<Wave | null>(null);
-  const headerRef = useRef<HTMLElement>(null);
+  const [ripple, setRipple] = useState<TextRipple | null>(null);
   const navRef = useRef<HTMLElement>(null);
-  const sunRef = useRef<HTMLButtonElement>(null);
-  const moonRef = useRef<HTMLButtonElement>(null);
-  const waveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rippleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const themeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transitionId = useRef(0);
 
   useEffect(() => {
     const sync = () => {
@@ -76,77 +64,95 @@ export function Header() {
     return () => {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("kultura-theme-change", sync);
-      if (waveTimer.current) clearTimeout(waveTimer.current);
+      if (rippleTimer.current) clearTimeout(rippleTimer.current);
       if (themeTimer.current) clearTimeout(themeTimer.current);
     };
   }, []);
 
   const setMode = (next: Theme) => {
     if (next === theme) return;
-    if (waveTimer.current) clearTimeout(waveTimer.current);
+    transitionId.current += 1;
+    const runId = transitionId.current;
+    if (rippleTimer.current) clearTimeout(rippleTimer.current);
     if (themeTimer.current) clearTimeout(themeTimer.current);
 
+    const root = document.documentElement;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!reduced && headerRef.current && sunRef.current && moonRef.current) {
-      const host = headerRef.current.getBoundingClientRect();
-      const first = sunRef.current.getBoundingClientRect();
-      const last = moonRef.current.getBoundingClientRect();
-      const desktopNav = window.innerWidth > 767 ? navRef.current : null;
-      const nav = desktopNav?.getBoundingClientRect();
-      const fromX = first.left + first.width / 2 - host.left;
-      const toX = last.left + last.width / 2 - host.left;
-      const origin = next === "dark" ? fromX : toX;
-      const destination = next === "dark" ? toX : fromX;
-      const soundWidth = desktopNav ? 180 : 90;
-      const delays = Array.from(desktopNav?.querySelectorAll(".theme-nav-letter") ?? [], (letter) => {
-        const bounds = letter.getBoundingClientRect();
-        const position = bounds.left + bounds.width / 2 - host.left;
-        const progress = Math.max(0, Math.min(1, (position - origin) / (destination - origin)));
-        return Math.round(80 + 940 * progress);
-      });
-      setWave({
-        key: Date.now(),
-        direction: next === "dark" ? "to-dark" : "to-light",
-        // Render just a travelling packet: nothing connects the two controls.
-        left: origin - soundWidth / 2,
-        top: nav
-          ? nav.bottom - host.top + 6
-          : (first.top + first.height / 2 + last.top + last.height / 2) / 2 - host.top,
-        width: soundWidth,
-        travel: destination - origin,
-        delays,
-      });
-      waveTimer.current = setTimeout(() => setWave(null), 1250);
-    } else {
-      setWave(null);
+    const direction = next === "dark" ? "to-dark" : "to-light";
+    const delayAt = (x: number) => {
+      const fraction = Math.max(0, Math.min(1, x / Math.max(1, window.innerWidth)));
+      const progress = next === "dark" ? fraction : 1 - fraction;
+      return Math.max(0, Math.round(progress * WIPE_MS - 125));
+    };
+
+    const nav = navRef.current;
+    const letters = Array.from(nav?.querySelectorAll<HTMLElement>(".theme-nav-letter") ?? []);
+    const delays = letters.map((letter) => {
+      const rect = letter.getBoundingClientRect();
+      return delayAt(rect.left + rect.width / 2);
+    });
+
+    // Native View Transitions animate each word separately as the wipe reaches
+    // its on-screen position; the letter-level ripple is a fallback for older browsers.
+    for (const link of Array.from(nav?.querySelectorAll<HTMLAnchorElement>("a") ?? [])) {
+      const word = link.getAttribute("data-theme-word");
+      if (!word) continue;
+      const rect = link.getBoundingClientRect();
+      root.style.setProperty(`--theme-${word}-delay`, `${delayAt(rect.left + rect.width / 2)}ms`);
     }
 
+    const nextRipple = reduced ? null : { direction, delays };
+    const applyTheme = () => {
+      root.dataset.theme = next;
+      flushSync(() => {
+        setTheme(next);
+        setRipple(nextRipple);
+      });
+      try {
+        window.localStorage.setItem(THEME_KEY, next);
+      } catch {
+        // Private browsing may block localStorage; the current selection still works.
+      }
+      window.dispatchEvent(new Event("kultura-theme-change"));
+    };
+
     if (!reduced) {
-      document.documentElement.classList.add("theme-animating");
-      themeTimer.current = setTimeout(() => {
-        document.documentElement.classList.remove("theme-animating");
-      }, 750);
+      rippleTimer.current = setTimeout(() => setRipple(null), WIPE_MS + 360);
     }
-    document.documentElement.dataset.theme = next;
-    setTheme(next);
-    try {
-      window.localStorage.setItem(THEME_KEY, next);
-    } catch {
-      // Local storage can be restricted; the toggle still works for this visit.
+
+    if (!reduced && typeof document.startViewTransition === "function") {
+      root.dataset.themeDirection = direction;
+      // The old page stays in place while the new themed page is revealed
+      // with a directional clip-path. No SVG or waveform is rendered.
+      const transition = document.startViewTransition(applyTheme);
+      void transition.finished.then(
+        () => {
+          if (transitionId.current === runId) delete root.dataset.themeDirection;
+        },
+        () => {
+          if (transitionId.current === runId) delete root.dataset.themeDirection;
+        },
+      );
+    } else {
+      // Browsers without same-document View Transitions still switch correctly.
+      if (!reduced) {
+        root.classList.add("theme-animating");
+        themeTimer.current = setTimeout(() => root.classList.remove("theme-animating"), 650);
+      }
+      applyTheme();
     }
-    window.dispatchEvent(new Event("kultura-theme-change"));
   };
 
   return (
     <>
       <div className="announcement">INDEPENDENT SPIRIT. EVERYDAY UNIFORM.</div>
-      <header ref={headerRef} className="header theme-header"
-        data-wave-direction={wave?.direction}>
+      <header className="header theme-header"
+        data-wave-direction={ripple?.direction}>
         <div className="theme-header-left">
           <Link href="/" className="wordmark" aria-label="KULTURA home">
             KULTURA<span>®</span>
           </Link>
-          <button ref={sunRef} type="button"
+          <button type="button"
             className="theme-mode-button theme-light-trigger"
             aria-label="Switch to light mode" title="Light mode"
             aria-pressed={theme === "light"} onClick={() => setMode("light")}>
@@ -158,10 +164,12 @@ export function Header() {
           {links.map(({ href, label }, linkIndex) => {
             const start = links.slice(0, linkIndex).reduce((count, link) => count + link.label.length, 0);
             return (
-              <Link key={href} href={href} aria-label={label}>
+              <Link key={href} href={href} aria-label={label}
+                data-theme-word={label.toLowerCase()}
+                style={{ viewTransitionName: `kultura-nav-${label.toLowerCase()}` }}>
                 {Array.from(label).map((char, index) => {
                   const order = start + index;
-                  const delay = wave?.delays[order] ?? 0;
+                  const delay = ripple?.delays[order] ?? 0;
                   return (
                     <span key={index} aria-hidden="true" className="theme-nav-letter"
                       style={{ "--wave-delay": `${delay}ms` } as CSSProperties}>
@@ -174,7 +182,7 @@ export function Header() {
           })}
         </nav>
         <div className="theme-header-right">
-          <button ref={moonRef} type="button" className="theme-mode-button theme-dark-trigger"
+          <button type="button" className="theme-mode-button theme-dark-trigger"
             aria-label="Switch to dark mode" title="Dark mode"
             aria-pressed={theme === "dark"} onClick={() => setMode("dark")}>
             <MoonIcon />
@@ -182,26 +190,7 @@ export function Header() {
           </button>
           <HeaderInteractions theme={theme} onThemeChange={setMode} />
         </div>
-        {wave ? (
-          <svg key={wave.key} className="theme-wave-track" aria-hidden="true"
-            style={{
-              left: wave.left,
-              top: wave.top,
-              width: wave.width,
-              "--soundwave-travel": `${wave.travel}px`,
-            } as CSSProperties}
-            viewBox="0 0 180 80" preserveAspectRatio="xMidYMid meet">
-            {soundPeaks.map((peak, index) => (
-              <rect key={index}
-                x={index * 4.8 + 1.2}
-                y={40 - peak / 2}
-                width="2.8"
-                height={peak}
-                rx="1.4"
-              />
-            ))}
-          </svg>
-        ) : null}
+
       </header>
     </>
   );

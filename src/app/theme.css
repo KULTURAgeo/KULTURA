@@ -71,36 +71,49 @@ html.theme-animating .checkout-summary-inner {
   outline: 2px solid var(--foreground);
   outline-offset: 3px;
 }
-/* Invisible at rest. Only a short sound-wave pulse crosses the menu
-   during an actual theme change; no permanent line or connecting rail. */
+/* Page-wide directional slide for theme changes. Only the new screenshot
+   is clipped; the old screenshot remains stable beneath it. */
 .theme-header { border-bottom: none; }
-.theme-wave-track {
-  position: absolute;
-  height: 80px;
-  pointer-events: none;
-  z-index: 3;
-  opacity: 0;
-  overflow: visible;
-  will-change: transform, opacity;
-  color: #bfc6d0;
-  filter: drop-shadow(0 0 5px rgba(188, 204, 222, .40));
-  animation:
-    kultura-soundwave-travel 1.12s linear both,
-    kultura-soundwave-appear 1.12s ease-in-out both;
+:root[data-theme-direction]::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
-.theme-wave-track rect { fill: currentColor; }
-html[data-theme="light"] .theme-wave-track {
-  color: #484e57;
-  filter: drop-shadow(0 0 4px rgba(60, 72, 92, .24));
+:root[data-theme-direction]::view-transition-new(root) {
+  mix-blend-mode: normal;
+  animation-duration: 1000ms;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
 }
-@keyframes kultura-soundwave-travel {
-  from { transform: translate3d(0, -50%, 0); }
-  to { transform: translate3d(var(--soundwave-travel), -50%, 0); }
+:root[data-theme-direction="to-dark"]::view-transition-new(root) {
+  animation-name: kultura-wipe-from-left;
 }
-@keyframes kultura-soundwave-appear {
-  0%, 100% { opacity: 0; }
-  12%, 79% { opacity: 1; }
-  90% { opacity: .45; }
+:root[data-theme-direction="to-light"]::view-transition-new(root) {
+  animation-name: kultura-wipe-from-right;
+}
+@keyframes kultura-wipe-from-left {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes kultura-wipe-from-right {
+  from { clip-path: inset(0 0 0 100%); }
+  to { clip-path: inset(0 0 0 0); }
+}
+/* The menu words ripple exactly as the colour boundary crosses them.
+   These are separate snapshot groups, so the motion remains visible
+   on top of the root screenshot during the wipe. */
+:root[data-theme-direction]::view-transition-group(kultura-nav-shop) {
+  animation: kultura-menu-ripple .38s ease-out var(--theme-shop-delay, 360ms) both;
+}
+:root[data-theme-direction]::view-transition-group(kultura-nav-drops) {
+  animation: kultura-menu-ripple .38s ease-out var(--theme-drops-delay, 440ms) both;
+}
+:root[data-theme-direction]::view-transition-group(kultura-nav-about) {
+  animation: kultura-menu-ripple .38s ease-out var(--theme-about-delay, 530ms) both;
+}
+@keyframes kultura-menu-ripple {
+  0%, 100% { transform: translateY(0) skewX(0); }
+  34% { transform: translateY(-5px) skewX(-5deg); }
+  68% { transform: translateY(2px) skewX(3deg); }
 }
 .theme-header[data-wave-direction] .theme-nav-letter {
   animation: kultura-letter-ripple .42s ease-out var(--wave-delay) both;
@@ -264,7 +277,6 @@ html[data-theme="light"] .cookie-consent .button { background: #d3d3d5; color: #
     letter-spacing: .13em;
   }
   .theme-header .theme-mode-button svg { width: 19px; height: 19px; }
-  .theme-header .theme-wave-track { z-index: 2; }
 }
 
 @media (max-width: 355px) {
@@ -272,7 +284,13 @@ html[data-theme="light"] .cookie-consent .button { background: #d3d3d5; color: #
   .theme-header .icon-button { width: 34px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .theme-wave-track { display: none; }
+  :root::view-transition-old(root),
+  :root::view-transition-new(root),
+  :root::view-transition-group(kultura-nav-shop),
+  :root::view-transition-group(kultura-nav-drops),
+  :root::view-transition-group(kultura-nav-about) {
+    animation-duration: 0.01ms !important;
+  }
   .theme-header[data-wave-direction] .theme-nav-letter { animation: none; }
   html.theme-animating body,
   html.theme-animating .header { transition: none; }
