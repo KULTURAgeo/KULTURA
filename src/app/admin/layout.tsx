@@ -1,11 +1,25 @@
 import Link from "next/link";
 import { requirePage } from "@/lib/auth/guards";
 import { Container } from "@/components/ui";
+import { AdminNavigation } from "@/components/admin-navigation";
+
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Administration", robots: { index: false, follow: false } };
+
 export default async function AdminLayout({ children }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    await requirePage(true);
-    return <Container className="page-section admin-shell"><div className="admin-top"><p className="eyebrow">KULTURA / ADMINISTRATION</p><Link href="/account">YOUR ACCOUNT ↗</Link></div><nav className="account-nav"><Link href="/admin">OVERVIEW</Link><Link href="/admin/products">PRODUCTS</Link><Link href="/admin/categories">CATEGORIES</Link><Link href="/admin/inventory">INVENTORY</Link><Link href="/admin/orders">ORDERS</Link><Link href="/admin/returns">RETURNS</Link><Link href="/admin/promos">PROMOS</Link><Link href="/admin/shipping">SHIPPING</Link><Link href="/shop">VIEW STORE ↗</Link></nav>{children}</Container>;
+  // Keep the server-side admin gate: prefetching must never grant access.
+  await requirePage(true);
+
+  return (
+    <Container className="page-section admin-shell">
+      <div className="admin-top">
+        <p className="eyebrow">KULTURA / ADMINISTRATION</p>
+        <Link href="/account">YOUR ACCOUNT ↗</Link>
+      </div>
+      <AdminNavigation />
+      {children}
+    </Container>
+  );
 }
