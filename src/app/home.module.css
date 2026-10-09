@@ -146,6 +146,15 @@
   background: #f7f6f2;
 }
 
+.demoCamera {
+  /* Zoom the entire physical scene, including backdrop and phone. */
+  position: absolute;
+  inset: 0;
+  background: #0b1713;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
 .demoBackdrop {
   position: absolute;
   inset: var(--demo-inset, 24px);
