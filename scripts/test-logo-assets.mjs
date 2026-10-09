@@ -4,7 +4,9 @@ import sharp from "sharp";
 
 const page = await readFile("src/app/page.tsx", "utf8");
 const names = await readdir("public/images");
-const paths = [...page.matchAll(/src="(\/images\/kultura-globe-[^"]+)"/g)].map(match => match[1]);
+// A page can reuse the same verified asset (e.g. phone badge and portal button).
+// Validate the unique referenced files rather than requiring one use per asset.
+const paths = [...new Set([...page.matchAll(/src="(\/images\/kultura-globe-[^"]+)"/g)].map(match => match[1]))];
 assert.deepEqual(paths.sort(), ["/images/kultura-globe-phone.webp", "/images/kultura-globe-scene.webp"]);
 assert.doesNotMatch(page, /kultura-phone-badge\.png|kultura-scene-logo\.jpg|kultura-globe-badge/);
 for (const path of paths) {
