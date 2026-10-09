@@ -98,17 +98,46 @@ html.theme-animating .checkout-summary-inner {
   from { clip-path: inset(0 0 0 100%); }
   to { clip-path: inset(0 0 0 0); }
 }
-/* The menu words ripple exactly as the colour boundary crosses them.
-   These are separate snapshot groups, so the motion remains visible
-   on top of the root screenshot during the wipe. */
-:root[data-theme-direction]::view-transition-group(kultura-nav-shop) {
+/* Never animate a View Transition *group*'s transform. The browser owns
+   that transform to keep named snapshots at their original page position.
+   Animating it moved SHOP / DROPS / ABOUT to viewport (0, 0). Instead ripple
+   the image-pair *inside* each group, retaining centred navigation geometry. */
+:root[data-theme-direction]::view-transition-image-pair(kultura-nav-shop) {
   animation: kultura-menu-ripple .38s ease-out var(--theme-shop-delay, 360ms) both;
 }
-:root[data-theme-direction]::view-transition-group(kultura-nav-drops) {
+:root[data-theme-direction]::view-transition-image-pair(kultura-nav-drops) {
   animation: kultura-menu-ripple .38s ease-out var(--theme-drops-delay, 440ms) both;
 }
-:root[data-theme-direction]::view-transition-group(kultura-nav-about) {
+:root[data-theme-direction]::view-transition-image-pair(kultura-nav-about) {
   animation: kultura-menu-ripple .38s ease-out var(--theme-about-delay, 530ms) both;
+}
+/* Swap the text snapshot at the instant the theme wipe reaches each word,
+   so white text is never displayed against the old light background. */
+:root[data-theme-direction]::view-transition-old(kultura-nav-shop) {
+  animation: kultura-word-old .01ms steps(1,end) calc(var(--theme-shop-delay, 360ms) + 125ms) both;
+}
+:root[data-theme-direction]::view-transition-old(kultura-nav-drops) {
+  animation: kultura-word-old .01ms steps(1,end) calc(var(--theme-drops-delay, 440ms) + 125ms) both;
+}
+:root[data-theme-direction]::view-transition-old(kultura-nav-about) {
+  animation: kultura-word-old .01ms steps(1,end) calc(var(--theme-about-delay, 530ms) + 125ms) both;
+}
+:root[data-theme-direction]::view-transition-new(kultura-nav-shop) {
+  animation: kultura-word-new .01ms steps(1,end) calc(var(--theme-shop-delay, 360ms) + 125ms) both;
+}
+:root[data-theme-direction]::view-transition-new(kultura-nav-drops) {
+  animation: kultura-word-new .01ms steps(1,end) calc(var(--theme-drops-delay, 440ms) + 125ms) both;
+}
+:root[data-theme-direction]::view-transition-new(kultura-nav-about) {
+  animation: kultura-word-new .01ms steps(1,end) calc(var(--theme-about-delay, 530ms) + 125ms) both;
+}
+@keyframes kultura-word-old {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes kultura-word-new {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 @keyframes kultura-menu-ripple {
   0%, 100% { transform: translateY(0) skewX(0); }
