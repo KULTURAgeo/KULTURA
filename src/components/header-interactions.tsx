@@ -26,7 +26,7 @@ export function HeaderInteractions({ theme, onThemeChange }: {
       <div className="header-actions">
         <Link
           className="icon-button"
-          href="/shop#search"
+          href="/search"
           aria-label={t("Search products")}
         >
           <Icon name="search" />
