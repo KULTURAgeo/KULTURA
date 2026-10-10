@@ -7,7 +7,7 @@ import { georgianInformationPages, type InformationPage } from "@/lib/informatio
 function renderInformationText(value: string) {
   const pattern = /(@kultura\.geo)(?=[\s.,;!?]|$)/g;
   return value.split(pattern).map((part, index) => part === "@kultura.geo" ? (
-    <a key={index} href="https://www.instagram.com/kultura.geo/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{part}</a>
+    <a key={index} href="https://www.instagram.com/kultura.geo/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline", textUnderlineOffset: "4px", textDecorationThickness: "1px" }}>{part}</a>
   ) : part);
 }
 
