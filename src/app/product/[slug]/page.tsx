@@ -8,12 +8,13 @@ import {
 } from "@/lib/catalog/repository";
 import { getActiveProductSlugs } from "@/lib/catalog/static-params";
 import { CatalogNotice } from "@/components/catalog-notice";
-import { Container, SectionHeading } from "@/components/ui";
+import { Container } from "@/components/ui";
 import { ProductDetail } from "@/components/product-detail";
 import { ProductCard } from "@/components/product-card";
 import { StructuredData } from "@/components/structured-data";
 import { RecentlyViewed } from "@/components/recently-viewed";
 import { LocalizedLabel } from "@/components/localized-label";
+import { LocalizedCategoryName } from "@/components/localized-category-name";
 
 export const revalidate = 300;
 
@@ -135,7 +136,7 @@ export default async function ProductPage({
           <Link href="/shop"><LocalizedLabel source="SHOP" /></Link>
           <span>/</span>
           <Link href={`/shop/${product.categorySlug}`}>
-            {product.category.toUpperCase()}
+            <LocalizedCategoryName name={product.category} slug={product.categorySlug} />
           </Link>
           <span>/</span>
           <span>{product.name.replace("KULTURA ", "")}</span>
@@ -143,7 +144,7 @@ export default async function ProductPage({
         <ProductDetail key={product.slug} product={product} />
         {related.length ? (
           <section className="section">
-            <SectionHeading eyebrow="RELATED PIECES" title="YOU MAY ALSO LIKE" />
+            <div className="section-heading"><div><p className="eyebrow"><LocalizedLabel source="RELATED PIECES" /></p><h2><LocalizedLabel source="YOU MAY ALSO LIKE" /></h2></div></div>
             <div className="product-grid">
               {related.map((item) => (
                 <ProductCard key={item.slug} product={item} />

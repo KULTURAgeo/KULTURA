@@ -5,6 +5,7 @@ import { campaignImage, money } from "@/lib/catalog";
 import { getHomepageCatalog } from "@/lib/catalog/repository";
 import { CatalogNotice } from "@/components/catalog-notice";
 import { Newsletter } from "@/components/newsletter";
+import { LocalizedCategoryName } from "@/components/localized-category-name";
 import { HomeMotion } from "@/components/home-motion";
 import styles from "./home.module.css";
 import { getServerLocale } from "@/lib/i18n-server";
@@ -340,7 +341,7 @@ export default async function Home() {
               <span className={styles.galleryShade} />
               <span className={styles.galleryIndex}>0{index + 1}</span>
               <div className={styles.galleryCopy}>
-                <strong>{category.name}</strong>
+                <strong><LocalizedCategoryName name={category.name} slug={category.slug} /></strong>
                 <span>{t("SHOP CATEGORY ↗")}</span>
               </div>
             </Link>

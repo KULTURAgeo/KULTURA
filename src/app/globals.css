@@ -1270,3 +1270,18 @@ footer {
     font-size: 15px;
   }
 }
+
+/* Georgian strings are longer than their English counterparts. Keep footer
+   columns flexible and prevent mobile overflow, without changing hierarchy. */
+.footer-top { min-width: 0; }
+.footer-top nav { grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; }
+.footer-top nav > * { min-width: 0; overflow-wrap: anywhere; line-height: 1.55; }
+.footer-top p { overflow-wrap: anywhere; }
+.footer-bottom { min-width: 0; }
+.footer-bottom > span { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 767px) {
+  .footer-top nav { column-gap: clamp(12px, 4vw, 28px); row-gap: 16px; }
+  .footer-top nav > a, .footer-top nav .muted { font-size: 12px; }
+  .footer-bottom { justify-content: flex-start; gap: 12px; }
+  .information .page-title { font-size: clamp(29px, 8vw, 44px); line-height: 1.18; overflow-wrap: anywhere; }
+}

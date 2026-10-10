@@ -236,6 +236,10 @@ const ka: Record<string, string> = {
   "The collection is being prepared. Check back soon.": "კოლექცია მზადდება. მალე დაბრუნდით.",
   "New pieces are on the way. Check back soon.": "ახალი ნივთები მალე დაემატება.",
   "Delivery becomes free from": "მიწოდება უფასოა შენაძენზე",
+  "EXPLORE THE COLLECTION ↗": "აღმოაჩინე კოლექცია ↗",
+  "IN STOCK": "მარაგში",
+  "RELATED PIECES": "მსგავსი ნივთები",
+  "YOU MAY ALSO LIKE": "შეიძლება მოგეწონოთ",
 };
 export function translate(locale: Locale, source: string): string {
   return locale === "ka" ? ka[source] ?? source : source;

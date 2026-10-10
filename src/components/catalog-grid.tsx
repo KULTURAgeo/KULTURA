@@ -4,6 +4,7 @@ import { useLanguage } from "./language-provider";
 import { useDeferredValue, useMemo, useState } from "react";
 import type { Product, Category } from "@/lib/catalog";
 import { ProductCard } from "./product-card";
+import { categoryDisplayName, colorDisplayName } from "@/lib/category-i18n";
 import styles from "./catalog-filters.module.css";
 
 function unique(values: string[]) {
@@ -26,7 +27,7 @@ export function CatalogGrid({
   categories: Category[];
   initialCategory?: string;
 }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const lockedCategory = initialCategory !== "All";
   const [category, setCategory] = useState(initialCategory);
   const [query, setQuery] = useState("");
@@ -118,7 +119,7 @@ export function CatalogGrid({
     [size, color, minPrice, maxPrice].filter(Boolean).length + Number(inStock);
   const activeLabels = [
     size ? `SIZE ${size}` : "",
-    color ? color.toUpperCase() : "",
+    color ? colorDisplayName(locale, color) : "",
     minPrice ? `FROM GEL ${minPrice}` : "",
     maxPrice ? `TO GEL ${maxPrice}` : "",
     inStock ? "IN STOCK" : "",
@@ -157,7 +158,7 @@ export function CatalogGrid({
                 key={c}
                 onClick={() => setCategory(c)}
               >
-                {t(c)}
+                {categoryDisplayName(locale, c, categories.find((item) => item.name === c)?.slug)}
               </button>
             ))}
           </div>
@@ -225,7 +226,7 @@ export function CatalogGrid({
                 <option value="">{t("All colors")}</option>
                 {colors.map((item) => (
                   <option key={item} value={item}>
-                    {item}
+                    {colorDisplayName(locale, item)}
                   </option>
                 ))}
               </select>

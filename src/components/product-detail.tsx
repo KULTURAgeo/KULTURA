@@ -1,5 +1,6 @@
 "use client";
 import { useLanguage } from "./language-provider";
+import { categoryDisplayName, colorDisplayName } from "@/lib/category-i18n";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { money, type Product } from "@/lib/catalog";
@@ -13,7 +14,7 @@ import { WishlistButton } from "./wishlist-button";
 
 export function ProductDetail({ product, wishlistSaved = false }: { product: Product; wishlistSaved?: boolean }) {
   const cart = useCart();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [size, setSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [view, setView] = useState(0);
@@ -119,14 +120,14 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
         {sampleImagery && <p className="muted">{t("Illustrative sample imagery. Final garment details may differ.")}</p>}
       </div>
       <div className="product-info">
-        <p className="eyebrow">KULTURA / {product.category}</p>
+        <p className="eyebrow">KULTURA / {categoryDisplayName(locale, product.category, product.categorySlug)}</p>
         <h1>{product.name.replace("KULTURA ", "")}</h1>
         <p className="detail-price">{money(product.price)} {product.compareAt && product.compareAt > product.price ? <del className="muted" aria-label={t("Original price")}>{money(product.compareAt)}</del> : null}</p>
         <ProductBadges product={product} />
         {product.drop && <Badge>DROP 001</Badge>}
         <p>{product.description}</p>
         <fieldset>
-          <legend>{t("COLOR")} — {color?.toUpperCase()}</legend>
+          <legend>{t("COLOR")} — {color ? colorDisplayName(locale, color).toUpperCase() : ""}</legend>
           {colors.map((c) => (
             <button
               key={c}
@@ -140,7 +141,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
               }}
             >
               <span />
-              {c}
+              {colorDisplayName(locale, c)}
             </button>
           ))}
         </fieldset>
