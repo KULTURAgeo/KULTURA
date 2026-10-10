@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "./language-provider";
+import { colorDisplayName } from "@/lib/category-i18n";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
@@ -21,7 +22,7 @@ export function ReviewOrder({
   testCheckoutEnabled: boolean;
 }) {
   const cart = useCart();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { ready, busy, refresh } = cart;
 
   useEffect(() => {
@@ -114,7 +115,7 @@ export function ReviewOrder({
                 <div className="review-order-item-info">
                   <div>
                     <strong>{line.name}</strong>
-                    <span>{line.color} / {line.size}</span>
+                    <span>{colorDisplayName(locale, line.color)} / {line.size}</span>
                     <span>{money(line.price)} each</span>
                   </div>
                   {line.notice ? (

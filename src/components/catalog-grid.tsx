@@ -52,16 +52,18 @@ export function CatalogGrid({
           product.name,
           product.description,
           product.category,
+          categoryDisplayName(locale, product.category, product.categorySlug),
           ...product.variants.flatMap((variant) => [
             variant.sku,
             variant.size,
             variant.color,
+            colorDisplayName(locale, variant.color),
           ]),
         ]
           .join(" ")
           .toLowerCase(),
       })),
-    [baseProducts],
+    [baseProducts, locale],
   );
 
   const sizes = useMemo(
@@ -158,7 +160,7 @@ export function CatalogGrid({
                 key={c}
                 onClick={() => setCategory(c)}
               >
-                {categoryDisplayName(locale, c, categories.find((item) => item.name === c)?.slug)}
+                {c === "All" ? t("All") : categoryDisplayName(locale, c, categories.find((item) => item.name === c)?.slug)}
               </button>
             ))}
           </div>

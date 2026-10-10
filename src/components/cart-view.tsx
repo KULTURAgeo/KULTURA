@@ -1,5 +1,6 @@
 "use client";
 import { useLanguage } from "./language-provider";
+import { colorDisplayName } from "@/lib/category-i18n";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
@@ -10,7 +11,7 @@ import { Button, Icon } from "./ui";
 
 export function CartContents({ compact = false }: { compact?: boolean }) {
   const cart = useCart();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { ready, busy, refresh } = cart;
 
   useEffect(() => {
@@ -56,7 +57,7 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
             ) : (
               <strong>{line.name}</strong>
             )}
-            <p>{line.color} / {line.size}</p>
+            <p>{colorDisplayName(locale, line.color)} / {line.size}</p>
             <p>{line.available ? money(line.price) : t("Unavailable")}</p>
             {line.notice ? <p className="muted" role="status">{line.notice}</p> : null}
             <div className="quantity-control">
