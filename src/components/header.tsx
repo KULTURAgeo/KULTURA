@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { HeaderInteractions } from "./header-interactions";
+import { LanguageSwitcher } from "./language-switcher";
+import { useLanguage } from "./language-provider";
 import { flushSync } from "react-dom";
 
 type Theme = "light" | "dark";
@@ -14,11 +16,6 @@ type TextRipple = {
 const THEME_KEY = "kultura-theme";
 const WIPE_MS = 1000;
 
-const links = [
-  { href: "/shop", label: "SHOP" },
-  { href: "/drops", label: "DROPS" },
-  { href: "/about", label: "ABOUT" },
-] as const;
 
 function SunIcon() {
   return (
@@ -40,6 +37,12 @@ function MoonIcon() {
 }
 
 export function Header() {
+  const { t } = useLanguage();
+  const links = [
+    { href: "/shop", label: t("SHOP"), key: "shop" },
+    { href: "/drops", label: t("DROPS"), key: "drops" },
+    { href: "/about", label: t("ABOUT"), key: "about" },
+  ];
   const [theme, setTheme] = useState<Theme>("dark");
   const [ripple, setRipple] = useState<TextRipple | null>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -152,7 +155,7 @@ export function Header() {
 
   return (
     <>
-      <div className="announcement">INDEPENDENT SPIRIT. EVERYDAY UNIFORM.</div>
+      <div className="announcement">{t("INDEPENDENT SPIRIT. EVERYDAY UNIFORM.")}</div>
       <header className="header theme-header"
         data-wave-direction={ripple?.direction}>
         <div className="theme-header-left">
@@ -161,19 +164,19 @@ export function Header() {
           </Link>
           <button type="button"
             className="theme-mode-button theme-light-trigger"
-            aria-label="Switch to light mode" title="Light mode"
+            aria-label={t("Switch to light mode")} title={t("LIGHT")}
             aria-pressed={theme === "light"} onClick={() => setMode("light")}>
             <SunIcon />
-            <span className="theme-mode-label">LIGHT</span>
+            <span className="theme-mode-label">{t("LIGHT")}</span>
           </button>
         </div>
-        <nav ref={navRef} className="desktop-nav theme-nav" aria-label="Main navigation">
-          {links.map(({ href, label }, linkIndex) => {
+        <nav ref={navRef} className="desktop-nav theme-nav" aria-label={t("Main navigation")}>
+          {links.map(({ href, label, key }, linkIndex) => {
             const start = links.slice(0, linkIndex).reduce((count, link) => count + link.label.length, 0);
             return (
               <Link key={href} href={href} aria-label={label}
-                data-theme-word={label.toLowerCase()}
-                style={{ viewTransitionName: `kultura-nav-${label.toLowerCase()}` }}>
+                data-theme-word={key}
+                style={{ viewTransitionName: `kultura-nav-${key}` }}>
                 {Array.from(label).map((char, index) => {
                   const order = start + index;
                   const delay = ripple?.delays[order] ?? 0;
@@ -190,11 +193,12 @@ export function Header() {
         </nav>
         <div className="theme-header-right">
           <button type="button" className="theme-mode-button theme-dark-trigger"
-            aria-label="Switch to dark mode" title="Dark mode"
+            aria-label={t("Switch to dark mode")} title={t("DARK")}
             aria-pressed={theme === "dark"} onClick={() => setMode("dark")}>
             <MoonIcon />
-            <span className="theme-mode-label">DARK</span>
+            <span className="theme-mode-label">{t("DARK")}</span>
           </button>
+          <LanguageSwitcher />
           <HeaderInteractions theme={theme} onThemeChange={setMode} />
         </div>
 

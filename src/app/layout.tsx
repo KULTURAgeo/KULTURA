@@ -1,3 +1,6 @@
+import { LanguageProvider } from "@/components/language-provider";
+import { getServerLocale } from "@/lib/i18n-server";
+import { translate } from "@/lib/i18n";
 import { AuthSession } from "@/components/auth-session";
 import { StructuredData } from "@/components/structured-data";
 import { CookieConsent } from "@/components/cookie-consent";
@@ -54,11 +57,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getServerLocale();
   const origin = siteUrl();
   const organizationId = new URL("/#organization", origin).href;
   const websiteId = new URL("/#website", origin).href;
@@ -82,13 +86,13 @@ export default function RootLayout({
         url: origin.href,
         name: "KULTURA",
         publisher: { "@id": organizationId },
-        inLanguage: "en",
+        inLanguage: locale,
       },
     ],
   };
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: "try { var theme = localStorage.getItem(\"kultura-theme\"); document.documentElement.dataset.theme = theme === \"light\" ? \"light\" : \"dark\"; } catch { document.documentElement.dataset.theme = \"dark\"; }" }} />
       </head>
@@ -100,14 +104,16 @@ export default function RootLayout({
         />
         <AuthSession config={supabaseConfig()} />
         <a className="skip-link" href="#main">
-          Skip to content
+          {translate(locale, "Skip to content")}
         </a>
+        <LanguageProvider initialLocale={locale}>
         <CartProvider>
           <Header />
           <main id="main">{children}</main>
           <LazyCartDrawer />
           <Footer />
         </CartProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

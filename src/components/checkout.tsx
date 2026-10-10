@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "./language-provider";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
@@ -56,6 +57,7 @@ export function Checkout({
   testCheckoutEnabled,
 }: CheckoutProps) {
   const cart = useCart();
+  const { t } = useLanguage();
   const router = useRouter();
   const [testPending, startTestTransition] = useTransition();
   const [testMessage, setTestMessage] = useState("");
@@ -128,11 +130,11 @@ export function Checkout({
         !draft.address_line_1.trim();
 
   const deliveryLabel = isTbilisi(deliveryCity)
-    ? "Tbilisi delivery"
-    : "Georgia regional delivery";
+    ? t("Tbilisi delivery")
+    : t("Georgia regional delivery");
   const deliveryEstimate = isTbilisi(deliveryCity)
-    ? "Estimated within 48 hours"
-    : "Estimated within 7 days";
+    ? t("Estimated within 48 hours")
+    : t("Estimated within 7 days");
 
   const updateDraft = (key: keyof DraftAddress, value: string) =>
     setDraft((current) => ({ ...current, [key]: value }));
@@ -264,25 +266,25 @@ export function Checkout({
         <section className="checkout-section">
           <div className="checkout-section-heading">
             <div>
-              <p className="eyebrow">CONTACT</p>
-              <h2>YOUR DETAILS</h2>
+              <p className="eyebrow">{t("CONTACT")}</p>
+              <h2>{t("YOUR DETAILS")}</h2>
             </div>
             <Link className="text-link" href="/account">
-              EDIT ACCOUNT ↗
+              {t("EDIT ACCOUNT ↗")}
             </Link>
           </div>
           <div className="checkout-contact">
             <div>
-              <span>EMAIL</span>
+              <span>{t("EMAIL")}</span>
               <strong>{profile.email}</strong>
             </div>
             <div>
-              <span>NAME</span>
-              <strong>{profile.fullName || "Not added"}</strong>
+              <span>{t("NAME")}</span>
+              <strong>{profile.fullName || t("Not added")}</strong>
             </div>
             <div>
-              <span>PHONE</span>
-              <strong>{profile.phone || "Add below"}</strong>
+              <span>{t("PHONE")}</span>
+              <strong>{profile.phone || t("Add below")}</strong>
             </div>
           </div>
         </section>
@@ -290,11 +292,11 @@ export function Checkout({
         <section className="checkout-section">
           <div className="checkout-section-heading">
             <div>
-              <p className="eyebrow">DELIVERY</p>
-              <h2>SHIPPING ADDRESS</h2>
+              <p className="eyebrow">{t("DELIVERY")}</p>
+              <h2>{t("SHIPPING ADDRESS")}</h2>
             </div>
             <Link className="text-link" href="/account/addresses">
-              MANAGE SAVED ADDRESSES ↗
+              {t("MANAGE SAVED ADDRESSES ↗")}
             </Link>
           </div>
 
@@ -305,14 +307,14 @@ export function Checkout({
                 className={addressMode === "saved" ? "active" : ""}
                 onClick={() => setAddressMode("saved")}
               >
-                SAVED ADDRESS
+                {t("SAVED ADDRESS")}
               </button>
               <button
                 type="button"
                 className={addressMode === "new" ? "active" : ""}
                 onClick={() => setAddressMode("new")}
               >
-                DIFFERENT ADDRESS
+                {t("DIFFERENT ADDRESS")}
               </button>
             </div>
           ) : null}
@@ -337,7 +339,7 @@ export function Checkout({
                   <span>
                     <strong>
                       {address.recipient_name}
-                      {address.is_default ? " · DEFAULT" : ""}
+                      {address.is_default ? ` · ${t("DEFAULT")}` : ""}
                     </strong>
                     <small>{address.phone}</small>
                     <small>
@@ -359,7 +361,7 @@ export function Checkout({
           ) : (
             <div className="checkout-address-form">
               <label className="k-field">
-                <span>RECIPIENT NAME</span>
+                <span>{t("RECIPIENT NAME")}</span>
                 <input
                   value={draft.recipient_name}
                   onChange={(event) =>
@@ -370,7 +372,7 @@ export function Checkout({
                 />
               </label>
               <label className="k-field">
-                <span>PHONE</span>
+                <span>{t("PHONE")}</span>
                 <input
                   value={draft.phone}
                   onChange={(event) => updateDraft("phone", event.target.value)}
@@ -379,21 +381,21 @@ export function Checkout({
                 />
               </label>
               <label className="k-field checkout-country">
-                <span>COUNTRY</span>
-                <input value="Georgia (GE)" disabled />
+                <span>{t("COUNTRY")}</span>
+                <input value={t("Georgia (GE)")} disabled />
               </label>
               <label className="k-field">
-                <span>CITY</span>
+                <span>{t("CITY")}</span>
                 <input
                   value={draft.city}
                   onChange={(event) => updateDraft("city", event.target.value)}
                   autoComplete="address-level2"
                   maxLength={120}
-                  placeholder="Tbilisi, Batumi, Kutaisi..."
+                  placeholder={t("Tbilisi, Batumi, Kutaisi...")}
                 />
               </label>
               <label className="k-field checkout-address-wide">
-                <span>ADDRESS LINE 1</span>
+                <span>{t("ADDRESS LINE 1")}</span>
                 <input
                   value={draft.address_line_1}
                   onChange={(event) =>
@@ -401,11 +403,11 @@ export function Checkout({
                   }
                   autoComplete="address-line1"
                   maxLength={300}
-                  placeholder="Street, building, apartment"
+                  placeholder={t("Street, building, apartment")}
                 />
               </label>
               <label className="k-field">
-                <span>ADDRESS LINE 2 · OPTIONAL</span>
+                <span>{t("ADDRESS LINE 2 · OPTIONAL")}</span>
                 <input
                   value={draft.address_line_2}
                   onChange={(event) =>
@@ -416,7 +418,7 @@ export function Checkout({
                 />
               </label>
               <label className="k-field">
-                <span>POSTAL CODE · OPTIONAL</span>
+                <span>{t("POSTAL CODE · OPTIONAL")}</span>
                 <input
                   value={draft.postal_code}
                   onChange={(event) =>
@@ -431,12 +433,12 @@ export function Checkout({
 
           <div className="checkout-delivery-card">
             <div>
-              <p className="eyebrow">STANDARD DELIVERY</p>
-              <strong>{deliveryCity ? deliveryLabel : "Enter a city"}</strong>
+              <p className="eyebrow">{t("STANDARD DELIVERY")}</p>
+              <strong>{deliveryCity ? deliveryLabel : t("Enter a city")}</strong>
               <small>
                 {deliveryCity
                   ? deliveryEstimate
-                  : "Delivery fee and estimate will update automatically."}
+                   : t("Delivery fee and estimate will update automatically.")}
               </small>
             </div>
             <strong>
@@ -469,15 +471,14 @@ export function Checkout({
         </section>
 
         <section className="checkout-section checkout-payment-preview">
-          <p className="eyebrow">PAYMENT</p>
-          <h2>PAYMENT PENDING</h2>
+          <p className="eyebrow">{t("PAYMENT")}</p>
+          <h2>{t("PAYMENT PENDING")}</h2>
           <label className="checkout-payment-option">
             <input type="radio" checked readOnly />
             <span>
-              <strong>ONLINE CARD PAYMENT</strong>
+              <strong>{t("ONLINE CARD PAYMENT")}</strong>
               <small>
-                The bank payment gateway is not connected yet. You can save a
-                pending order without entering card details.
+                {t("The bank payment gateway is not connected yet. You can save a pending order without entering card details.")}
               </small>
             </span>
             <span>VISA · MC</span>
@@ -485,8 +486,8 @@ export function Checkout({
 
           <div className="checkout-promo">
             <div>
-              <p className="eyebrow">PROMO CODE</p>
-              <span>Have a discount code? Apply it before placing the order.</span>
+              <p className="eyebrow">{t("PROMO CODE")}</p>
+              <span>{t("Have a discount code? Apply it before placing the order.")}</span>
             </div>
             <div className="checkout-promo-row">
               <input
@@ -494,8 +495,8 @@ export function Checkout({
                 onChange={(event) => setPromoInput(event.target.value.toUpperCase())}
                 maxLength={50}
                 autoComplete="off"
-                placeholder="ENTER CODE"
-                aria-label="Promo code"
+                placeholder={t("ENTER CODE")}
+                aria-label={t("Promo code")}
               />
               <button
                 type="button"
@@ -503,7 +504,7 @@ export function Checkout({
                 onClick={applyPromo}
                 disabled={promoPending || !cart.quote.lines.length || !promoInput.trim()}
               >
-                {promoPending ? "APPLYING…" : "APPLY"}
+                {promoPending ? t("APPLYING…") : t("APPLY")}
               </button>
             </div>
             {promoMessage ? (
@@ -516,14 +517,13 @@ export function Checkout({
             ) : null}
             {appliedPromo && !promoIsCurrent ? (
               <p className="form-error" role="status">
-                Your bag changed. Apply the promo code again.
+                {t("Your bag changed. Apply the promo code again.")}
               </p>
             ) : null}
           </div>
 
           <p className="muted">
-            No card details are collected and this action does not charge money.
-            Payment status will remain PENDING until a verified payment gateway is connected.
+            {t("No card details are collected and this action does not charge money. Payment status will remain PENDING until a verified payment gateway is connected.")}
           </p>
         </section>
       </div>
@@ -532,22 +532,22 @@ export function Checkout({
         <div className="checkout-summary-inner">
           <div className="checkout-summary-heading">
             <div>
-              <p className="eyebrow">ORDER SUMMARY</p>
-              <h2>YOUR BAG</h2>
+              <p className="eyebrow">{t("ORDER SUMMARY")}</p>
+              <h2>{t("YOUR BAG")}</h2>
             </div>
             <Link className="text-link" href="/cart">
-              EDIT ↗
+              {t("EDIT ↗")}
             </Link>
           </div>
 
-          {!cart.ready ? <p>Loading your bag…</p> : null}
+          {!cart.ready ? <p>{t("Loading your bag…")}</p> : null}
           {cart.error ? <p role="alert">{cart.error}</p> : null}
 
           {cart.ready && !cart.quote.lines.length ? (
             <div className="empty-state">
-              <p>Your bag is empty.</p>
+              <p>{t("Your bag is empty.")}</p>
               <Link className="text-link" href="/shop">
-                RETURN TO SHOP ↗
+                {t("RETURN TO SHOP ↗")}
               </Link>
             </div>
           ) : null}
@@ -580,11 +580,11 @@ export function Checkout({
             <>
               <div className="checkout-totals">
                 <div>
-                  <span>SUBTOTAL</span>
+                  <span>{t("SUBTOTAL")}</span>
                   <strong>{money(cart.quote.subtotal)}</strong>
                 </div>
                 <div>
-                  <span>DELIVERY</span>
+                  <span>{t("DELIVERY")}</span>
                   <strong>
                     {!deliveryCity
                       ? "—"
@@ -600,7 +600,7 @@ export function Checkout({
                   </div>
                 ) : null}
                 <div className="checkout-total-final">
-                  <span>TOTAL</span>
+                  <span>{t("TOTAL")}</span>
                   <strong>
                     {deliveryCity
                       ? money(total)
@@ -611,11 +611,11 @@ export function Checkout({
 
               {unavailable ? (
                 <p className="form-error">
-                  Remove unavailable items from your bag before checkout.
+                  {t("Remove unavailable items from your bag before checkout.")}
                 </p>
               ) : missingDelivery ? (
                 <p className="muted">
-                  Complete your delivery address to continue.
+                  {t("Complete your delivery address to continue.")}
                 </p>
               ) : null}
 
@@ -643,8 +643,8 @@ export function Checkout({
               ) : (
                 <div className="checkout-test-mode">
                   <div className="checkout-test-mode-label">
-                    <span>PAYMENT GATEWAY PENDING</span>
-                    <small>Saves this order with payment status PENDING. No money is charged.</small>
+                    <span>{t("PAYMENT GATEWAY PENDING")}</span>
+                    <small>{t("Saves this order with payment status PENDING. No money is charged.")}</small>
                   </div>
                   <button
                     type="button"
@@ -652,13 +652,13 @@ export function Checkout({
                     disabled={!canCreateUnpaidOrder}
                     onClick={runUnpaidCheckout}
                   >
-                    {orderPending ? "SAVING ORDER…" : "PLACE UNPAID ORDER"}
+                    {orderPending ? t("SAVING ORDER…") : t("PLACE UNPAID ORDER")}
                   </button>
                   {orderMessage ? (
                     <p className="form-error" role="alert">{orderMessage}</p>
                   ) : null}
                   <p className="checkout-secure-note">
-                    NO PAYMENT WILL BE TAKEN · PAYMENT STATUS WILL BE PENDING
+                    {t("NO PAYMENT WILL BE TAKEN · PAYMENT STATUS WILL BE PENDING")}
                   </p>
                 </div>
               )}

@@ -1,5 +1,6 @@
 import type { Product } from "@/lib/catalog";
 import styles from "./product-badges.module.css";
+import { LocalizedLabel } from "./localized-label";
 
 type ProductBadge = { label: string; tone?: "sale" | "low" | "sold" };
 
@@ -29,7 +30,7 @@ export function ProductBadges({ product }: { product: Product }) {
           key={badge.label}
           className={`${styles.badge} ${badge.tone ? styles[badge.tone] : ""}`}
         >
-          {badge.label}
+          <LocalizedLabel source={badge.label} />
         </span>
       ))}
     </div>

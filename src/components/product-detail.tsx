@@ -1,4 +1,5 @@
 "use client";
+import { useLanguage } from "./language-provider";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { money, type Product } from "@/lib/catalog";
@@ -12,6 +13,7 @@ import { WishlistButton } from "./wishlist-button";
 
 export function ProductDetail({ product, wishlistSaved = false }: { product: Product; wishlistSaved?: boolean }) {
   const cart = useCart();
+  const { t } = useLanguage();
   const [size, setSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [view, setView] = useState(0);
@@ -28,20 +30,20 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
     product.images.length > 1
       ? product.images.map((image, i) => ({
           ...image,
-          label: i === 0 ? "Front view" : `View ${i + 1}`,
+          label: i === 0 ? t("Front view") : `${t("VIEW")} ${i + 1}`,
           crop: false,
         }))
       : [
           {
             src: product.image,
             alt: product.images[0]?.alt ?? product.name,
-            label: "Front view",
+            label: t("Front view"),
             crop: false,
           },
           {
             src: product.image,
             alt: product.images[0]?.alt ?? product.name,
-            label: "Detail crop",
+            label: t("Detail crop"),
             crop: true,
           },
         ];
@@ -114,17 +116,17 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
             </button>
           ))}
         </div>
-        {sampleImagery && <p className="muted">Illustrative sample imagery. Final garment details may differ.</p>}
+        {sampleImagery && <p className="muted">{t("Illustrative sample imagery. Final garment details may differ.")}</p>}
       </div>
       <div className="product-info">
         <p className="eyebrow">KULTURA / {product.category}</p>
         <h1>{product.name.replace("KULTURA ", "")}</h1>
-        <p className="detail-price">{money(product.price)} {product.compareAt && product.compareAt > product.price ? <del className="muted" aria-label="Original price">{money(product.compareAt)}</del> : null}</p>
+        <p className="detail-price">{money(product.price)} {product.compareAt && product.compareAt > product.price ? <del className="muted" aria-label={t("Original price")}>{money(product.compareAt)}</del> : null}</p>
         <ProductBadges product={product} />
         {product.drop && <Badge>DROP 001</Badge>}
         <p>{product.description}</p>
         <fieldset>
-          <legend>COLOR — {color?.toUpperCase()}</legend>
+          <legend>{t("COLOR")} — {color?.toUpperCase()}</legend>
           {colors.map((c) => (
             <button
               key={c}
@@ -143,7 +145,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
           ))}
         </fieldset>
         <fieldset>
-          <legend>SELECT SIZE</legend>
+          <legend>{t("SELECT SIZE")}</legend>
           <div className="size-options">
             {product.variants
               .filter((v) => v.color === color)
@@ -168,11 +170,11 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
           <SizeGuide product={product} />
         </fieldset>
         <fieldset>
-          <legend>QUANTITY</legend>
-          <div className="product-quantity" aria-label="Quantity selector">
+          <legend>{t("QUANTITY")}</legend>
+          <div className="product-quantity" aria-label={t("Quantity selector")}>
             <button
               type="button"
-              aria-label="Decrease quantity"
+              aria-label={t("Decrease quantity")}
               disabled={!variant || variant.stock === 0 || quantity <= 1 || cart.busy}
               onClick={() => {
                 setQuantity((current) => Math.max(1, current - 1));
@@ -181,10 +183,10 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
             >
               −
             </button>
-            <output aria-label="Selected quantity">{quantity}</output>
+            <output aria-label={t("Selected quantity")}>{quantity}</output>
             <button
               type="button"
-              aria-label="Increase quantity"
+              aria-label={t("Increase quantity")}
               disabled={!variant || variant.stock === 0 || quantity >= maxQuantity || cart.busy}
               onClick={() => {
                 setQuantity((current) => Math.min(maxQuantity, current + 1));
@@ -194,16 +196,16 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
               +
             </button>
             <span className="product-quantity-limit">
-              {variant ? `MAX ${maxQuantity}` : "SELECT SIZE FIRST"}
+              {variant ? `MAX ${maxQuantity}` : t("SELECT SIZE FIRST")}
             </span>
           </div>
         </fieldset>
         <p className="stock" role="status">
           {soldOut
-            ? "Sold out"
+            ? t("Sold out")
             : variant
-              ? `${variant.stock} currently available`
-              : "Select your size to check availability"}
+              ? `${variant.stock} ${t("currently available")}`
+              : t("Select your size to check availability")}
         </p>
         <Button
           className="add-button"
@@ -230,29 +232,27 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
             }
             setMessage(
               ok
-                ? `${quantity} item${quantity === 1 ? "" : "s"} added to your bag.`
-                : "Unable to add this item. Please try again.",
+                ? `${quantity} ${t("items added to your bag.")}`
+                : t("Unable to add this item. Please try again."),
             );
           }}
         >
-          {soldOut ? "SOLD OUT" : "ADD TO CART"}{" "}
+          {soldOut ? t("SOLD OUT") : t("ADD TO CART")}{" "}
           <span aria-hidden="true">↗</span>
         </Button>
         <p role="status">{message}</p>
         <WishlistButton product={product} saved={wishlistSaved} />
         <div className="accordions">
           <details>
-            <summary>DETAILS & CARE</summary>
+            <summary>{t("DETAILS & CARE")}</summary>
             <p>
-              Sample product description. Fabric composition, care instructions
-              and final measurements will be confirmed before launch.
+              {t("Sample product description. Fabric composition, care instructions and final measurements will be confirmed before launch.")}
             </p>
           </details>
           <details>
-            <summary>DELIVERY & RETURNS</summary>
+            <summary>{t("DELIVERY & RETURNS")}</summary>
             <p>
-              Delivery regions, rates and returns terms will be published before
-              ordering opens. No orders are accepted in this preview.
+              {t("Delivery regions, rates and returns terms will be published before ordering opens. No orders are accepted in this preview.")}
             </p>
           </details>
         </div>
@@ -272,7 +272,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
             onClick={() => setZoomOpen(false)}
             autoFocus
           >
-            CLOSE ×
+            {t("CLOSE ×")}
           </button>
           <div className="product-zoom-image" onClick={(event) => event.stopPropagation()}>
             <Image

@@ -7,6 +7,8 @@ import { CatalogNotice } from "@/components/catalog-notice";
 import { Newsletter } from "@/components/newsletter";
 import { HomeMotion } from "@/components/home-motion";
 import styles from "./home.module.css";
+import { getServerLocale } from "@/lib/i18n-server";
+import { translate } from "@/lib/i18n";
 
 export const metadata = pageMetadata("KULTURA — Step Into Kultura", "/");
 
@@ -30,6 +32,8 @@ function facebookProfileUrl(): string | undefined {
 }
 
 export default async function Home() {
+  const locale = await getServerLocale();
+  const t = (source: string) => translate(locale, source);
   const { products: showcase, categories, status } = await getHomepageCatalog();
   const facebookUrl = facebookProfileUrl();
 
@@ -58,9 +62,9 @@ export default async function Home() {
     <HomeMotion className={styles.home}>
       <section className={styles.hero} data-hero>
         <div className={styles.heroInner} data-hero-copy>
-          <h1>STEP INTO KULTURA</h1>
+          <h1>{t("STEP INTO KULTURA")}</h1>
           <p className={styles.heroLead}>
-            Clothing with presence. Strong silhouettes, restrained detail and movement at the center.
+            {t("Clothing with presence. Strong silhouettes, restrained detail and movement at the center.")}
           </p>
           <div className={styles.socials}>
             <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">INSTAGRAM ↗</a>
@@ -102,7 +106,7 @@ export default async function Home() {
                 <strong>KULTURA</strong>
                 <span>K</span>
               </div>
-              <div className={styles.phoneLabel}>FEATURED / DROP 001</div>
+              <div className={styles.phoneLabel}>{t("FEATURED / DROP 001")}</div>
 
               <div className={styles.phoneViewport} data-phone-viewport>
                 {phoneSlides.map((product, index) => (
@@ -121,7 +125,7 @@ export default async function Home() {
                     <div className={styles.phoneSlideShade} />
                     <div className={styles.phoneMeta}>
                       <strong>{product?.name?.replace("KULTURA ", "") ?? `KULTURA 0${index + 1}`}</strong>
-                      <span>{product ? money(product.price) : "VIEW"}</span>
+                      <span>{product ? money(product.price) : t("VIEW")}</span>
                     </div>
                   </div>
                 ))}
@@ -136,7 +140,7 @@ export default async function Home() {
                   width: "100%",
                 }}
               >
-                <span style={{ justifySelf: "start" }}>HOME</span>
+                <span style={{ justifySelf: "start" }}>{t("HOME")}</span>
                 <span
                   data-phone-logo
                   style={{
@@ -308,17 +312,17 @@ export default async function Home() {
           </div>
 
           <div className={styles.demoCaption} data-demo-caption>
-            <span>SCROLL TO EXPLORE</span>
-            <span>PRODUCTS IN MOTION</span>
+            <span>{t("SCROLL TO EXPLORE")}</span>
+            <span>{t("PRODUCTS IN MOTION")}</span>
           </div>
         </div>
       </section>
 
       <section className={styles.bothSection} data-reveal>
-        <p className={styles.bothEyebrow}>KULTURA / CATEGORIES</p>
-        <h2>FASHION OR KULTURA?<br /><em>BOTH.</em></h2>
-        <p className={styles.bothLead}>Choose the piece. Keep the attitude.</p>
-        <Link href="/shop" className={styles.cta}>CATEGORIES</Link>
+        <p className={styles.bothEyebrow}>{t("KULTURA / CATEGORIES")}</p>
+        <h2>{t("FASHION OR KULTURA?")}<br /><em>{t("BOTH.")}</em></h2>
+        <p className={styles.bothLead}>{t("Choose the piece. Keep the attitude.")}</p>
+        <Link href="/shop" className={styles.cta}>{t("CATEGORIES")}</Link>
       </section>
 
       <section className={styles.gallerySection}>
@@ -337,7 +341,7 @@ export default async function Home() {
               <span className={styles.galleryIndex}>0{index + 1}</span>
               <div className={styles.galleryCopy}>
                 <strong>{category.name}</strong>
-                <span>SHOP CATEGORY ↗</span>
+                <span>{t("SHOP CATEGORY ↗")}</span>
               </div>
             </Link>
           ))}
@@ -348,9 +352,9 @@ export default async function Home() {
         <Image src={thirdProduct?.image ?? campaignImage} alt="" fill sizes="100vw" />
         <div className={styles.endShade} />
         <div className={styles.endCopy} data-reveal>
-          <span>STEP INTO KULTURA</span>
-          <h2>WEAR IT<br />YOUR WAY.</h2>
-          <Link href="/shop" className={styles.endCta}>ENTER SHOP ↗</Link>
+          <span>{t("STEP INTO KULTURA")}</span>
+          <h2>{t("WEAR IT")}<br />{t("YOUR WAY.")}</h2>
+          <Link href="/shop" className={styles.endCta}>{t("ENTER SHOP ↗")}</Link>
         </div>
       </section>
 

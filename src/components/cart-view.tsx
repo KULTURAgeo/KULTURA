@@ -1,4 +1,5 @@
 "use client";
+import { useLanguage } from "./language-provider";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
@@ -9,6 +10,7 @@ import { Button, Icon } from "./ui";
 
 export function CartContents({ compact = false }: { compact?: boolean }) {
   const cart = useCart();
+  const { t } = useLanguage();
   const { ready, busy, refresh } = cart;
 
   useEffect(() => {
@@ -23,22 +25,22 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className="cart-content" aria-busy={cart.busy}>
-      {!cart.ready ? <p role="status">Loading your bag…</p> : null}
+      {!cart.ready ? <p role="status">{t("Loading your bag…")}</p> : null}
 
       {cart.error ? (
         <div role="alert">
           <p>{cart.error}</p>
           <Button onClick={() => void cart.refresh()} disabled={cart.busy}>
-            TRY AGAIN
+            {t("TRY AGAIN")}
           </Button>
         </div>
       ) : null}
 
       {cart.ready && !cart.quote.lines.length && !cart.error ? (
         <div className="empty-state">
-          <p>Your bag is waiting.</p>
+          <p>{t("Your bag is waiting.")}</p>
           <Link className="text-link" href="/shop" onClick={cart.close}>
-            EXPLORE THE COLLECTION ↗
+            {t("EXPLORE THE COLLECTION ↗")}
           </Link>
         </div>
       ) : null}
@@ -55,7 +57,7 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
               <strong>{line.name}</strong>
             )}
             <p>{line.color} / {line.size}</p>
-            <p>{line.available ? money(line.price) : "Unavailable"}</p>
+            <p>{line.available ? money(line.price) : t("Unavailable")}</p>
             {line.notice ? <p className="muted" role="status">{line.notice}</p> : null}
             <div className="quantity-control">
               <button
@@ -65,7 +67,7 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
               >
                 −
               </button>
-              <output aria-label="Quantity">{line.quantity}</output>
+              <output aria-label={t("Quantity")}>{line.quantity}</output>
               <button
                 aria-label={`Increase quantity for ${line.name}`}
                 disabled={cart.busy || !line.available || line.quantity >= Math.min(line.stock, MAX_QUANTITY)}
@@ -78,7 +80,7 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
                 disabled={cart.busy}
                 onClick={() => void cart.remove(line.variantId)}
               >
-                Remove
+                {t("Remove")}
               </button>
             </div>
           </div>
@@ -89,19 +91,19 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
       {!!cart.quote.lines.length ? (
         <div className="cart-total">
           <div>
-            <span>SUBTOTAL</span>
-            <strong>{cart.error ? "Refresh required" : money(cart.quote.subtotal)}</strong>
+            <span>{t("SUBTOTAL")}</span>
+            <strong>{cart.error ? t("Refresh required") : money(cart.quote.subtotal)}</strong>
           </div>
           <p className="muted">
-            Prices and availability are refreshed from the store. Delivery is calculated before checkout. Items are not reserved.
+            {t("Prices and availability are refreshed from the store. Delivery is calculated before checkout. Items are not reserved.")}
           </p>
 
           {compact ? (
-            <Link className="button" href="/cart" onClick={cart.close}>VIEW YOUR BAG ↗</Link>
+            <Link className="button" href="/cart" onClick={cart.close}>{t("VIEW YOUR BAG ↗")}</Link>
           ) : canReview ? (
-            <Link className="button" href="/checkout/review">REVIEW ORDER ↗</Link>
+            <Link className="button" href="/checkout/review">{t("REVIEW ORDER ↗")}</Link>
           ) : (
-            <Button disabled>CHECKOUT UNAVAILABLE</Button>
+            <Button disabled>{t("CHECKOUT UNAVAILABLE")}</Button>
           )}
         </div>
       ) : null}
@@ -111,6 +113,7 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
 
 export function CartDrawer() {
   const cart = useCart();
+  const { t } = useLanguage();
   const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -129,8 +132,8 @@ export function CartDrawer() {
       }}
     >
       <div className="drawer-heading">
-        <h2 id="bag-title">YOUR BAG</h2>
-        <button className="icon-button" aria-label="Close bag" onClick={cart.close}>
+        <h2 id="bag-title">{t("YOUR BAG")}</h2>
+        <button className="icon-button" aria-label={t("Close bag")} onClick={cart.close}>
           <Icon name="close" />
         </button>
       </div>

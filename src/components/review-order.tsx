@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "./language-provider";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
@@ -20,6 +21,7 @@ export function ReviewOrder({
   testCheckoutEnabled: boolean;
 }) {
   const cart = useCart();
+  const { t } = useLanguage();
   const { ready, busy, refresh } = cart;
 
   useEffect(() => {
@@ -63,15 +65,15 @@ export function ReviewOrder({
         <section className="review-order-panel" aria-labelledby="review-items-title">
           <div className="review-order-heading">
             <div>
-              <p className="eyebrow">REVIEW ORDER</p>
-              <h2 id="review-items-title">YOUR PIECES</h2>
+              <p className="eyebrow">{t("REVIEW ORDER")}</p>
+              <h2 id="review-items-title">{t("YOUR PIECES")}</h2>
             </div>
             <Link className="text-link" href="/cart">
-              EDIT BAG ↗
+              {t("EDIT BAG ↗")}
             </Link>
           </div>
 
-          {!cart.ready ? <p role="status">Refreshing prices and stock…</p> : null}
+          {!cart.ready ? <p role="status">{t("Refreshing prices and stock…")}</p> : null}
           {cart.error ? (
             <div role="alert" className="review-order-error">
               <p>{cart.error}</p>
@@ -81,16 +83,16 @@ export function ReviewOrder({
                 onClick={() => void cart.refresh()}
                 disabled={cart.busy}
               >
-                TRY AGAIN
+                {t("TRY AGAIN")}
               </button>
             </div>
           ) : null}
 
           {cart.ready && !cart.quote.lines.length && !cart.error ? (
             <div className="empty-state">
-              <p>Your bag is empty.</p>
+              <p>{t("Your bag is empty.")}</p>
               <Link className="button" href="/shop">
-                BROWSE SHOP ↗
+                {t("BROWSE SHOP ↗")}
               </Link>
             </div>
           ) : null}
@@ -129,7 +131,7 @@ export function ReviewOrder({
                     >
                       −
                     </button>
-                    <output aria-label="Quantity">{line.quantity}</output>
+                    <output aria-label={t("Quantity")}>{line.quantity}</output>
                     <button
                       type="button"
                       aria-label={`Increase quantity for ${line.name}`}
@@ -150,12 +152,12 @@ export function ReviewOrder({
                       disabled={cart.busy}
                       onClick={() => void cart.remove(line.variantId)}
                     >
-                      Remove
+                      {t("Remove")}
                     </button>
                   </div>
                 </div>
                 <strong className="review-order-line-total">
-                  {line.available ? money(line.lineTotal) : "UNAVAILABLE"}
+                  {line.available ? money(line.lineTotal) : t("UNAVAILABLE")}
                 </strong>
               </article>
             ))}
@@ -163,53 +165,53 @@ export function ReviewOrder({
         </section>
 
         <aside className="review-order-summary" aria-labelledby="review-total-title">
-          <p className="eyebrow">ORDER TOTAL</p>
-          <h2 id="review-total-title">SUMMARY</h2>
+          <p className="eyebrow">{t("ORDER TOTAL")}</p>
+          <h2 id="review-total-title">{t("SUMMARY")}</h2>
           <div className="review-total-lines">
             <div>
-              <span>SUBTOTAL</span>
+              <span>{t("SUBTOTAL")}</span>
               <strong>{money(cart.quote.subtotal)}</strong>
             </div>
             <div>
-              <span>DELIVERY</span>
-              <strong>{shipping === 0 ? "FREE" : money(shipping)}</strong>
+              <span>{t("DELIVERY")}</span>
+              <strong>{shipping === 0 ? t("FREE") : money(shipping)}</strong>
             </div>
             <div className="review-total-final">
-              <span>TOTAL</span>
+              <span>{t("TOTAL")}</span>
               <strong>{money(total)}</strong>
             </div>
           </div>
 
           {shippingSettings.freeShippingThreshold !== null ? (
             <p className="muted">
-              Delivery becomes free from {money(shippingSettings.freeShippingThreshold)}.
+              {t("Delivery becomes free from")} {money(shippingSettings.freeShippingThreshold)}.
             </p>
           ) : null}
           <p className="muted">
-            Promo codes can be applied on the next step and may reduce this total.
+            {t("Promo codes can be applied on the next step and may reduce this total.")}
           </p>
           {testCheckoutEnabled ? (
             <p className="muted">
-              Admin test checkout may recalculate delivery after the address is selected.
+              {t("Admin test checkout may recalculate delivery after the address is selected.")}
             </p>
           ) : null}
           {unavailable ? (
             <p className="form-error" role="alert">
-              Remove unavailable items before continuing.
+              {t("Remove unavailable items before continuing.")}
             </p>
           ) : null}
 
           {canContinue ? (
             <Link className="button review-order-continue" href="/checkout">
-              CONTINUE TO CHECKOUT ↗
+              {t("CONTINUE TO CHECKOUT ↗")}
             </Link>
           ) : (
             <button className="button review-order-continue" type="button" disabled>
-              CHECKOUT UNAVAILABLE
+              {t("CHECKOUT UNAVAILABLE")}
             </button>
           )}
           <Link className="text-link review-order-back" href="/shop">
-            CONTINUE SHOPPING
+            {t("CONTINUE SHOPPING")}
           </Link>
         </aside>
       </div>
