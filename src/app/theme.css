@@ -341,3 +341,20 @@ html[data-theme="light"] .cookie-consent .button { background: #d3d3d5; color: #
   html.theme-animating body,
   html.theme-animating .header { transition: none; }
 }
+
+/* Compact store-language selector: functional preference, desktop and mobile. */
+.kultura-language-switcher { display: inline-flex; align-items: center; min-width: 0; }
+.kultura-language-switcher select {
+  appearance: none; -webkit-appearance: none;
+  background: transparent; border: 1px solid var(--line);
+  color: var(--foreground); border-radius: 3px;
+  padding: 8px 6px; font-size: 11px; line-height: 1.15;
+  letter-spacing: .03em; font-weight: 700; cursor: pointer;
+  max-width: 104px; min-height: 34px;
+  font-family: Arial, "Noto Sans Georgian", sans-serif;
+}
+.kultura-language-switcher select:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.kultura-language-switcher option { color: #171717; background: #fff; }
+.mobile-language-choice { padding: 18px 0 8px; }
+.mobile-language-choice .kultura-language-switcher select { min-height: 42px; min-width: 116px; padding-inline: 10px; }
+@media (max-width: 767px) { .theme-header-right > .kultura-language-switcher:not(.mobile) { display: none; } }

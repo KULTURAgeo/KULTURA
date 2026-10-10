@@ -1,7 +1,10 @@
+"use client";
 import Link from "next/link";
 import { Container } from "./ui";
 import { CookieSettingsButton } from "./cookie-settings-button";
+import { useLanguage } from "./language-provider";
 export function Footer() {
+  const { t } = useLanguage();
   return (
     <footer>
       <Container>
@@ -10,9 +13,9 @@ export function Footer() {
             <Link href="/" className="wordmark">
               KULTURA®
             </Link>
-            <p>For those who move differently.</p>
+            <p>{t("For those who move differently.")}</p>
           </div>
-          <nav aria-label="Footer navigation">
+          <nav aria-label={t("Footer navigation")}>
             {[
               "shop",
               "about",
@@ -23,17 +26,17 @@ export function Footer() {
               "terms",
             ].map((item) => (
               <Link key={item} href={`/${item}`}>
-                {item.toUpperCase()}
+                {t(item.toUpperCase())}
               </Link>
             ))}
-            <span className="muted">INSTAGRAM — COMING SOON</span>
+            <span className="muted">{t("INSTAGRAM — COMING SOON")}</span>
             <CookieSettingsButton />
           </nav>
         </div>
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} KULTURA</span>
-          <span>STEP INTO KULTURA</span>
-          <span>GEORGIA / GEL</span>
+          <span>{t("STEP INTO KULTURA")}</span>
+          <span>{t("GEORGIA / GEL")}</span>
         </div>
       </Container>
     </footer>

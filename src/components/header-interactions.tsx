@@ -4,12 +4,15 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { useCart } from "./cart-provider";
 import { Icon } from "./ui";
+import { LanguageSwitcher } from "./language-switcher";
+import { useLanguage } from "./language-provider";
 
 export function HeaderInteractions({ theme, onThemeChange }: {
   theme: "light" | "dark";
   onThemeChange: (theme: "light" | "dark") => void;
 }) {
   const cart = useCart();
+  const { t } = useLanguage();
   const dialog = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
 
@@ -24,11 +27,11 @@ export function HeaderInteractions({ theme, onThemeChange }: {
         <Link
           className="icon-button"
           href="/shop#search"
-          aria-label="Search products"
+          aria-label={t("Search products")}
         >
           <Icon name="search" />
         </Link>
-        <Link className="icon-button" href="/account" aria-label="Account">
+        <Link className="icon-button" href="/account" aria-label={t("ACCOUNT")}>
           <Icon name="account" />
         </Link>
         <button
@@ -41,7 +44,7 @@ export function HeaderInteractions({ theme, onThemeChange }: {
         </button>
         <button
           className="icon-button mobile-menu"
-          aria-label="Open navigation"
+          aria-label={t("Open navigation")}
           aria-expanded={open}
           aria-controls="mobile-navigation"
           onClick={() => {
@@ -55,7 +58,7 @@ export function HeaderInteractions({ theme, onThemeChange }: {
 
       <dialog
         id="mobile-navigation"
-        aria-label="Mobile navigation"
+        aria-label={t("Mobile navigation")}
         ref={dialog}
         className="mobile-dialog"
         onClose={() => setOpen(false)}
@@ -65,7 +68,7 @@ export function HeaderInteractions({ theme, onThemeChange }: {
       >
         <div className="mobile-dialog-top">
           <span className="wordmark">KULTURA</span>
-          <button className="icon-button" aria-label="Close navigation" onClick={close}>
+          <button className="icon-button" aria-label={t("Close navigation")} onClick={close}>
             <Icon name="close" />
           </button>
         </div>
@@ -79,22 +82,23 @@ export function HeaderInteractions({ theme, onThemeChange }: {
           ].map(([label, href], index) => (
             <Link href={href} key={href} onClick={close}>
               <small>0{index + 1}</small>
-              {label}
+              {t(label)}
               <span>↗</span>
             </Link>
           ))}
         </nav>
-        <div className="mobile-theme-choice" role="group" aria-label="Color theme">
+        <div className="mobile-language-choice"><LanguageSwitcher mobile /></div>
+        <div className="mobile-theme-choice" role="group" aria-label={t("Color theme")}>
           <button type="button" aria-pressed={theme === "light"}
             onClick={() => { onThemeChange("light"); close(); }}>
-            ☀ LIGHT
+            ☀ {t("LIGHT")}
           </button>
           <button type="button" aria-pressed={theme === "dark"}
             onClick={() => { onThemeChange("dark"); close(); }}>
-            ☾ DARK
+            ☾ {t("DARK")}
           </button>
         </div>
-        <p className="eyebrow">STEP INTO KULTURA</p>
+        <p className="eyebrow">{t("STEP INTO KULTURA")}</p>
       </dialog>
     </>
   );

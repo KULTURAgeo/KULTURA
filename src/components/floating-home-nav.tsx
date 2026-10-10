@@ -4,11 +4,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import styles from "./floating-home-nav.module.css";
+import { useLanguage } from "./language-provider";
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
 export function FloatingHomeNav() {
+  const { t } = useLanguage();
   const navRef = useRef<HTMLElement>(null);
   const brandRef = useRef<HTMLAnchorElement>(null);
   const shopRef = useRef<HTMLAnchorElement>(null);
@@ -78,8 +80,8 @@ export function FloatingHomeNav() {
           unoptimized
         />
       </Link>
-      <Link ref={shopRef} href="/shop" className={styles.shop}>SHOP</Link>
-      <span ref={tagRef} className={styles.tag}>STREETWEAR / GEORGIA</span>
+      <Link ref={shopRef} href="/shop" className={styles.shop}>{t("SHOP")}</Link>
+      <span ref={tagRef} className={styles.tag}>{t("STREETWEAR / GEORGIA")}</span>
     </nav>
   );
 }
