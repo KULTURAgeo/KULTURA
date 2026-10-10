@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "./language-provider";
+import { colorDisplayName } from "@/lib/category-i18n";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
@@ -57,7 +58,7 @@ export function Checkout({
   testCheckoutEnabled,
 }: CheckoutProps) {
   const cart = useCart();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const router = useRouter();
   const [testPending, startTestTransition] = useTransition();
   const [testMessage, setTestMessage] = useState("");
@@ -567,7 +568,7 @@ export function Checkout({
                 <div>
                   <strong>{line.name}</strong>
                   <small>
-                    {line.color} / {line.size}
+                    {colorDisplayName(locale, line.color)} / {line.size}
                   </small>
                   {line.notice ? <small>{line.notice}</small> : null}
                 </div>
