@@ -4,6 +4,7 @@ import { isSearchIndexableCategorySlug } from "@/lib/seo-indexing";
 import { Container } from "@/components/ui";
 import { CatalogGrid } from "@/components/catalog-grid";
 import { LocalizedLabel } from "@/components/localized-label";
+import { LocalizedCategoryName } from "@/components/localized-category-name";
 import { CatalogNotice } from "@/components/catalog-notice";
 import {
   getCategoryCatalog,
@@ -58,7 +59,7 @@ export default async function Category({
   return (
     <Container className="page-section">
       <p className="eyebrow"><LocalizedLabel source="THE COLLECTION" /></p>
-      <h1 className="page-title">{selected.name}</h1>
+      <h1 className="page-title"><LocalizedCategoryName name={selected.name} slug={selected.slug} /></h1>
       <CatalogGrid
         products={products}
         categories={[]}

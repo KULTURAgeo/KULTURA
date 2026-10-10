@@ -4,6 +4,7 @@ import { pageMetadata } from "@/lib/site";
 import { Container } from "@/components/ui";
 import { getShopCategories } from "@/lib/catalog/repository";
 import { CatalogNotice } from "@/components/catalog-notice";
+import { LocalizedCategoryName } from "@/components/localized-category-name";
 import { getServerLocale } from "@/lib/i18n-server";
 import { translate } from "@/lib/i18n";
 
@@ -40,7 +41,7 @@ export default async function Shop() {
               <span className="eyebrow">
                 {t("CATEGORY")} {String(index + 1).padStart(2, "0")}
               </span>
-              <h3>{category.name}</h3>
+              <h3><LocalizedCategoryName name={category.name} slug={category.slug} /></h3>
               <span className="muted">
                 {category.count} {t(category.count === 1 ? "PIECE" : "PIECES")}
               </span>

@@ -2,19 +2,8 @@
 export const dynamicParams = false;
 import { notFound } from "next/navigation";
 import { pageMetadata } from "@/lib/site";
-import { Container, ButtonLink } from "@/components/ui";
-
-type InformationSection = {
-  heading: string;
-  paragraphs?: string[];
-  items?: string[];
-};
-
-type InformationPage = {
-  title: string;
-  intro: string;
-  sections?: InformationSection[];
-};
+import { InformationContent } from "@/components/information-content";
+import type { InformationPage } from "@/lib/information-pages-ka";
 
 const pages: Record<string, InformationPage> = {
   about: {
@@ -369,35 +358,5 @@ export default async function Information({
   const entry = Object.hasOwn(pages, page) ? pages[page] : undefined;
   if (!entry) notFound();
 
-  return (
-    <Container className="information page-section">
-      <p className="eyebrow">KULTURA</p>
-      <h1 className="page-title">{entry.title}</h1>
-      <p className="information-intro">{entry.intro}</p>
-
-      {entry.sections?.length ? (
-        <div className="policy-sections">
-          {entry.sections.map((section) => (
-            <section className="policy-section" key={section.heading}>
-              <h2>{section.heading}</h2>
-              {section.paragraphs?.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
-              {section.items?.length ? (
-                <ul>
-                  {section.items.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              ) : null}
-            </section>
-          ))}
-        </div>
-      ) : null}
-
-      <ButtonLink href="/shop" secondary>
-        EXPLORE THE COLLECTION ↗
-      </ButtonLink>
-    </Container>
-  );
+  return <InformationContent slug={page} english={entry} />;
 }
