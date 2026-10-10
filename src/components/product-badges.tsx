@@ -27,10 +27,10 @@ export function ProductBadges({ product }: { product: Product }) {
     <div className={styles.badges} aria-label="Product status">
       {badges.map((badge) => (
         <span
-          key=<LocalizedLabel source={badge.label} />
+          key={badge.label}
           className={`${styles.badge} ${badge.tone ? styles[badge.tone] : ""}`}
         >
-          {badge.label}
+          <LocalizedLabel source={badge.label} />
         </span>
       ))}
     </div>
