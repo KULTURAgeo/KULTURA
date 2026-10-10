@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "./language-provider";
 import { useDeferredValue, useMemo, useState } from "react";
 import type { Product, Category } from "@/lib/catalog";
 import { ProductCard } from "./product-card";
@@ -25,6 +26,7 @@ export function CatalogGrid({
   categories: Category[];
   initialCategory?: string;
 }) {
+  const { t } = useLanguage();
   const lockedCategory = initialCategory !== "All";
   const [category, setCategory] = useState(initialCategory);
   const [query, setQuery] = useState("");
@@ -146,7 +148,7 @@ export function CatalogGrid({
         {!lockedCategory ? (
           <div
             className="category-filters"
-            aria-label="Filter products by category"
+            aria-label={t("Filter products by category")}
           >
             {["All", ...categories.map((c) => c.name)].map((c) => (
               <button
@@ -155,7 +157,7 @@ export function CatalogGrid({
                 key={c}
                 onClick={() => setCategory(c)}
               >
-                {c}
+                {t(c)}
               </button>
             ))}
           </div>
@@ -164,47 +166,47 @@ export function CatalogGrid({
         <div className={styles.searchRow}>
           <div>
             <label htmlFor="catalog-search" className="sr-only">
-              Search products
+              {t("Search products")}
             </label>
             <input
               id="catalog-search"
               type="search"
-              placeholder="Search products, colours, sizes or SKU"
+              placeholder={t("Search products, colours, sizes or SKU")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
           <div>
             <label className="sr-only" htmlFor="catalog-sort">
-              Sort products
+              {t("Sort products")}
             </label>
             <select
               id="catalog-sort"
               value={sort}
               onChange={(e) => setSort(e.target.value)}
             >
-              <option value="featured">Featured</option>
-              <option value="newest">Newest</option>
-              <option value="low">Price: low to high</option>
-              <option value="high">Price: high to low</option>
+              <option value="featured">{t("Featured")}</option>
+              <option value="newest">{t("Newest")}</option>
+              <option value="low">{t("Price: low to high")}</option>
+              <option value="high">{t("Price: high to low")}</option>
             </select>
           </div>
         </div>
 
         <details className={styles.filterPanel}>
           <summary className={styles.filterSummary}>
-            <span>FILTERS</span>
+            <span>{t("FILTERS")}</span>
             <span className={styles.filterCount}>{filterCount}</span>
           </summary>
           <div className={styles.filterBody}>
             <div className={styles.field}>
-              <label htmlFor="filter-size">Size</label>
+              <label htmlFor="filter-size">{t("Size")}</label>
               <select
                 id="filter-size"
                 value={size}
                 onChange={(e) => setSize(e.target.value)}
               >
-                <option value="">All sizes</option>
+                <option value="">{t("All sizes")}</option>
                 {sizes.map((item) => (
                   <option key={item} value={item}>
                     {item}
@@ -214,13 +216,13 @@ export function CatalogGrid({
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="filter-color">Color</label>
+              <label htmlFor="filter-color">{t("Color")}</label>
               <select
                 id="filter-color"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
               >
-                <option value="">All colors</option>
+                <option value="">{t("All colors")}</option>
                 {colors.map((item) => (
                   <option key={item} value={item}>
                     {item}
@@ -230,19 +232,19 @@ export function CatalogGrid({
             </div>
 
             <div className={styles.field}>
-              <label>Price range · GEL</label>
+              <label>{t("Price range · GEL")}</label>
               <div className={styles.priceFields}>
                 <input
-                  aria-label="Minimum price in GEL"
+                  aria-label={t("Minimum price in GEL")}
                   inputMode="decimal"
-                  placeholder="Min"
+                  placeholder={t("Min")}
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
                 />
                 <input
-                  aria-label="Maximum price in GEL"
+                  aria-label={t("Maximum price in GEL")}
                   inputMode="decimal"
-                  placeholder="Max"
+                  placeholder={t("Max")}
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
                 />
@@ -255,7 +257,7 @@ export function CatalogGrid({
                 checked={inStock}
                 onChange={(e) => setInStock(e.target.checked)}
               />
-              IN STOCK ONLY
+              {t("IN STOCK ONLY")}
             </label>
 
             <button
@@ -264,14 +266,14 @@ export function CatalogGrid({
               disabled={!hasAnyControl}
               onClick={clearAll}
             >
-              CLEAR ALL
+              {t("CLEAR ALL")}
             </button>
           </div>
         </details>
       </div>
 
       <div className={styles.resultMeta} role="status" aria-live="polite">
-        <p className="eyebrow">{visible.length} PIECES</p>
+        <p className="eyebrow">{visible.length} {t("PIECES")}</p>
         {activeLabels.length ? (
           <p className={styles.activeSummary}>{activeLabels.join(" · ")}</p>
         ) : null}
@@ -284,10 +286,9 @@ export function CatalogGrid({
       </div>
       {visible.length === 0 && (
         <div className="empty-state">
-          <h2>No matching pieces.</h2>
+          <h2>{t("No matching pieces.")}</h2>
           <p>
-            Try clearing a filter, changing the price range or using another
-            search.
+            {t("Try clearing a filter, changing the price range or using another search.")}
           </p>
           {hasAnyControl ? (
             <button
@@ -295,7 +296,7 @@ export function CatalogGrid({
               className="button secondary"
               onClick={clearAll}
             >
-              CLEAR FILTERS
+              {t("CLEAR FILTERS")}
             </button>
           ) : null}
         </div>

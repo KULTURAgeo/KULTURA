@@ -1,3 +1,4 @@
+import { LocalizedLabel } from "./localized-label";
 import type { CatalogStatus } from "@/lib/catalog/repository";
 export function CatalogNotice({
   status,
@@ -9,11 +10,11 @@ export function CatalogNotice({
   if (status === "ready" && !empty) return null;
   return (
     <p className="empty-state" role="status">
-      {status === "unavailable"
+      <LocalizedLabel source={status === "unavailable"
         ? "The collection is temporarily unavailable. Please try again shortly."
         : status === "unconfigured"
           ? "The collection is being prepared. Check back soon."
-          : "New pieces are on the way. Check back soon."}
+          : "New pieces are on the way. Check back soon."} />
     </p>
   );
 }

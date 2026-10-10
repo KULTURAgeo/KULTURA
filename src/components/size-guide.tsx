@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "./language-provider";
 import { useEffect, useState } from "react";
 import type { Product } from "@/lib/catalog";
 import styles from "./size-guide.module.css";
@@ -25,6 +26,7 @@ const footwearRows = [
 
 export function SizeGuide({ product }: { product: Product }) {
   const [open, setOpen] = useState(false);
+  const { t } = useLanguage();
   const footwear = /shoe|footwear|sneaker|boot/i.test(product.category);
   const sizes = [...new Set(product.variants.map((variant) => variant.size))];
 
@@ -40,7 +42,7 @@ export function SizeGuide({ product }: { product: Product }) {
   return (
     <>
       <button className={styles.trigger} type="button" onClick={() => setOpen(true)}>
-        SIZE GUIDE ↗
+        {t("SIZE GUIDE ↗")}
       </button>
       {open ? (
         <div className={styles.overlay} role="presentation" onMouseDown={() => setOpen(false)}>
@@ -53,31 +55,31 @@ export function SizeGuide({ product }: { product: Product }) {
           >
             <div className={styles.head}>
               <div>
-                <p className="eyebrow">KULTURA / FIT REFERENCE</p>
-                <h2 id="size-guide-title">SIZE GUIDE</h2>
+                <p className="eyebrow">{t("KULTURA / FIT REFERENCE")}</p>
+                <h2 id="size-guide-title">{t("SIZE GUIDE")}</h2>
               </div>
-              <button className={styles.close} type="button" aria-label="Close size guide" onClick={() => setOpen(false)}>
+              <button className={styles.close} type="button" aria-label={t("Close size guide")} onClick={() => setOpen(false)}>
                 ×
               </button>
             </div>
-            <p className="muted">Available for this product</p>
+            <p className="muted">{t("Available for this product")}</p>
             <div className={styles.available}>
               {sizes.map((size) => <span key={size}>{size}</span>)}
             </div>
             <div className={styles.tableWrap}>
               {footwear ? (
                 <table className={styles.table}>
-                  <thead><tr><th>EU SIZE</th><th>FOOT LENGTH · CM</th></tr></thead>
+                  <thead><tr><th>{t("EU SIZE")}</th><th>{t("FOOT LENGTH · CM")}</th></tr></thead>
                   <tbody>{footwearRows.map((row) => <tr key={row[0]}><td>{row[0]}</td><td>{row[1]}</td></tr>)}</tbody>
                 </table>
               ) : (
                 <table className={styles.table}>
-                  <thead><tr><th>SIZE</th><th>CHEST · CM</th><th>WAIST · CM</th><th>HIP · CM</th></tr></thead>
+                  <thead><tr><th>{t("SIZE")}</th><th>{t("CHEST · CM")}</th><th>{t("WAIST · CM")}</th><th>{t("HIP · CM")}</th></tr></thead>
                   <tbody>{apparelRows.map((row) => <tr key={row[0]}>{row.map((cell) => <td key={cell}>{cell}</td>)}</tr>)}</tbody>
                 </table>
               )}
             </div>
-            <p className={styles.note}>General body-size reference. Final garment measurements and fit can vary by style.</p>
+            <p className={styles.note}>{t("General body-size reference. Final garment measurements and fit can vary by style.")}</p>
           </section>
         </div>
       ) : null}

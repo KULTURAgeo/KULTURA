@@ -13,6 +13,7 @@ import { ProductDetail } from "@/components/product-detail";
 import { ProductCard } from "@/components/product-card";
 import { StructuredData } from "@/components/structured-data";
 import { RecentlyViewed } from "@/components/recently-viewed";
+import { LocalizedLabel } from "@/components/localized-label";
 
 export const revalidate = 300;
 
@@ -131,7 +132,7 @@ export default async function ProductPage({
       ) : null}
       <Container className="page-section">
         <nav className="breadcrumb" aria-label="Breadcrumb">
-          <Link href="/shop">SHOP</Link>
+          <Link href="/shop"><LocalizedLabel source="SHOP" /></Link>
           <span>/</span>
           <Link href={`/shop/${product.categorySlug}`}>
             {product.category.toUpperCase()}

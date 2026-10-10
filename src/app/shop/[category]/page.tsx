@@ -3,6 +3,7 @@ import { pageMetadata } from "@/lib/site";
 import { isSearchIndexableCategorySlug } from "@/lib/seo-indexing";
 import { Container } from "@/components/ui";
 import { CatalogGrid } from "@/components/catalog-grid";
+import { LocalizedLabel } from "@/components/localized-label";
 import { CatalogNotice } from "@/components/catalog-notice";
 import {
   getCategoryCatalog,
@@ -56,7 +57,7 @@ export default async function Category({
 
   return (
     <Container className="page-section">
-      <p className="eyebrow">THE COLLECTION</p>
+      <p className="eyebrow"><LocalizedLabel source="THE COLLECTION" /></p>
       <h1 className="page-title">{selected.name}</h1>
       <CatalogGrid
         products={products}
