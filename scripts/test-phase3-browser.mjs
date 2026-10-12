@@ -19,6 +19,12 @@ await page.keyboard.press("Escape");await visit("/cart");assert.equal(await page
 async function login(email){await visit("/login");await page.locator('[name=email]').fill(email);await page.locator('[name=password]').fill("TEST_ONLY_PASSWORD");await page.getByRole("button",{name:"SIGN IN",exact:true}).click();await page.waitForURL(/\/account/);await page.locator("main h1").first().waitFor(); await page.waitForTimeout(250);}
 await login("customer@example.invalid");
 await visit("/admin/products");assert.match(page.url(),/\/account\?restricted=1/);checks.push("Customer admin route rejected");
+await visit("/checkout");
+await page.locator(".checkout-item").first().waitFor({timeout:15000});
+await page.reload();
+await page.locator(".checkout-item").first().waitFor({timeout:15000});
+assert.equal(await page.getByText("Loading your bag…").count(),0);
+checks.push("Checkout restores persisted bag on hard refresh");
 for(const width of [375,390,430,768,1024,1440]){await page.setViewportSize({width,height:900});for(const route of ["/account","/account/orders","/account/addresses"]){await visit(route);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,width+" "+route);checks.push(width+" "+route);}}
 await page.getByRole("button",{name:"SIGN OUT",exact:true}).click();await page.waitForURL(/\/login/);checks.push("Logout");
 await login("admin@example.invalid");
