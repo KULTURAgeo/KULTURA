@@ -4,7 +4,7 @@ import { useLanguage } from "./language-provider";
 import { colorDisplayName } from "@/lib/category-i18n";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
 import { money } from "@/lib/catalog";
@@ -60,6 +60,13 @@ export function Checkout({
   const cart = useCart();
   const { t, locale } = useLanguage();
   const router = useRouter();
+  const { ready, busy, refresh } = cart;
+
+  // The global cart intentionally defers validation until a cart UI is opened.
+  // Checkout must refresh stored items after a hard reload before allowing an order.
+  useEffect(() => {
+    if (!ready && !busy) void refresh();
+  }, [ready, busy, refresh]);
   const [testPending, startTestTransition] = useTransition();
   const [testMessage, setTestMessage] = useState("");
   const [orderPending, startOrderTransition] = useTransition();
@@ -542,7 +549,19 @@ export function Checkout({
           </div>
 
           {!cart.ready ? <p>{t("Loading your bag…")}</p> : null}
-          {cart.error ? <p role="alert">{cart.error}</p> : null}
+          {cart.error ? (
+            <div className="review-order-error" role="alert">
+              <p>{cart.error}</p>
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() => void cart.refresh()}
+                disabled={cart.busy}
+              >
+                {t("TRY AGAIN")}
+              </button>
+            </div>
+          ) : null}
 
           {cart.ready && !cart.quote.lines.length ? (
             <div className="empty-state">
