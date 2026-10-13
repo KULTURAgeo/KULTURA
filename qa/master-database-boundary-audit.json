@@ -1,0 +1,45 @@
+{
+  "scope": "Isolated PGlite; baseline application migrations only; no hosted connection, payment or notification send",
+  "evidence": [
+    {
+      "status": "PASSED",
+      "check": "Unpaid checkout uses DB price, selected quantity, shipping and pending payment"
+    },
+    {
+      "status": "PASSED",
+      "check": "Customer B cannot select Customer A order or items through RLS"
+    },
+    {
+      "status": "PASSED",
+      "check": "Customer B cannot prepare Customer A notification"
+    },
+    {
+      "status": "FAILED",
+      "check": "Identical retried submission returns same order",
+      "actual": "second distinct pending order"
+    },
+    {
+      "status": "FAILED",
+      "check": "Customer cannot prepare payment-paid event for pending order",
+      "actual": "RPC accepted payment_paid; no email or SMS sent by this probe"
+    },
+    {
+      "status": "FAILED",
+      "check": "Customer cannot forge provider delivery receipt",
+      "actual": "RPC accepted sent status without provider evidence"
+    },
+    {
+      "status": "PASSED",
+      "check": "SQL NULL cart/address rejected by RPC after audit migration"
+    },
+    {
+      "status": "PASSED",
+      "check": "Every public table has RLS enabled"
+    },
+    {
+      "status": "PASSED",
+      "check": "Security definers pin empty search_path",
+      "functions": []
+    }
+  ]
+}

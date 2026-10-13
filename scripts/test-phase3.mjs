@@ -58,6 +58,8 @@ await check("Admin can read real orders",()=>as(admin,async()=>assert.equal((awa
 for(const who of [a,admin])await check("Order total/payment writes denied: "+who,()=>denied(who,"update orders set payment_status='paid',final_total=0"));
 const testCart=JSON.stringify([{product_id:p.id,variant_id:v.id,quantity:1}]);
 const testAddress=JSON.stringify({recipient_name:"KULTURA TEST",phone:"555000000",city:"Tbilisi",address_line_1:"Test 1",address_line_2:null,postal_code:"0170"});
+await check("Unpaid checkout rejects SQL NULL cart before creating an empty order",()=>denied(a,"select checkout_create_unpaid_order(null,$1::jsonb,null)",[testAddress],"22023"));
+await check("Unpaid checkout rejects SQL NULL delivery input",()=>denied(a,"select checkout_create_unpaid_order($1::jsonb,null,null)",[testCart],"22023"));
 await check("Customer cannot create paid test checkout",()=>denied(a,"select admin_create_test_order($1::jsonb,$2::jsonb)",[testCart,testAddress]));
 await check("Admin test checkout reprices server-side and does not decrement stock",()=>as(admin,async()=>{
 const before=(await db.query("select stock_quantity from product_variants where id=$1",[v.id])).rows[0].stock_quantity;

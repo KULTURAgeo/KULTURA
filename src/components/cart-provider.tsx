@@ -41,6 +41,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const stored = useRef<CartLine[]>([]);
+  const restored = useRef(false);
   const lock = useRef(false);
   const lastServerRefresh = useRef(0);
   const [count, setCount] = useState(0);
@@ -111,9 +112,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [persist],
   );
 
-  const refresh = useCallback(() => resolve(stored.current), [resolve]);
-
-  useEffect(() => {
+  const restoreStored = useCallback(() => {
+    if (restored.current) return;
+    restored.current = true;
     try {
       stored.current = readStoredCart(localStorage.getItem(CART_KEY));
     } catch {
@@ -130,6 +131,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setReady(true);
       setQuote(EMPTY_QUOTE);
     }
+  }, []);
+
+  const refresh = useCallback(() => {
+    // A child's mount effect can run before the provider's effect. Restore
+    // first so an initial quote cannot replace a persisted bag with [].
+    restoreStored();
+    return resolve(stored.current);
+  }, [resolve, restoreStored]);
+
+  useEffect(() => {
+    restoreStored();
 
     const sync = (event: StorageEvent) => {
       if (event.key !== CART_KEY || lock.current) return;
@@ -142,7 +154,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     window.addEventListener("storage", sync);
     return () => window.removeEventListener("storage", sync);
-  }, []);
+  }, [restoreStored]);
 
   const add = async (line: CartLine) => {
     if (lock.current) return false;
