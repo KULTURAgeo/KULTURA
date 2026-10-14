@@ -107,3 +107,15 @@ New application requires the new checkout RPC. Coordinate DB-first maintenance/s
 ## J. Verdict
 
 **SAFE FOR ISOLATED REVIEW/TESTING, NOT READY FOR PRODUCTION.** All three originally failing security boundary cases now pass locally. This does not authorize merging main, applying hosted SQL, or production deployment. Keep PR #48 draft until blocked validation and rollout prerequisites are resolved.
+
+## K. Post-commit CI and candidate browser evidence
+
+Source commit `b6b56cc42f5ceebdf26345ef2298c67a957c25b2` was pushed only to the audit branch. Remote main was reverified unchanged at `0ce2f80b46c6214baf189da3719aaa9d85052f5a`.
+
+GitHub run 38565278148, verify job 115856255178: **PASSED** frozen installation, type generation, full `pnpm check`, production and critical dependency gates, build, and secret audit. This resolves the complete-suite execution gate in Linux CI; the local Windows wrapper failure above remains an accurate local result. Both automatic Vercel Preview build statuses are success; no manual deployment was initiated.
+
+The browser could access the isolated staging branch Preview despite the Vercel API 403:
+`https://kultura-staging-git-audit-master-hardening-20261012-kultura4.vercel.app`.
+**PASSED limited candidate browser checks:** homepage renders; shop to category to product navigation; selected test variant quantity increases 1 to 2; product DOM at 1440x900 and 390x844 has no horizontal overflow and zero failed loaded images; screenshots inspected. Product photography is an intentional placeholder, not a broken image. Optional analytics consent rejected. Viewport override reset afterward. No hosted order, admin write, auth credential, provider send or database mutation was attempted.
+
+This supersedes the earlier blanket inability to open the candidate browser, but NOT the full authenticated E2E blocker. Exact hosted DB identity/history remains unverified, new migration remains unapplied, and anonymous product rendering does not establish RLS/auth/checkout correctness. Production verdict remains NOT READY.
