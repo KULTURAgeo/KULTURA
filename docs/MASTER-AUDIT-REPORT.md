@@ -1,164 +1,109 @@
-# KULTURA master audit — 2026-10-12 / 2026-10-13
+# KULTURA master audit — remediation update 2026-10-14
 
 ## A. Executive summary
 
-**NOT READY** for production approval. This audit delivers a bounded corrective patch and reproducible evidence, not a claim that the exhaustive hosted audit is complete. Three database security/reliability checks still fail. Hosted schema/configuration parity, full customer/admin browser journeys, recovery email delivery, and outage/rate-limit verification remain unproven.
+**NOT READY for production.** The three previously reproduced database vulnerabilities are fixed in the candidate source and isolated PostgreSQL tests: **23 PASSED / 0 FAILED boundary checks**. Hosted schema compatibility, multi-connection concurrency and full browser journeys remain BLOCKED/unproven. A passing build does not waive these gates.
 
-Baseline: `0ce2f80b46c6214baf189da3719aaa9d85052f5a`; branch: `audit/master-hardening-20261012`. Discovery was recorded in `MASTER-AUDIT-BASELINE.md` before application edits. No hosted SQL, customer-data writes, production deployment, or merge was performed. Test database writes used fresh in-memory PGlite instances only.
+Branch: `audit/master-hardening-20261012`, Draft PR #48. Baseline main: `0ce2f80b46c6214baf189da3719aaa9d85052f5a`. Previous audit commit: `f76e7d377ff08bae80e9623486ca65577ebb3e03`. Baseline inventory remains in MASTER-AUDIT-BASELINE.md. No hosted migration, payment, customer notification, production deployment or main merge was performed. Database tests use disposable in-memory PGlite only.
 
-## B. Codebase analysis and cleanup
+## B. Reconciliation and scope
 
-Inventory: 251 baseline tracked files; App Router public catalog/information routes, account/order/confirmation routes, admin management routes, Server Actions, SSR session clients, cart/language/consent providers, catalog repository/cache, notification service, SQL migrations, CI and test scripts. Reviewed critical boundaries: proxy, auth actions/access guards, cart restoration, checkout page/submission, catalog queries/mapping, notification RPCs/service, grants/RLS, type generation, build/env validation and CI.
+GitHub metadata rechecked on October 14: #48 and #47 remain draft/open; #41 is merged. #47's checkout mount/retry intent is already incorporated and extended with restore-before-refresh in #48. Do not merge the overlapping patches independently. #41 supplies XML rejection, baseline headers and patched dependencies; it is not the later `security/production-hardening` branch.
 
-Repository-wide searches covered Server Action authorization calls, environment references, unsafe HTML sinks, TODO/FIXME markers and runtime logging. These searches are inventory evidence, not proof that every line or every business flow is correct. No components, assets, dependencies, or migration history were deleted: there was insufficient evidence for safe removal. Existing CSS, animation, typography, product positions and layouts were not edited.
+Reused selected reviewed SQL/backend notification patterns from security/production-hardening: customer-scoped request keys, profile row serialization, legacy RPC revocation, notification backend ACLs, state checks, transactional outbox and claims. Adapted them as a NEW migration; no historical migration overwritten. Did not copy the unrelated Redis, auth redirect, broad CSP or other customer-write quota changes. Their presence on the old branch is not evidence they exist on current main.
+
+No layout, branding, animation, price presentation or stock display redesign. No packages added, removed or upgraded.
+
+## C. Remediation behavior
+
+1. **Duplicate checkout — PASSED locally.** New `checkout_submit_order(uuid,jsonb,jsonb,text)` validates authenticated identity and strict input types/fields, locks the customer's profile row, canonicalizes cart ordering, and stores request payload/order ID in private.checkout_requests. Same customer/key/payload returns the original order, even at the quota limit. Conflicting payload is rejected. The old non-idempotent RPC is no longer executable by anon/authenticated. Product prices, stock, shipping, promo discount and snapshots still come from SQL. New orders remain payment pending; no fake paid status.
+2. Browser request IDs persist before submission, keyed by a SHA-256 payload/customer fingerprint, without storing contact/address text. Network exceptions and validation failures preserve cart and request key. Web Locks coordinate supported browsers. A completed key is retained for delayed/stale-tab requests; an intentional subsequent add-to-cart clears completed keys for a new purchase. Storage failures block submission before network activity. The synchronous click guard remains. Browsers without Web Locks have no proven cross-tab atomic creation; hosted cross-tab/manual testing remains required. Different request keys intentionally represent different purchases.
+3. **Fraudulent payment notification — PASSED locally.** Customers, including admin sessions, cannot invoke notification backend RPCs. A service-role call cannot prepare a payment-paid event for an unpaid order. Event/state matching is checked in SQL. Real provider integration must later verify its webhook before changing payment state; none is implemented here.
+4. **Forged delivery receipt — PASSED locally.** Prepare/claim/record RPCs are service-role only; public/anon/authenticated grants revoked. A dedicated server-only client is used instead of customer cookies. Claims are atomic and each channel is claimed before provider delivery. Mocked parallel calls send once. NULL delivery channel rejected.
+5. Outbox creation occurs transactionally on real order creation/state transitions. Test orders skip notifications. Missing service key/provider configuration leaves queued events without sending. No automatic retry worker is introduced. A process crash after claim can leave an undelivered claim; deliberate recovery and provider reconciliation are required to avoid duplicate sends. Provider HTTP success means provider acceptance, not inbox/SMS receipt.
+6. Accepted new unpaid orders consume a promo use once; replay does not. No historical counters are rewritten. Cancelled orders retain usage. This policy needs merchant approval before production; there is no payment integration. Inventory is checked but unpaid orders do not reserve/decrement stock, matching existing behavior. Payment-time stock handling remains future work.
+
+Existing #48 fixes remain: cold checkout quote/retry; provider restore before child refresh; safe shipping-config failure; cart preservation on errors; confirmation session/privacy scope; CRLF-safe generated-type verification; explicit SQL NULL checkout rejection.
+
+## D. Database migration and security review
+
+New: `supabase/migrations/20261013000100_checkout_notification_security.sql`.
+Prerequisite: repository chain through `20261012000100_checkout_null_inputs.sql` (after the 16 baseline migrations through `20261001000100_query_performance_indexes.sql`). Apply filenames in lexical/timestamp order; never rerun bootstrap or old migrations after hardening. `20261007000100_security_hardening.sql` belongs to the other branch and is NOT in this chain. An environment with that migration needs separate reconciliation, not assumed compatibility.
 
 Changes:
+- New RLS-enabled private.request_limits and private.checkout_requests; customer FKs cascade on account deletion, request order FK cascades on order deletion; primary keys customer/scope and customer/request. Requests contain sensitive delivery payloads, private-only. No new secondary index needed for PK lookups.
+- Enable RLS on private.checkout_settings; no new customer policy.
+- private.customer_rate_limit: accepted checkout quota 10/hour; transaction rollback means failed requests do not consume quota. This is not an edge/DDoS limiter.
+- public.checkout_submit_order: authenticated execute, anon/public denied; private rate-limit and old checkout helper inaccessible to customers.
+- public.notification_prepare, notification_record_delivery, notification_claim: only service_role execute. Existing notification RLS remains; no customer bypass.
+- notification_outbox adds nullable email_claimed_at/sms_claimed_at; private.queue_order_notification and orders_queue_notification AFTER INSERT/UPDATE OF payment_status,fulfillment_status queue trusted events.
+- Security-definer functions pin empty search_path; no dynamic user-controlled SQL. Generated database.types.ts updated.
+- No existing order/customer/product/inventory rows deleted or rewritten by migration. New columns initially NULL. Runtime only writes request/quota/outbox/promo-use/order records as described.
 
-- `src/components/cart-provider.tsx`: restore stored cart once before a child-triggered refresh; avoids mount-effect ordering erasing the bag.
-- `src/components/checkout.tsx`: initialize authoritative quote on mount, expose existing retry styling, synchronously lock unpaid submission and catch ambiguous transport errors without clearing cart.
-- `src/app/checkout/page.tsx`: refuse unavailable shipping configuration instead of displaying fabricated zero shipping.
-- `src/proxy.ts`: extend session refresh and sensitive privacy headers to order confirmation.
-- `scripts/generate-database-types.mjs`: normalize CRLF during comparison; no generated schema/type contract change.
-- `.env.example`: document already-used optional public Facebook URL; no credentials or new required setting.
-- `package.json`: add audit regression tests to existing check chain; no dependency/version changes.
-- Regression/evidence scripts, QA JSON and these reports document actual scope and results.
-- New unapplied SQL migration rejects SQL NULL checkout inputs; see section E.
+Migration uses BEGIN/COMMIT and reviewed function-body fingerprints (CRLF normalized) to refuse unknown definitions before changes. Unknown pre-existing security tables without a wrapper also refuse. Reapply is tested; function/ACL snapshot stays identical and legacy execute stays denied. Unexpected function drift aborts transaction without replacing it. These guards do NOT replace hosted schema/owner/ACL/history inspection. Owners, table constraints and any custom policies must be compared before hosted approval. No claim that arbitrary modified or old-security staging databases are automatically compatible.
 
-## C. Bugs and verification
+## E. Tests and evidence
 
-| Defect | Severity | Result / evidence |
+Executed against candidate code in this remediation:
+
+| Gate | Result | Evidence |
 | --- | --- | --- |
-| Checkout cold refresh stays at Loading your bag | High | Quote mount/retry added, based on open PR #47; deterministic component test passes |
-| Child refresh can precede provider storage restore | High | Restore-before-quote; quantity 3 and subtotal survive simulated child-first effect ordering |
-| Rapid unpaid submit callbacks run twice before React pending state | Medium | Synchronous ref lock; controlled pending promise proves one call and clear/redirect only after resolution |
-| Unexpected submission rejection lacks useful recovery | Medium | Safe message and unchanged bag; both validation failure and thrown transport failure covered |
-| Shipping RPC error displayed as free shipping | High | Fail with safe error; no fabricated free rate; component/page test passes |
-| Confirmation excluded from sensitive proxy scope | Medium | Real SSR SDK test refreshes expired fixture cookies and checks private/no-store/noindex/referrer headers |
-| Windows type check reports stale types for CRLF only | Low | LF normalization; actual generated contract unchanged; generator check passes |
-| SQL NULL cart creates zero-item order | High | Reproduced in isolated SQL before patch; additive migration now rejects NULL cart/address with 22023 |
+| DB security boundaries | PASSED | 23 assertions, 0 failed; qa/master-database-boundary-audit.json |
+| Foundation DB/RLS | PASSED | 63; roles, ownership, negative inputs, snapshots |
+| Phase 3 | PASSED | 48; admin/customer/storage/returns inputs; NULL checks now target guarded RPC |
+| Auth/session | PASSED | 21; actual SSR SDK with mocked HTTP/cookie adapters |
+| Catalog | PASSED | 13; actual SDK against isolated SQL-backed fixture |
+| Production configuration | PASSED | 14 |
+| Cart/checkout component logic | PASSED | 10; hook adapters, not browser certification |
+| Migration guards/reapply | PASSED | 5; both new migrations in isolated DB |
+| Notification service | PASSED | 5; mocked backend/provider, no HTTP sends |
+| Types and lint | PASSED | direct installed TypeScript/ESLint executables; final rerun passed |
+| Production build | PASSED | direct Next build with no hosted Supabase configuration; final rerun passed |
+| Generated types | PASSED | generator --check |
+| Logos | PASSED | decoded source assets/public-path validation |
+| Secret audit | PASSED | repository pattern scan and built-client scan; no values printed |
+| Runtime dependency audit | PASSED | fresh pnpm audit --prod --audit-level high: no known vulnerabilities |
+| Full graph advisory | FAILED advisory scan / no critical advisory | braces@3.0.3 via ESLint fast-glob/micromatch; GHSA-vfj7-8cjw-p6xm, HIGH stack exhaustion on nested patterns; no published patch in current response; tooling only, no runtime advisory |
+| pnpm check wrapper | BLOCKED | dependency preparation fails at esbuild postinstall with Windows spawn EPERM; individual equivalent commands passed, wrapper did not |
+| Hosted candidate and real-browser E2E | BLOCKED | Vercel connection 403 for kultura4; no mapped Vercel CLI available; local server execution previously rejected by approval policy |
+| Multi-connection concurrency | BLOCKED | PGlite is single-connection; row-lock reasoning is not a concurrent PostgreSQL execution result |
 
-The click lock is **not** durable request idempotency. Reload, network retry or another tab can still create a second pending order. The ambiguous-result message explicitly directs customers to order history before retrying.
+Commands: `node scripts/test-database.mjs`; loader `node --conditions=react-server --import ./scripts/typescript-loader.mjs` with test-phase3.mjs, test-auth-session.mjs, test-catalog.mjs, test-production.mjs, test-audit-regressions.mjs, test-notification-security.mjs; `node scripts/test-audit-migration.mjs`; `node scripts/audit-database-boundaries.mjs`; `node scripts/generate-database-types.mjs --check`; `node scripts/test-logo-assets.mjs`; `node scripts/audit-repository.mjs`; `node scripts/audit-client-bundle.mjs`; installed TypeScript, ESLint and Next executables. Boundary and notification checks are included in `pnpm check` via test:audit.
 
-## D. Security evidence and remaining failures
+Expected synthetic error logs in catalog/provider-outage tests are tested failure paths, not live failures. Local evidence does not validate Supabase hosted PostgREST/GoTrue, Vercel cookies or provider delivery.
 
-Fresh local evidence:
+## F. Hosted/browser and performance limitations
 
-- 63 schema/RLS checks: anonymous/customer writes to prices, stock, totals and payment state denied; private data isolation; role escalation denied; constraints/snapshots tested.
-- 48 Phase 3 checks: customer/admin separation, direct SQL admin restrictions, storage upload boundaries, profile/address isolation, validation and admin test checkout. Test-mode paid records are explicitly test records, not verified payments.
-- 21 real Supabase SSR SDK tests with mocked HTTP/cookie adapters: login, registration, confirmation, reset, logout, server role guard, expired-session refresh and outage handling.
-- 13 catalog transport/SQL checks; 14 configuration checks; 7 deterministic component regressions; 2 migration reapply/drift checks.
-- Boundary probe `node scripts/audit-database-boundaries.mjs`: **6 PASSED / 3 FAILED** after the NULL patch. Exit code is nonzero when findings remain. The normal regression suite is not a replacement for this security result.
+Prior read-only staging baseline product checks at 390px and 1440px had no horizontal overflow or broken loaded images; quantity changed 1 to 2. They were performed on main, NOT this candidate and are not repeated unnecessarily. No candidate full browser pass is claimed.
 
-Unresolved, reproduced in isolated SQL:
+Required candidate smoke journeys: disposable customer registration/confirmation/login/logout/recovery; session refresh; shop/search/filter/variant quantity; cart reload; shipping and promo quote; valid/invalid checkout; simultaneous same-key submissions using independent DB connections; ambiguous network retry; cross-tab stale checkout; order confirmation/history and customer A/B ownership; admin direct-action denial for customers; admin product/inventory/order/returns and locale; 390/1440px keyboard/accessibility/screenshots; bounded rate limits; isolated notification/DB outages. No real customer notifications or real payments.
 
-1. HIGH: identical checkout RPC calls create distinct pending orders. Require a customer-bound idempotency key, stored request fingerprint and atomic replay semantics, coordinated with the client/action API.
-2. HIGH: a customer can prepare `payment_paid` notification for their own pending order. The probe did not send email/SMS or change payment status. Require event/state authorization.
-3. HIGH: customer can call `notification_record_delivery` and mark their own notification sent without provider evidence. Require a trusted backend delivery boundary, with matching application and deployment configuration. Simply revoking authenticated access would break the current sender, so this patch does not silently do that.
+No measured performance improvement claimed. Previous build size/warm compilation comparison is historical, not current remediation evidence. Notifications await bounded provider work after order persistence; latency and background delivery design remain to be measured/reviewed.
 
-The existing `security/production-hardening` branch contains broader related fixes, but is not merged into this baseline. It requires reconciliation and its own integration/hosted validation; do not selectively copy its database API without matching application code.
+## G. Environment and rollout prerequisites
 
-Current main has no application Redis/HMAC limiter. Supabase/Vercel platform abuse protections were not inspected/configured here. Rate-limit and Redis fail-closed claims from the old branch do not apply. This branch retains Next.js Server Action protections and existing auth/RLS guards; it does not add the old branch's explicit strict-origin module.
+Existing: SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, SITE_URL. New server-only SUPABASE_SECRET_KEY is needed ONLY to dispatch/record notification delivery through the privileged client; without it orders still persist and events remain queued. Never place it in a NEXT_PUBLIC variable or layout/client props. Use an isolated staging project key for staging. Provider settings: RESEND_API_KEY and NOTIFICATION_EMAIL_FROM; optional SMS TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM or TWILIO_MESSAGING_SERVICE_SID. Optional analytics/public identifiers unchanged; no Redis configuration added.
 
-CSP remains baseline `base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'`; no script-src/default-src allowlist is claimed. Existing HSTS, nosniff, DENY, permissions and sensitive no-store remain. JSON-LD escapes `<`; the theme script is a static literal. Upload decoder/size checks and image-origin allowlist remain. Secret scans are pattern-based, not a mathematical absence guarantee.
+New application requires the new checkout RPC. Coordinate DB-first maintenance/staging rollout with application release: revoking legacy RPC intentionally breaks old application checkout during a mixed-version window. Do not grant it back as a convenience workaround. Disable checkout/maintenance while deploying the paired release if needed. Never apply new application to an unverified database.
 
-## E. Database review, migration and rollback
+## H. Backup and rollback plan BEFORE hosted approval
 
-All repository migration files execute in order in PGlite with minimal Supabase auth/storage shims. RLS is enabled on every public table inspected; security-definer functions pin empty search_path. Price/quantity/snapshot and cross-customer checks passed. PGlite is not hosted GoTrue/PostgREST or concurrent multi-connection proof. Pending checkout checks current stock but does not reserve/decrement it. Do not interpret pending records as paid stock commitments.
+1. Verify isolated project ref/host and migration history; do not derive production identity from an alias. Take restorable full schema/data backup/PITR point. Save counts and exports of orders/items, promo_codes (id,used_count), notification_outbox and any existing private checkout request/quota tables.
+2. Save pg_get_functiondef, proowner, proacl, proconfig and signatures for checkout_create_unpaid_order, checkout_submit_order, customer_rate_limit, notification_prepare, notification_record_delivery, notification_claim and queue_order_notification where present. Save table column/constraint/owner/ACL definitions, pg_policies and relrowsecurity flags, and pg_get_triggerdef for orders_queue_notification. Record which objects did not exist.
+3. Prefer forward correction retaining idempotency and notification ACLs. Revert the application commit only via reviewed development PR, never reset main. Older application calls legacy RPC and will fail against retained hardened ACLs: keep checkout disabled until a compatible release is restored.
+4. If database rollback is essential, first stop checkout and notification workers; in one reviewed transaction restore only saved function definitions/owners/ACLs and prior trigger definition (or remove the new trigger if none existed). Restore RLS/ACLs only from the saved exact baseline. Re-enabling legacy checkout or customer notification privileges reintroduces the known vulnerabilities and requires explicit security acceptance; it is NOT the recommended rollback.
+5. Preserve new private tables, request-to-order mappings, outbox claims and every created order. Do not drop them or decrement promo counters blindly. Runtime uses after the snapshot must be reconciled per order; restoring the old whole promo counter would lose concurrent legitimate use. Extra nullable claim columns can remain harmlessly. Do not remove migration history or rerun bootstrap.
+6. Because definitions and ACLs vary by hosted target, no universal executable destructive rollback SQL is supplied. Generate the exact transaction from the verified backup before hosted application; absence of that backup is a deployment blocker.
 
-New file: `supabase/migrations/20261012000100_checkout_null_inputs.sql`.
+## I. Remaining blockers
 
-- Replaces only `public.checkout_create_unpaid_order(jsonb,jsonb,text)` with the reviewed baseline body plus explicit SQL NULL checks.
-- Preserves signature, price/shipping/promo behavior, pending payment, and existing execute ACL intent (authenticated only; public/anon revoked).
-- No tables, columns, indexes, policies, triggers, existing records or inventory are changed.
-- Transactional and idempotent against the exact baseline/patched function; SQL-body hash guard refuses divergent functions, including a separately hardened deployment. Hashes are source fingerprints, not secrets.
-- Do **not** apply blindly to staging that already has `20261007000100_security_hardening.sql`. Inspect history and saved definitions, reconcile the branches and run the full integration suite first. Hosted migration history was not accessed.
-- No migration was applied remotely; the application patch does not require the new SQL to render, but the NULL vulnerability remains until reviewed SQL is applied.
+- Hosted schema/history/owner/grant parity and reviewed rollback backup not verified.
+- Candidate deployment/runtime and complete disposable-user browser journeys not verified; Vercel scoped access currently denied.
+- Real multi-connection DB concurrency and no-Web-Locks cross-tab behavior not proven.
+- Notification claim recovery/worker operations and provider sandbox verification not complete; missing service key intentionally queues without delivery.
+- Merchant approval of unpaid promo-use accounting and non-reserving stock semantics required; real payment integration absent.
+- Wider security branch Redis/origin/CSP hardening is not automatically reconciled by this targeted three-vulnerability fix. Do not advertise it as deployed here.
 
-Exact baseline sequence before this new migration:
+## J. Verdict
 
-1. `20260923000100_commerce_schema.sql`
-2. `20260923000200_row_level_security.sql`
-3. `20260924000100_admin_authorization.sql`
-4. `20260924000200_product_storage.sql`
-5. `20260924000300_customer_address.sql`
-6. `20260926000100_vercel_upload_limit.sql`
-7. `20260927000100_admin_fulfillment.sql`
-8. `20260927000200_test_checkout.sql`
-9. `20260927000300_promo_codes.sql`
-10. `20260930000200_unpaid_checkout.sql`
-11. `20260930000300_shipping_settings_admin.sql`
-12. `20260930000400_admin_categories.sql`
-13. `20260930000500_wishlist.sql`
-14. `20260930000600_order_notifications.sql`
-15. `20260930000700_return_requests.sql`
-16. `20261001000100_query_performance_indexes.sql`
-17. New `20261012000100_checkout_null_inputs.sql`
-
-Before any future hosted application: verify project identity, inspect migration history, back up schema/data and save function definition, owner and ACL:
-
-```sql
-select pg_get_functiondef(oid), proowner::regrole, proacl
-from pg_proc
-where oid = 'public.checkout_create_unpaid_order(jsonb,jsonb,text)'::regprocedure;
-```
-
-Rollback: revert only the audit application commit via reviewed PR. Prefer retaining the NULL rejection because it is backward compatible. If SQL rollback is required, restore the saved exact function definition and saved owner/grants in a reviewed transaction; never rerun bootstrap, drop tables or remove migration history. Restoring the old body reintroduces zero-item orders. No data reversal is needed for this patch; orders created independently after deployment must be preserved.
-
-## F. Performance
-
-Same local production-build configuration, no live DB:
-
-| Measure | Baseline | Patched |
-| --- | ---: | ---: |
-| Emitted JS chunks | 31 | 31 |
-| Total JS raw bytes | 1,226,034 | 1,226,537 |
-| Sum of individually gzipped chunks | 373,463 | 373,643 |
-| Reported compilation | 39.7s | 24.6s |
-
-These are whole-build totals, not initial route payload. The second build is warm, so its faster compilation does **not** prove a performance improvement. The patch adds 503 raw / 180 gzip bytes. No Core Web Vitals, INP/LCP/CLS improvement, production database latency or network-waterfall claim is made. Catalog cache remains 300 seconds; cart repricing bypasses it. No speculative animation/image optimization was performed.
-
-## G. Functional QA / command outcomes
-
-Passed via direct installed executables because pnpm bootstrap/lifecycle failed in this Windows environment:
-
-- `node node_modules/typescript/bin/tsc --noEmit`
-- `node node_modules/eslint/bin/eslint.js`
-- `node scripts/test-database.mjs` — 63
-- `node --conditions=react-server --import ./scripts/typescript-loader.mjs scripts/test-phase3.mjs` — 48
-- Same loader for `test-catalog.mjs` — 13, `test-production.mjs` — 14, `test-auth-session.mjs` — 21, `test-audit-regressions.mjs` — 7
-- `node scripts/test-audit-migration.mjs` — 2
-- `node scripts/generate-database-types.mjs --check`
-- `node scripts/test-logo-assets.mjs` — both assets decode, public paths/resolution checked
-- `node node_modules/next/dist/bin/next build` — passed before and after application changes
-- `node scripts/audit-client-bundle.mjs` — 31 chunks
-
-Initial `pnpm install --frozen-lockfile` verified supply-chain policies but failed on esbuild lifecycle `spawn EPERM`; offline retry lacked registry metadata. `pnpm check` subsequently attempted dependency preparation and hit registry ECONNREFUSED; stopped that retry process. Do not report the pnpm wrapper as passed. Its individual source/type/lint/test equivalents were executed as listed. Dependency audit previously returned zero production advisories and one HIGH development-only `braces@3.0.3` advisory (GHSA-vfj7-8cjw-p6xm), no published patch in that result. No runtime production path identified; unsafe glob input could affect tooling. No package upgrade/removal was guessed.
-
-Current staging alias read-only browser observation: shop/category/product load; selected variant showed 5 stock; quantity changed from 1 to 2; product DOM at 390px and 1440px had no horizontal overflow and no broken loaded images. Product uses an explicit photograph placeholder. This is baseline staging, not this branch. No hosted order submitted.
-
-BLOCKED / not proven: local production server start was rejected by automatic approval review (shell approval unavailable), therefore no completed local browser E2E or HTTP suite for this patch. Full desktop/mobile checkout/reload/promo/order/admin/returns/localization journeys, real recovery emails, hosted RLS, service-outage injection and rate-limit thresholds need isolated staging. Component hook adapters do not prove browser scheduling or visual correctness. Newsletter is intentionally disabled and payment gateway absent; neither is a completed integration.
-
-## H. Staging / production parity
-
-Read-only Vercel metadata verified both current aliases on main `0ce2f80b46c6214baf189da3719aaa9d85052f5a`:
-
-- Production kultura: `dpl_3WsR5eSMSpeMtbQ7ab7xqCEBhdeT`.
-- Current kultura-staging: `dpl_571JXhAnKTYCMRFBapuzRpazkzSx`.
-- Old isolated tested security deployment: `dpl_Cu7A87uoKRvaQXeDPRoHz9tzR7dF`, commit `5449fdf803b64269e4aa344800a07236e9af58a0`.
-
-[PR #41](https://github.com/KULTURAgeo/KULTURA/pull/41) is merged (`2968e92c8521749e9f8b7b9f0fe80512964d89c3`), containing earlier baseline hardening. [PR #47](https://github.com/KULTURAgeo/KULTURA/pull/47) remains draft/open at `aaadff35536b864ba1a68bbc6d99e779100adbcf`; checkout mount/retry is reused and extended here. Do not merge both independently without reconciling overlap. No PR was closed by this audit.
-
-Matching Git SHA does not establish database/env parity. No hosted credentials/secret values were inspected. Required application settings remain SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, SITE_URL; optional SITE_INDEXABLE, GOOGLE_SITE_VERIFICATION, GOOGLE_ANALYTICS_ID, META_PIXEL_ID, NEXT_PUBLIC_FACEBOOK_URL, RESEND_API_KEY, NOTIFICATION_EMAIL_FROM, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM or TWILIO_MESSAGING_SERVICE_SID. Platform supplies VERCEL/VERCEL_ENV/NODE_ENV. This patch introduces no required secret, Redis variable or service-role client.
-
-## I. Remaining work before approval
-
-1. Reconcile broader security branch with current main; close all three reproducible DB findings, plus review promo usage/concurrent inventory semantics and strict input/rate-limit coverage.
-2. Resolve hosted migration/config parity; confirm notification trust boundary and delivery credentials in isolated staging.
-3. Run the complete real-browser checkout regression including stored quantity, promo totals, shipping outage/retry, double click, refresh and confirmation ownership. Test customer A/B/admin using disposable identities.
-4. Verify password recovery/expiry, admin replay denial, cookie attributes, bounded rate limiting and isolated outage behavior against the exact candidate deployment.
-5. Complete localization/accessibility/visual checks, real catalog/policies and payment integration before taking money; obtain repeatable Web Vitals and DB query evidence before claiming optimization.
-6. Get clean CI and review the additive SQL prerequisite/rollback before approving any merge or deployment.
-
-## J. Final verdict
-
-**NOT READY.** Safe corrective changes and regression evidence are prepared for draft review. Passing local regression/build does not supersede three failing boundary checks or the blocked hosted/browser quality gates. No production approval is implied.
+**SAFE FOR ISOLATED REVIEW/TESTING, NOT READY FOR PRODUCTION.** All three originally failing security boundary cases now pass locally. This does not authorize merging main, applying hosted SQL, or production deployment. Keep PR #48 draft until blocked validation and rollout prerequisites are resolved.

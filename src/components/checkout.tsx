@@ -11,6 +11,7 @@ import { money } from "@/lib/catalog";
 import type { Database } from "@/lib/supabase/database.types";
 import { createTestOrder, quotePromo } from "@/app/checkout/actions";
 import { createUnpaidOrder } from "@/app/checkout/unpaid-actions";
+import { checkoutRequestId, finishCheckoutRequest } from "@/lib/cart/checkout-request";
 
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 
@@ -245,11 +246,13 @@ export function Checkout({
     setOrderMessage("");
     startOrderTransition(async () => {
       try {
-        const result = await createUnpaidOrder({
-          lines: checkoutLines(),
+        const input = {
+          lines: checkoutLines().map(({ productId, variantId, quantity }) => ({ productId, variantId, quantity })).sort((a, b) => a.variantId.localeCompare(b.variantId)),
           address: activeAddress,
           promoCode: activePromoCode,
-        });
+        };
+        const requestId = await checkoutRequestId(profile.email, input);
+        const result = await createUnpaidOrder({ ...input, requestId });
 
         if (!result.ok || !result.orderId) {
           setOrderMessage(result.message || "The order could not be created.");
@@ -257,6 +260,7 @@ export function Checkout({
         }
 
         cart.clear();
+        finishCheckoutRequest(requestId);
         router.push(`/order-confirmation/${result.orderId}`);
         router.refresh();
       } catch {

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireActor } from "@/lib/auth/guards";
 import { normalizeLines } from "@/lib/cart/model";
-import { InputError } from "@/lib/validation";
+import { InputError, id } from "@/lib/validation";
 import { safeFailure } from "@/lib/actions";
 import { notifyOrderEvent } from "@/lib/notifications/order-notifications";
 
@@ -17,6 +17,7 @@ type AddressInput = {
 };
 
 type CheckoutInput = {
+  requestId?: unknown;
   lines?: unknown;
   address?: AddressInput;
   promoCode?: unknown;
@@ -59,8 +60,10 @@ export async function createUnpaidOrder(
 ): Promise<UnpaidCheckoutResult> {
   try {
     const { client } = await requireActor();
+    const requestId = id(input.requestId, "checkout request");
     const lines = normalizeLines(input.lines);
-    if (!lines.length) throw new InputError("Your bag is empty.");
+    if (!lines.length || !Array.isArray(input.lines) || lines.length !== input.lines.length || input.lines.length > 50)
+      throw new InputError("Review your bag and try again.");
 
     const address = input.address ?? {};
     const payload = {
@@ -78,7 +81,8 @@ export async function createUnpaidOrder(
       quantity: line.quantity,
     }));
 
-    const { data, error } = await client.rpc("checkout_create_unpaid_order", {
+    const { data, error } = await client.rpc("checkout_submit_order", {
+      p_request_id: requestId,
       p_cart: cart,
       p_address: payload,
       p_promo_code: promoCode(input.promoCode),

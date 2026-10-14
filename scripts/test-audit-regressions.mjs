@@ -41,7 +41,7 @@ function render(component, props) { cursor = 0; effects = []; return component(p
 function nodes(node) { if (!node || typeof node !== "object") return []; if (Array.isArray(node)) return node.flatMap(nodes); return [node, ...nodes(node.props?.children)]; }
 const line = { productId: "10000000-0000-4000-8000-000000000001", variantId: "10000000-0000-4000-8000-000000000002", size: "M", color: "Black", quantity: 3, observedPrice: 4900 };
 const storage = new Map([[CART_KEY, JSON.stringify({version: 1, items: [line]})]]);
-globalThis.localStorage = {getItem: key => storage.get(key) ?? null, setItem: (key,value) => storage.set(key,value)};
+globalThis.localStorage = {get length(){return storage.size},key:i=>[...storage.keys()][i]??null,getItem: key => storage.get(key) ?? null, setItem: (key,value) => storage.set(key,value),removeItem:key=>storage.delete(key)};
 globalThis.window = {addEventListener(){},removeEventListener(){}};
 let quoted;
 __audit.quote = async lines => { quoted = lines; return {ok:true,quote:{lines:lines.map(l=>({...l,price:4900,lineTotal:14700,available:true})),subtotal:14700}}; };
@@ -71,8 +71,9 @@ await check("Cold checkout requests its authoritative quote",async()=>{
   render(Checkout,props); effects.forEach(f=>f()); assert.equal(refreshes,1); __audit.cart=original;
 });
 await check("Concurrent clicks submit once; success clears and redirects after persistence",async()=>{
-  reset(); let finish; __audit.submit=async input=>{calls++;assert.equal(input.lines[0].quantity,3);return new Promise(r=>finish=r)};
-  const submit=place(); submit(); submit(); assert.equal(calls,1);assert.equal(clears,0);
+  reset(); let finish, started; const submitted=new Promise(r=>started=r);
+  __audit.submit=async input=>{calls++;assert.equal(input.lines[0].quantity,3);assert.match(input.requestId,/^[0-9a-f-]{36}$/);started();return new Promise(r=>finish=r)};
+  const submit=place(); submit(); submit(); await submitted; assert.equal(calls,1);assert.equal(clears,0);
   finish({ok:true,orderId:"persisted-id"}); await Promise.all(transitions);
   assert.equal(clears,1);assert.deepEqual(destinations,["/order-confirmation/persisted-id"]);
 });
@@ -86,5 +87,32 @@ for (const rejected of [false,true]) await check(`Order ${rejected?'transport ex
 await check("Shipping transport failure cannot silently display free delivery",async()=>{
   __audit.actor=async()=>({user:{email:'test@example.invalid'},profile:{role:'customer'},client:{from:()=>({select:()=>({eq:()=>({order:()=>({order:async()=>({data:[],error:null})})})})}),rpc:async()=>({data:null,error:{message:'private upstream error'}})}});
   await assert.rejects(CheckoutPage,/temporarily unavailable/);
+});
+const {checkoutRequestId,finishCheckoutRequest,beginNewCheckoutIntent} = await import('../src/lib/cart/checkout-request.ts');
+await check('Delayed completed request replays until deliberate new add-to-cart intent',async()=>{
+  const payload={lines:[line]};
+  const first=await checkoutRequestId('completed-customer',payload);
+  finishCheckoutRequest(first);
+  assert.equal(await checkoutRequestId('completed-customer',payload),first);
+  beginNewCheckoutIntent();
+  assert.notEqual(await checkoutRequestId('completed-customer',payload),first);
+});
+await check('Checkout key survives retry and module reload without persisting contact data',async()=>{
+  const payload={lines:[line],address:{phone:'disposable-private-fixture'}};
+  const first=await checkoutRequestId('customer-a',payload);
+  const reloaded=await import('../src/lib/cart/checkout-request.ts?reload');
+  assert.equal(await reloaded.checkoutRequestId('customer-a',payload),first);
+  assert.equal(await checkoutRequestId('customer-a',payload),first);
+  assert.notEqual(await checkoutRequestId('customer-b',payload),first);
+  assert.notEqual(await checkoutRequestId('customer-a',{...payload,promoCode:'TEST'}),first);
+  assert.ok(![...storage.values()].some(value=>value.includes('disposable-private-fixture')));
+});
+await check('Unavailable durable browser storage prevents order submission',async()=>{
+  reset();let submitted=0;const saved=globalThis.localStorage;
+  globalThis.localStorage={getItem(){throw Error('storage blocked')},setItem(){throw Error('storage blocked')}};
+  try {
+    __audit.submit=async()=>{submitted++;throw Error('must not reach server')};
+    place()();await Promise.all(transitions);assert.equal(submitted,0);
+  } finally {globalThis.localStorage=saved;}
 });
 console.log(JSON.stringify({scope:'Local component logic with hook adapters; not browser or hosted proof',passed:checks.length,checks},null,2));

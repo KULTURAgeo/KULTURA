@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { refreshCart } from "@/app/cart/actions";
+import { beginNewCheckoutIntent } from "@/lib/cart/checkout-request";
 import {
   CART_KEY,
   addLine,
@@ -164,7 +165,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return false;
     }
     const ok = await resolve(next);
-    if (ok) setDrawerOpen(true);
+    if (ok) {
+      beginNewCheckoutIntent();
+      setDrawerOpen(true);
+    }
     return ok;
   };
 

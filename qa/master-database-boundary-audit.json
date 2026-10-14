@@ -1,5 +1,5 @@
 {
-  "scope": "Isolated PGlite; baseline application migrations only; no hosted connection, payment or notification send",
+  "scope": "Isolated PGlite; repository migrations including remediation; no hosted connection, payment or notification send",
   "evidence": [
     {
       "status": "PASSED",
@@ -14,23 +14,77 @@
       "check": "Customer B cannot prepare Customer A notification"
     },
     {
-      "status": "FAILED",
+      "status": "PASSED",
       "check": "Identical retried submission returns same order",
-      "actual": "second distinct pending order"
-    },
-    {
-      "status": "FAILED",
-      "check": "Customer cannot prepare payment-paid event for pending order",
-      "actual": "RPC accepted payment_paid; no email or SMS sent by this probe"
-    },
-    {
-      "status": "FAILED",
-      "check": "Customer cannot forge provider delivery receipt",
-      "actual": "RPC accepted sent status without provider evidence"
+      "actual": "same order"
     },
     {
       "status": "PASSED",
-      "check": "SQL NULL cart/address rejected by RPC after audit migration"
+      "check": "Customer cannot prepare payment-paid event"
+    },
+    {
+      "status": "PASSED",
+      "check": "Trusted backend cannot prepare paid event for unpaid order"
+    },
+    {
+      "status": "PASSED",
+      "check": "Order-received notification queued atomically without sending"
+    },
+    {
+      "status": "PASSED",
+      "check": "Customer cannot forge delivery receipt"
+    },
+    {
+      "status": "PASSED",
+      "check": "Customer cannot claim backend delivery work"
+    },
+    {
+      "status": "PASSED",
+      "check": "Trusted backend claims once and records result (simulated delivery only)"
+    },
+    {
+      "status": "PASSED",
+      "check": "Legacy non-idempotent checkout RPC denied"
+    },
+    {
+      "status": "PASSED",
+      "check": "NULL cart/address denied"
+    },
+    {
+      "status": "PASSED",
+      "check": "Same key conflicting quantity rejected"
+    },
+    {
+      "status": "PASSED",
+      "check": "Client price fields rejected at SQL boundary"
+    },
+    {
+      "status": "PASSED",
+      "check": "Idempotency key is scoped to authenticated customer"
+    },
+    {
+      "status": "PASSED",
+      "check": "Promo price calculated in SQL and replay consumes exactly one use"
+    },
+    {
+      "status": "PASSED",
+      "check": "Verified backend state transition can queue future payment success event"
+    },
+    {
+      "status": "PASSED",
+      "check": "Anonymous direct checkout RPC denied"
+    },
+    {
+      "status": "PASSED",
+      "check": "Admin session cannot forge backend notification delivery either"
+    },
+    {
+      "status": "PASSED",
+      "check": "Trusted delivery API rejects NULL channel"
+    },
+    {
+      "status": "PASSED",
+      "check": "Bounded SQL quota blocks new orders but allows existing request replay"
     },
     {
       "status": "PASSED",
