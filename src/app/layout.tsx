@@ -13,12 +13,14 @@ import { LazyCartDrawer } from "@/components/lazy-cart-drawer";
 import { Footer } from "@/components/footer";
 import { MotionEnhancements } from "@/components/motion-enhancements";
 import { PremiumScroll } from "@/components/premium-scroll";
+import { MotionPreviewProvider } from "@/components/motion-preview-provider";
 import "./globals.css";
 import "./phase3.css";
 import "./commerce-polish.css";
 import "./theme.css";
 import "./premium-motion.css";
 import "./mobile-polish.css";
+import "./motion-react.css";
 
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 const googleAnalyticsId = /^G-[A-Z0-9]+$/.test(
@@ -110,6 +112,7 @@ export default async function RootLayout({
         <a className="skip-link" href="#main">
           {translate(locale, "Skip to content")}
         </a>
+        <MotionPreviewProvider>
         <LanguageProvider initialLocale={locale}>
         <CartProvider>
           <Header />
@@ -120,6 +123,7 @@ export default async function RootLayout({
           <Footer />
         </CartProvider>
         </LanguageProvider>
+        </MotionPreviewProvider>
       </body>
     </html>
   );

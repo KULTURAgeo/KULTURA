@@ -1,0 +1,27 @@
+/* Production Motion+ enhancements. Motion owns the transforms of marked
+   elements; original CSS-driven entrance animations are disabled only there. */
+@media (prefers-reduced-motion: no-preference) {
+  .product-card[data-motion-managed] {
+    transition: none !important;
+    will-change: transform, opacity;
+  }
+  .cart-drawer[data-motion-drawer][open] { animation: none; }
+  .cart-drawer[data-motion-drawer] .k-motion-drawer-inner { min-height: 100%; }
+  .mobile-dialog[data-motion-menu][open] { animation: none; }
+  .mobile-dialog[data-motion-menu][open] nav a { animation: none !important; }
+  .mobile-dialog[data-motion-menu] nav > div { will-change: opacity, transform; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-card[data-motion-managed],
+  .mobile-dialog[data-motion-menu] nav > div { will-change: auto; }
+}
+
+/* Avoid double entrance effects: Motion handles the approved hero animation.
+   Scroll-linked transformations for phone/globe remain owned by HomeMotion. */
+[data-hero-copy] h1,
+[data-hero-copy] p,
+[data-hero-copy] .socials,
+[data-hero] > div:last-child {
+  animation: none !important;
+}
+body.kultura-motion-home [data-hero-copy] h1 { transform-origin: center bottom; }

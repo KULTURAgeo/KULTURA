@@ -135,7 +135,7 @@ export function MotionEnhancements() {
     const observeTargets = () => {
       const candidates = Array.from(main.querySelectorAll<HTMLElement>(selectors.join(",")));
       for (const element of candidates) {
-        if (seen.has(element) || element.closest("[data-demo-track]") || element.matches("[data-reveal]")) continue;
+        if (seen.has(element) || element.closest("[data-demo-track]") || element.matches("[data-reveal], [data-motion-managed]")) continue;
         seen.add(element);
         tracked.push(element);
         const parent = element.parentElement;

@@ -5,6 +5,7 @@ import { Container } from "@/components/ui";
 import { getShopCategories } from "@/lib/catalog/repository";
 import { CatalogNotice } from "@/components/catalog-notice";
 import { LocalizedCategoryName } from "@/components/localized-category-name";
+import { MotionRevealLink } from "@/components/motion-editorial";
 import { getServerLocale } from "@/lib/i18n-server";
 import { translate } from "@/lib/i18n";
 
@@ -37,7 +38,7 @@ export default async function Shop() {
       ) : (
         <div className="category-grid">
           {categories.map((category, index) => (
-            <Link href={"/shop/" + category.slug} key={category.slug}>
+            <MotionRevealLink href={"/shop/" + category.slug} index={index} key={category.slug}>
               <span className="eyebrow">
                 {t("CATEGORY")} {String(index + 1).padStart(2, "0")}
               </span>
@@ -46,7 +47,7 @@ export default async function Shop() {
                 {category.count} {t(category.count === 1 ? "PIECE" : "PIECES")}
               </span>
               <span aria-hidden="true">↗</span>
-            </Link>
+            </MotionRevealLink>
           ))}
         </div>
       )}

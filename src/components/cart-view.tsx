@@ -4,6 +4,8 @@ import { colorDisplayName } from "@/lib/category-i18n";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useMotionPreview } from "./motion-preview-provider";
 import { useCart } from "./cart-provider";
 import { money } from "@/lib/catalog";
 import { MAX_QUANTITY } from "@/lib/cart/model";
@@ -12,6 +14,9 @@ import { Button, Icon } from "./ui";
 export function CartContents({ compact = false }: { compact?: boolean }) {
   const cart = useCart();
   const { t, locale } = useLanguage();
+  const reduced = useReducedMotion();
+  const { enabled } = useMotionPreview();
+  const active = enabled && !reduced;
   const { ready, busy, refresh } = cart;
 
   useEffect(() => {
@@ -46,8 +51,17 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
         </div>
       ) : null}
 
+      <AnimatePresence initial={false}>
       {cart.quote.lines.map((line) => (
-        <article className="cart-line" key={line.variantId}>
+        <motion.article
+          className="cart-line"
+          key={line.variantId}
+          layout={active ? "position" : false}
+          initial={!active ? false : { opacity: 0, x: 28, scale: 0.97 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={!active ? undefined : { opacity: 0, x: 30, scale: 0.96 }}
+          transition={!active ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 29 }}
+        >
           <Image src={line.image} alt={line.name} width={110} height={140} />
           <div className="cart-line-info">
             {line.slug ? (
@@ -68,7 +82,13 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
               >
                 −
               </button>
-              <output aria-label={t("Quantity")}>{line.quantity}</output>
+              <motion.output
+                key={`${line.variantId}-${line.quantity}`}
+                aria-label={t("Quantity")}
+                initial={active ? { scale: 1.2, opacity: 0.55 } : false}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 480, damping: 25 }}
+              >{line.quantity}</motion.output>
               <button
                 aria-label={`Increase quantity for ${line.name}`}
                 disabled={cart.busy || !line.available || line.quantity >= Math.min(line.stock, MAX_QUANTITY)}
@@ -86,8 +106,9 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
             </div>
           </div>
           <span>{line.available ? money(line.lineTotal) : "—"}</span>
-        </article>
+        </motion.article>
       ))}
+      </AnimatePresence>
 
       {!!cart.quote.lines.length ? (
         <div className="cart-total">
@@ -114,6 +135,9 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
 
 export function CartDrawer() {
   const cart = useCart();
+  const reduced = useReducedMotion();
+  const { enabled } = useMotionPreview();
+  const active = enabled && !reduced;
   const { t } = useLanguage();
   const dialog = useRef<HTMLDialogElement>(null);
 
@@ -126,12 +150,19 @@ export function CartDrawer() {
     <dialog
       ref={dialog}
       className="cart-drawer"
+      data-motion-drawer
       aria-labelledby="bag-title"
       onClose={cart.close}
       onClick={(event) => {
         if (event.target === event.currentTarget) cart.close();
       }}
     >
+      <motion.div
+        className="k-motion-drawer-inner"
+        initial={!active ? false : { opacity: 0, x: 32 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={!active ? { duration: 0 } : { type: "spring", stiffness: 320, damping: 33 }}
+      >
       <div className="drawer-heading">
         <h2 id="bag-title">{t("YOUR BAG")}</h2>
         <button className="icon-button" aria-label={t("Close bag")} onClick={cart.close}>
@@ -139,6 +170,7 @@ export function CartDrawer() {
         </button>
       </div>
       <CartContents compact />
+      </motion.div>
     </dialog>
   );
 }
