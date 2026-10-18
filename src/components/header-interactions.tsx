@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { useCart } from "./cart-provider";
 import { Icon } from "./ui";
 import { LanguageSwitcher } from "./language-switcher";
@@ -15,6 +16,13 @@ export function HeaderInteractions({ theme, onThemeChange }: {
   const { t } = useLanguage();
   const dialog = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
+  const reduced = useReducedMotion();
+  const press = reduced ? undefined : { scale: 0.9 };
+  const navVariants = { open: { transition: { staggerChildren: 0.074, delayChildren: 0.07 } }, closed: {} };
+  const itemVariants = reduced ? { open: { opacity: 1, y: 0 }, closed: { opacity: 1, y: 0 } } : {
+    open: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 330, damping: 27 } },
+    closed: { opacity: 0, y: 18, transition: { duration: 0.12 } },
+  };
 
   const close = () => {
     dialog.current?.close();
@@ -34,15 +42,17 @@ export function HeaderInteractions({ theme, onThemeChange }: {
         <Link className="icon-button" href="/account" aria-label={t("ACCOUNT")}>
           <Icon name="account" />
         </Link>
-        <button
+        <motion.button
+          whileTap={press}
           className="icon-button bag-button"
           aria-label={`Shopping bag, ${cart.count} items`}
           onClick={cart.open}
         >
           <Icon name="bag" />
           {cart.count > 0 ? <span className="bag-count">{cart.count}</span> : null}
-        </button>
-        <button
+        </motion.button>
+        <motion.button
+          whileTap={press}
           className="icon-button mobile-menu"
           aria-label={t("Open navigation")}
           aria-expanded={open}
@@ -53,7 +63,7 @@ export function HeaderInteractions({ theme, onThemeChange }: {
           }}
         >
           <Icon name="menu" />
-        </button>
+        </motion.button>
       </div>
 
       <dialog
@@ -61,6 +71,7 @@ export function HeaderInteractions({ theme, onThemeChange }: {
         aria-label={t("Mobile navigation")}
         ref={dialog}
         className="mobile-dialog"
+        data-motion-menu
         onClose={() => setOpen(false)}
         onClick={(event) => {
           if (event.target === event.currentTarget) close();
@@ -68,11 +79,16 @@ export function HeaderInteractions({ theme, onThemeChange }: {
       >
         <div className="mobile-dialog-top">
           <span className="wordmark">KULTURA</span>
-          <button className="icon-button" aria-label={t("Close navigation")} onClick={close}>
+          <motion.button whileTap={press} className="icon-button" aria-label={t("Close navigation")} onClick={close}>
             <Icon name="close" />
-          </button>
+          </motion.button>
         </div>
-        <nav aria-label="Mobile navigation">
+        <motion.nav
+          aria-label="Mobile navigation"
+          initial="closed"
+          animate={open ? "open" : "closed"}
+          variants={navVariants}
+        >
           {[
             ["Shop", "/shop"],
             ["Drops", "/drops"],
@@ -80,13 +96,15 @@ export function HeaderInteractions({ theme, onThemeChange }: {
             ["Account", "/account"],
             ["Your bag", "/cart"],
           ].map(([label, href], index) => (
-            <Link href={href} key={href} onClick={close}>
-              <small>0{index + 1}</small>
-              {t(label)}
-              <span>↗</span>
-            </Link>
+            <motion.div key={href} variants={itemVariants}>
+              <Link href={href} onClick={close}>
+                <small>0{index + 1}</small>
+                {t(label)}
+                <span>↗</span>
+              </Link>
+            </motion.div>
           ))}
-        </nav>
+        </motion.nav>
         <div className="mobile-language-choice"><LanguageSwitcher mobile /></div>
         <div className="mobile-theme-choice" role="group" aria-label={t("Color theme")}>
           <button type="button" aria-pressed={theme === "light"}
