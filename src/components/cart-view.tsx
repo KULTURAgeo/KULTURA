@@ -85,7 +85,7 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
               <motion.output
                 key={`${line.variantId}-${line.quantity}`}
                 aria-label={t("Quantity")}
-                initial={reduced ? false : { scale: 1.2, opacity: 0.55 }}
+                initial={active ? { scale: 1.2, opacity: 0.55 } : false}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 480, damping: 25 }}
               >{line.quantity}</motion.output>
@@ -136,8 +136,6 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
 export function CartDrawer() {
   const cart = useCart();
   const reduced = useReducedMotion();
-  const { enabled } = useMotionPreview();
-  const active = enabled && !reduced;
   const { enabled } = useMotionPreview();
   const active = enabled && !reduced;
   const { t } = useLanguage();
