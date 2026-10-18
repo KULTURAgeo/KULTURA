@@ -143,3 +143,17 @@
     }
   }
 }
+
+/* Homepage already tracks reveal visibility inside HomeMotion. Smooth its
+   existing data-reveal elements without installing a second observer. */
+@media (prefers-reduced-motion: no-preference) {
+  body.kultura-motion-home [data-reveal] {
+    transition:
+      opacity 680ms cubic-bezier(.22,1,.36,1),
+      transform 720ms cubic-bezier(.22,1,.36,1);
+    transition-delay: var(--k-stagger,0ms);
+  }
+  body.kultura-motion-home [data-reveal][data-visible="true"] {
+    transform: translate3d(0,0,0);
+  }
+}
