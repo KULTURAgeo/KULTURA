@@ -85,7 +85,7 @@ export function HomeMotion({
     if (demoTrack) {
       // Sticky runway for the in-phone feed, globe enlargement and handoff.
       // The phone never gets a second zoom after the feed completes.
-      demoTrack.style.height = "460svh";
+      demoTrack.style.height = window.innerWidth < 720 ? "390svh" : "460svh";
     }
 
     if (phoneTransition) {
@@ -147,13 +147,13 @@ export function HomeMotion({
         const initialScale = Math.min(
           2.2,
           viewportHeight * 0.82 / phoneHeight,
-          viewportWidth * (viewportWidth < 720 ? 0.85 : 0.60) / phoneWidth,
+          viewportWidth * (viewportWidth < 720 ? 0.80 : 0.60) / phoneWidth,
         );
         // Second frame: a modest close-up (~1.34x, bounded on phones).
         // Keep the surrounding editorial backdrop visible.
         const zoomTarget = Math.max(initialScale, Math.min(
           initialScale * 1.34,
-          viewportWidth * (viewportWidth < 720 ? 0.98 : 0.56) / phoneWidth,
+          viewportWidth * (viewportWidth < 720 ? 0.89 : 0.56) / phoneWidth,
           viewportHeight * 1.23 / phoneHeight,
         ));
         const scale = mix(initialScale * 0.82, initialScale, entry)
@@ -309,15 +309,19 @@ export function HomeMotion({
     const requestRender = () => {
       if (!frame) frame = requestAnimationFrame(render);
     };
+    const onResize = () => {
+      if (demoTrack) demoTrack.style.height = window.innerWidth < 720 ? "390svh" : "460svh";
+      requestRender();
+    };
 
     render();
     window.addEventListener("scroll", requestRender, { passive: true });
-    window.addEventListener("resize", requestRender);
+    window.addEventListener("resize", onResize);
 
     return () => {
       if (frame) cancelAnimationFrame(frame);
       window.removeEventListener("scroll", requestRender);
-      window.removeEventListener("resize", requestRender);
+      window.removeEventListener("resize", onResize);
       observer.disconnect();
       document.body.classList.remove("kultura-motion-home");
     };
