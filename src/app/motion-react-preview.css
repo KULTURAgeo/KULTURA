@@ -1,0 +1,18 @@
+/* Motion for React preview: Motion owns these transforms, not legacy CSS. */
+@media (prefers-reduced-motion: no-preference) {
+  .product-card[data-motion-managed] {
+    transition: none !important;
+    will-change: transform, opacity;
+  }
+  .cart-drawer[data-motion-drawer][open] { animation: none; }
+  .cart-drawer[data-motion-drawer] .k-motion-drawer-inner { min-height: 100%; }
+  .mobile-dialog[data-motion-menu][open] { animation: none; }
+  .mobile-dialog[data-motion-menu][open] nav a { animation: none !important; }
+  .mobile-dialog[data-motion-menu] nav > div { will-change: opacity, transform; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-card[data-motion-managed],
+  .mobile-dialog[data-motion-menu] nav > div {
+    will-change: auto;
+  }
+}
