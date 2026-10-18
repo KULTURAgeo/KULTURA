@@ -1,5 +1,5 @@
-/* Premium Motion preview — progressive enhancement only.
-   No scroll hijack: mobile and trackpad input remain native. */
+/* KULTURA Premium Motion — cinematic scrolling and accessible transitions.
+   Native touch and reduced-motion behavior are preserved. */
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
 
@@ -158,7 +158,7 @@
   }
 }
 
-/* === MOTION LAB v2: compare against SOFT on the same URL === */
+/* Cinematic motion — desktop Lenis + responsive progressive enhancement. */
 html.lenis, html.lenis body { height: auto; }
 html.lenis.lenis-smooth { scroll-behavior: auto !important; }
 html.lenis.lenis-stopped { overflow: hidden; }
@@ -184,61 +184,6 @@ html.lenis.lenis-scrolling iframe { pointer-events: none; }
   box-shadow: 0 0 9px rgba(190,195,205,.34);
   will-change: transform;
 }
-.k-motion-compare {
-  position: fixed;
-  left: max(16px, env(safe-area-inset-left));
-  bottom: max(18px, env(safe-area-inset-bottom));
-  z-index: 2000;
-  display: grid;
-  gap: 7px;
-  padding: 12px;
-  background: rgba(16,16,18,.90);
-  color: #f5f5f5;
-  border: 1px solid rgba(225,225,225,.24);
-  border-radius: 12px;
-  box-shadow: 0 15px 44px rgba(0,0,0,.28);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  font-family: inherit;
-}
-.k-motion-compare-caption {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: .19em;
-  opacity: .78;
-  white-space: nowrap;
-}
-.k-motion-compare-buttons {
-  display: flex;
-  gap: 3px;
-  border-radius: 7px;
-  background: rgba(255,255,255,.08);
-  padding: 3px;
-}
-.k-motion-compare-buttons button {
-  color: #c6c7cd;
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  min-height: 35px;
-  padding: 0 14px;
-  font-size: 10px;
-  font-weight: 800;
-  cursor: pointer;
-  letter-spacing: .08em;
-  transition: background .2s ease, color .2s ease, transform .2s ease;
-}
-.k-motion-compare-buttons button[aria-pressed="true"] {
-  color: #101010;
-  background: #f5f5f5;
-}
-.k-motion-compare-buttons button:active { transform: scale(.94); }
-.k-motion-compare-buttons button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-@media (max-width: 550px) {
-  .k-motion-compare { padding: 9px; gap: 5px; }
-  .k-motion-compare-buttons button { min-height: 34px; padding-inline: 12px; }
-}
-
 /* Intentional, editorial-grade movement, only while CINEMATIC is selected. */
 @media (prefers-reduced-motion: no-preference) {
   html[data-motion-mode="cinematic"] #main.k-route-enter {
@@ -344,21 +289,5 @@ html.lenis.lenis-scrolling iframe { pointer-events: none; }
   html[data-motion-mode="cinematic"] .mobile-dialog[open] nav a:nth-child(4) { animation-delay: .22s; }
   html[data-motion-mode="cinematic"] .mobile-dialog[open] nav a:nth-child(5) { animation-delay: .27s; }
 
-  html[data-motion-mode="soft"] .k-motion-reveal {
-    opacity: 1 !important;
-    transform: none !important;
-    filter: none !important;
-    transition: none !important;
-  }
-  html[data-motion-mode="soft"] body.kultura-motion-home [data-reveal] {
-    opacity: 1 !important;
-    transform: none !important;
-    filter: none !important;
-    transition: none !important;
-  }
-  html[data-motion-mode="soft"] #main.k-route-enter { animation: none; }
-  html[data-motion-mode="soft"].k-route-leaving #main { transition: none; filter: none; transform: none; opacity: 1; }
-  html[data-motion-mode="soft"] body.kultura-motion-home [data-hero-copy] > * {
-    animation: none;
-  }
+
 }
