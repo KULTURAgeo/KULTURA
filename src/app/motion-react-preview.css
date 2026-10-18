@@ -19,10 +19,10 @@
 
 /* Preview A/B comparison. Original mode leaves Lenis and the preexisting
    cinematic scroll scene alone; only the NEW Motion additions are disabled. */
-html[data-motion-preview] [data-hero-copy] h1,
-html[data-motion-preview] [data-hero-copy] p,
-html[data-motion-preview] [data-hero-copy] .socials,
-html[data-motion-preview] [data-hero] > div:last-child {
+[data-hero-copy] h1,
+[data-hero-copy] p,
+[data-hero-copy] .socials,
+[data-hero] > div:last-child {
   animation: none !important;
 }
 html[data-motion-preview] body.kultura-motion-home [data-hero-copy] h1 {
