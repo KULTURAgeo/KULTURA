@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 /**
@@ -93,6 +93,7 @@ function completeProductPortal(pathname: string) {
 
 export function MotionEnhancements() {
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     // Disable document-wide effects for users who request reduced motion.
@@ -119,56 +120,85 @@ export function MotionEnhancements() {
       ".information > p",
       ".newsletter-inner",
     ];
-    const targets = Array.from(main.querySelectorAll<HTMLElement>(selectors.join(",")))
-      .filter((node) => !node.closest("[data-demo-track]") && !node.matches("[data-reveal]"));
+
+    const tracked: HTMLElement[] = [];
+    const seen = new WeakSet<HTMLElement>();
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
         entry.target.classList.add("k-in-view");
         observer.unobserve(entry.target);
       }
-    }, { threshold: 0.08, rootMargin: "0px 0px -24px 0px" });
-    for (const element of targets) {
-      const parent = element.parentElement;
-      const siblings = parent
-        ? Array.from(parent.children).filter((child) => child.matches(".product-card, .category-grid > a"))
-        : [];
-      const index = siblings.indexOf(element);
-      element.style.setProperty("--k-stagger", `${Math.min(Math.max(index, 0) % 4, 3) * 60}ms`);
-      element.classList.add("k-motion-reveal");
-      observer.observe(element);
-    }
+    }, { threshold: 0.10, rootMargin: "0px 0px -34px 0px" });
+
+    // Server-streamed shop results may arrive after hydration. Observe them too.
+    const observeTargets = () => {
+      const candidates = Array.from(main.querySelectorAll<HTMLElement>(selectors.join(",")));
+      for (const element of candidates) {
+        if (seen.has(element) || element.closest("[data-demo-track]") || element.matches("[data-reveal]")) continue;
+        seen.add(element);
+        tracked.push(element);
+        const parent = element.parentElement;
+        const siblings = parent
+          ? Array.from(parent.children).filter((child) => child.matches(".product-card, .category-grid > a"))
+          : [];
+        const index = siblings.indexOf(element);
+        element.style.setProperty("--k-stagger", `${Math.max(0, index) % 4 * 115}ms`);
+        element.classList.add("k-motion-reveal");
+        observer.observe(element);
+      }
+    };
+    observeTargets();
+    const mutationObserver = new MutationObserver(observeTargets);
+    mutationObserver.observe(main, { childList: true, subtree: true });
+    let navigationTimer: number | null = null;
 
     const onClick = (event: MouseEvent) => {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || event.defaultPrevented) return;
+      if (document.documentElement.dataset.motionMode === "soft") return;
       const source = event.target;
       if (!(source instanceof Element)) return;
       const link = source.closest<HTMLAnchorElement>("a[href]");
-      if (!link || link.target && link.target !== "_self" || link.hasAttribute("download")) return;
+      if (!link || (link.target && link.target !== "_self") || link.hasAttribute("download")) return;
+      if (link.closest("dialog, [contenteditable='true']")) return;
       const url = new URL(link.href, location.href);
-      if (url.origin !== location.origin || url.pathname === location.pathname) return;
-      // Account, checkout and other routes remain functional even if an animation fails.
+      const current = new URL(location.href);
+      if (url.origin !== location.origin || (url.pathname === current.pathname && url.search === current.search)) return;
+      // Enhance only storefront pages. Accounts, forms and checkout use normal navigation.
+      const storefront = (path: string) =>
+        path === "/" || path === "/shop" || path.startsWith("/shop/")
+        || path === "/drops" || path === "/about" || path.startsWith("/product/");
+      if (!storefront(url.pathname) || !storefront(current.pathname)) return;
+
+      // Delay the route for a brief, perceptible departure; Next still handles client navigation.
+      event.preventDefault();
       if (url.pathname.startsWith("/product/")) startProductPortal(link);
       document.documentElement.classList.add("k-route-leaving");
-      window.setTimeout(() => document.documentElement.classList.remove("k-route-leaving"), 460);
+      if (navigationTimer !== null) window.clearTimeout(navigationTimer);
+      navigationTimer = window.setTimeout(() => {
+        navigationTimer = null;
+        router.push(url.pathname + url.search + url.hash);
+      }, 270);
     };
     document.addEventListener("click", onClick, { capture: true });
     const frame = window.requestAnimationFrame(() => completeProductPortal(pathname));
-    const enterTimer = window.setTimeout(() => main.classList.remove("k-route-enter"), 640);
+    const enterTimer = window.setTimeout(() => main.classList.remove("k-route-enter"), 810);
 
     return () => {
       observer.disconnect();
+      mutationObserver.disconnect();
+      if (navigationTimer !== null) window.clearTimeout(navigationTimer);
       window.cancelAnimationFrame(frame);
       window.clearTimeout(enterTimer);
       document.removeEventListener("click", onClick, { capture: true });
-      for (const element of targets) {
+      for (const element of tracked) {
         element.classList.remove("k-motion-reveal", "k-in-view");
         element.style.removeProperty("--k-stagger");
       }
       main.classList.remove("k-route-enter");
       document.documentElement.classList.remove("k-route-leaving");
     };
-  }, [pathname]);
+  }, [pathname, router]);
 
   return null;
 }
