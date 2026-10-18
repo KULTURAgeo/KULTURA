@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
+import { useMotionPreview } from "./motion-preview-provider";
 import { useCart } from "./cart-provider";
 import { Icon } from "./ui";
 import { LanguageSwitcher } from "./language-switcher";
@@ -17,9 +18,11 @@ export function HeaderInteractions({ theme, onThemeChange }: {
   const dialog = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
   const reduced = useReducedMotion();
-  const press = reduced ? undefined : { scale: 0.9 };
+  const { enabled } = useMotionPreview();
+  const active = enabled && !reduced;
+  const press = !active ? undefined : { scale: 0.9 };
   const navVariants = { open: { transition: { staggerChildren: 0.074, delayChildren: 0.07 } }, closed: {} };
-  const itemVariants = reduced ? { open: { opacity: 1, y: 0 }, closed: { opacity: 1, y: 0 } } : {
+  const itemVariants = !active ? { open: { opacity: 1, y: 0 }, closed: { opacity: 1, y: 0 } } : {
     open: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 330, damping: 27 } },
     closed: { opacity: 0, y: 18, transition: { duration: 0.12 } },
   };
@@ -85,8 +88,8 @@ export function HeaderInteractions({ theme, onThemeChange }: {
         </div>
         <motion.nav
           aria-label="Mobile navigation"
-          initial="closed"
-          animate={open ? "open" : "closed"}
+          initial={active ? "closed" : false}
+          animate={open && active ? "open" : "closed"}
           variants={navVariants}
         >
           {[
