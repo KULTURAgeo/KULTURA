@@ -36,17 +36,11 @@ export default async function CheckoutPage() {
     client.rpc("checkout_get_shipping_settings", { p_request: true }),
   ]);
 
-  if (addressResult.error) {
+  if (addressResult.error || shippingResult.error) {
     throw new Error("Checkout details are temporarily unavailable.");
   }
 
-  let shippingSettings = {
-    shippingTotal: 0,
-    freeShippingThreshold: null as number | null,
-  };
-  if (!shippingResult.error) {
-    shippingSettings = parseSettings(shippingResult.data);
-  }
+  const shippingSettings = parseSettings(shippingResult.data);
 
   return (
     <Container className="checkout-page page-section">

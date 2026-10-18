@@ -141,6 +141,21 @@ await check("Logout clears persisted session after a new login",async()=>{
  assert.equal((await logout()).redirectTo,"/login");
  await assert.rejects(()=>requirePage(),e=>e.redirectTo==="/login?next=/account");
 });
+await check("Order confirmation refreshes expired cookies and sends private sensitive headers",async()=>{
+ const expired=session(-60);
+ const cookie="sb-auth-fixture-auth-token=base64-"+Buffer.from(JSON.stringify(expired)).toString("base64url");
+ const before=refreshCount;
+ const response=await proxy(new NextRequest("https://store.example.invalid/order-confirmation/fixture-order",{headers:{cookie}}));
+ assert.ok(refreshCount>before);
+ assert.ok(response.cookies.getAll().some(c=>c.name.includes("auth-token")));
+ assert.match(response.headers.get("cache-control"),/private.*no-store/);
+ assert.equal(response.headers.get("x-robots-tag"),"noindex, nofollow");
+ assert.equal(response.headers.get("referrer-policy"),"no-referrer");
+});
+await check("Similarly named public route is not treated as order confirmation",async()=>{
+ const response=await proxy(new NextRequest("https://store.example.invalid/order-confirmation-public"));
+ assert.equal(response.headers.get("pragma"),null);
+});
 await check("Invalid confirmation link cannot create session",async()=>{
  const response=await confirm(new NextRequest("https://store.example.invalid/auth/confirm?type=admin"));
  assert.equal(response.headers.get("location"),"https://store.example.invalid/login?auth_error=1");

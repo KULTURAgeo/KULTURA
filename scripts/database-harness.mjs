@@ -1,6 +1,6 @@
 import { PGlite } from "@electric-sql/pglite";
 import { readFile, readdir } from "node:fs/promises";
-export async function createTestDatabase({ seed = true, phase2Only = false } = {}) {
+export async function createTestDatabase({ seed = true, phase2Only = false, through = null } = {}) {
   const db = new PGlite();
   // Minimal Supabase Auth contract; not a substitute for testing hosted GoTrue/PostgREST.
   await db.exec(`
@@ -24,7 +24,7 @@ export async function createTestDatabase({ seed = true, phase2Only = false } = {
  alter default privileges in schema public grant all on tables to anon, authenticated;
  `);
   for (const file of (await readdir("supabase/migrations"))
-    .filter((f) => f.endsWith(".sql") && (!phase2Only || f.startsWith("20260923")))
+    .filter((f) => f.endsWith(".sql") && (!through || f <= through) && (!phase2Only || f.startsWith("20260923")))
     .sort()) {
     await db.exec(await readFile("supabase/migrations/" + file, "utf8"));
   }

@@ -11,7 +11,7 @@ const EXACT_SENSITIVE_PATHS = new Set([
   "/forgot-password",
   "/reset-password",
 ]);
-const SENSITIVE_PREFIXES = ["/account", "/admin", "/checkout", "/auth"];
+const SENSITIVE_PREFIXES = ["/account", "/admin", "/checkout", "/auth", "/order-confirmation"];
 
 function isSensitivePath(pathname: string) {
   return (
