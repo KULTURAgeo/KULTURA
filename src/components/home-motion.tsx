@@ -42,7 +42,13 @@ export function HomeMotion({
       },
       { threshold: 0.12, rootMargin: "0px 0px -5% 0px" },
     );
-    revealNodes.forEach((item) => observer.observe(item));
+    let galleryIndex = 0;
+    revealNodes.forEach((item) => {
+      if (item.hasAttribute("data-gallery-card")) {
+        item.style.setProperty("--k-stagger", `${(galleryIndex++ % 4) * 90}ms`);
+      }
+      observer.observe(item);
+    });
 
     if (reduced) {
       revealNodes.forEach((item) => item.setAttribute("data-visible", "true"));
@@ -198,14 +204,14 @@ export function HomeMotion({
           // to the reference, before that SAME button becomes the new page.
           const portalEntry = smooth(range(p, 0.852, 0.881));
           const buttonGrow = smooth(range(p, 0.868, 0.936));
-          const portalGrow = smooth(range(p, 0.938, 0.992));
+          const portalGrow = smooth(range(p, 0.938, 0.999));
 
           // Keep the BACKDROP moving all the way through the globe's portal
           // reveal, not just until the button reaches its wide pill shape.
           // Overlap the second movement with the first to avoid a freeze
           // near p=.936. The phone itself retains its settled scale.
           // Everything is progress-based, including reverse scrolling.
-          const backdropDive = smooth(range(p, 0.922, 0.992));
+          const backdropDive = smooth(range(p, 0.922, 0.999));
           const backdropScale =
             mix(1, viewportWidth < 720 ? 1.22 : 1.30, buttonGrow)
             * mix(1, viewportWidth < 720 ? 1.34 : 1.43, backdropDive);
