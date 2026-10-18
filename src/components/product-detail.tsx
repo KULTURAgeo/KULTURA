@@ -7,6 +7,7 @@ import { money, type Product } from "@/lib/catalog";
 import { useCart } from "./cart-provider";
 import { Badge } from "./ui";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useMotionPreview } from "./motion-preview-provider";
 import { trackAddToCart, trackViewItem } from "./analytics";
 import { MAX_QUANTITY } from "@/lib/cart/model";
 import { ProductBadges } from "./product-badges";
@@ -16,6 +17,8 @@ import { WishlistButton } from "./wishlist-button";
 export function ProductDetail({ product, wishlistSaved = false }: { product: Product; wishlistSaved?: boolean }) {
   const cart = useCart();
   const reduced = useReducedMotion();
+  const { enabled } = useMotionPreview();
+  const active = enabled && !reduced;
   const { t, locale } = useLanguage();
   const [size, setSize] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -109,7 +112,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
         <div className="gallery-thumbs">
           {gallery.map(({ label, src }, i) => (
             <motion.button
-              whileTap={reduced ? undefined : { scale: 0.94 }}
+              whileTap={active ? { scale: 0.94 }}
               key={label}
               aria-label={label}
               aria-pressed={view === i}
@@ -214,7 +217,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
         <motion.button
           className="button add-button"
           data-motion-action
-          whileHover={reduced ? undefined : { y: -3 }}
+          whileHover={active ? { y: -3 }}
           whileTap={reduced ? undefined : { scale: 0.965 }}
           transition={{ type: "spring", stiffness: 440, damping: 27 }}
           disabled={!variant || variant.stock === 0 || cart.busy}
@@ -269,9 +272,9 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
       <AnimatePresence initial={false}>
       {zoomOpen ? (
         <motion.div
-          initial={reduced ? false : { opacity: 0 }}
+          initial={!active ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={reduced ? undefined : { opacity: 0 }}
+          exit={!active ? undefined : { opacity: 0 }}
           transition={{ duration: 0.21 }}
           className="product-zoom-overlay"
           role="dialog"
@@ -293,7 +296,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
             initial={reduced ? false : { opacity: 0.7, scale: 0.93, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={reduced ? undefined : { opacity: 0, scale: 0.96 }}
-            transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 31 }}
+            transition={!active ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 31 }}
           >
             <Image
               src={currentImage.src}
