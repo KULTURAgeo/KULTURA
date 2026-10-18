@@ -12,6 +12,7 @@ import { CartProvider } from "@/components/cart-provider";
 import { LazyCartDrawer } from "@/components/lazy-cart-drawer";
 import { Footer } from "@/components/footer";
 import { MotionEnhancements } from "@/components/motion-enhancements";
+import { PremiumScroll } from "@/components/premium-scroll";
 import "./globals.css";
 import "./phase3.css";
 import "./commerce-polish.css";
@@ -112,6 +113,7 @@ export default async function RootLayout({
         <CartProvider>
           <Header />
           <MotionEnhancements />
+          <PremiumScroll />
           <main id="main">{children}</main>
           <LazyCartDrawer />
           <Footer />
