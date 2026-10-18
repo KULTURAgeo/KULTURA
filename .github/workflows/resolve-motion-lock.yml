@@ -6,7 +6,7 @@ permissions:
   contents: write
 jobs:
   verified-lock:
-    if: github.event.head_commit.message != 'chore(preview): resolve Motion lockfile'
+    if: "github.event.head_commit.message != 'chore(preview): resolve Motion lockfile'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
