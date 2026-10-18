@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 /**
- * Preview-only compare switch. Lenis is loaded only for desktop fine pointers.
- * Touch, reduced-motion users, dialogs and nested scrolling keep native input.
+ * Production cinematic scrolling.
+ * Lenis loads lazily for desktop mouse/trackpad users only.
+ * Touch devices, reduced-motion users, open dialogs and nested inputs
+ * retain native scrolling.
  */
 export function PremiumScroll() {
-  const [mode, setMode] = useState<"cinematic" | "soft">("cinematic");
   const progressRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    document.documentElement.dataset.motionMode = mode;
+    document.documentElement.dataset.motionMode = "cinematic";
 
     const desktop = window.matchMedia(
       "(min-width: 800px) and (pointer: fine) and (prefers-reduced-motion: no-preference)",
@@ -24,7 +25,7 @@ export function PremiumScroll() {
       const version = ++generation;
       controller?.destroy();
       controller = null;
-      if (mode !== "cinematic" || !desktop.matches) return;
+      if (!desktop.matches) return;
       void import("lenis").then(({ default: Lenis }) => {
         if (!alive || version !== generation) return;
         controller = new Lenis({
@@ -47,7 +48,7 @@ export function PremiumScroll() {
       desktop.removeEventListener("change", setUp);
       controller?.destroy();
     };
-  }, [mode]);
+  }, []);
 
   useEffect(() => {
     let frame = 0;
@@ -71,17 +72,6 @@ export function PremiumScroll() {
   }, []);
 
   return (
-    <>
-      <div className="k-scroll-progress" aria-hidden="true"><div ref={progressRef} /></div>
-      <div className="k-motion-compare" role="group" aria-label="Preview animation comparison">
-        <span className="k-motion-compare-caption">KULTURA / MOTION PREVIEW</span>
-        <div className="k-motion-compare-buttons">
-          <button type="button" aria-pressed={mode === "soft"}
-            onClick={() => setMode("soft")}>SOFT</button>
-          <button type="button" aria-pressed={mode === "cinematic"}
-            onClick={() => setMode("cinematic")}>CINEMATIC</button>
-        </div>
-      </div>
-    </>
+    <div className="k-scroll-progress" aria-hidden="true"><div ref={progressRef} /></div>
   );
 }
