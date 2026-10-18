@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useMotionPreview } from "./motion-preview-provider";
 import { useCart } from "./cart-provider";
 import { money } from "@/lib/catalog";
 import { MAX_QUANTITY } from "@/lib/cart/model";
@@ -14,6 +15,8 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
   const cart = useCart();
   const { t, locale } = useLanguage();
   const reduced = useReducedMotion();
+  const { enabled } = useMotionPreview();
+  const active = enabled && !reduced;
   const { ready, busy, refresh } = cart;
 
   useEffect(() => {
@@ -53,11 +56,11 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
         <motion.article
           className="cart-line"
           key={line.variantId}
-          layout={reduced ? false : "position"}
-          initial={reduced ? false : { opacity: 0, x: 28, scale: 0.97 }}
+          layout={active ? "position" : false}
+          initial={!active ? false : { opacity: 0, x: 28, scale: 0.97 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={reduced ? undefined : { opacity: 0, x: 30, scale: 0.96 }}
-          transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 29 }}
+          exit={!active ? undefined : { opacity: 0, x: 30, scale: 0.96 }}
+          transition={!active ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 29 }}
         >
           <Image src={line.image} alt={line.name} width={110} height={140} />
           <div className="cart-line-info">
@@ -133,6 +136,10 @@ export function CartContents({ compact = false }: { compact?: boolean }) {
 export function CartDrawer() {
   const cart = useCart();
   const reduced = useReducedMotion();
+  const { enabled } = useMotionPreview();
+  const active = enabled && !reduced;
+  const { enabled } = useMotionPreview();
+  const active = enabled && !reduced;
   const { t } = useLanguage();
   const dialog = useRef<HTMLDialogElement>(null);
 
@@ -154,9 +161,9 @@ export function CartDrawer() {
     >
       <motion.div
         className="k-motion-drawer-inner"
-        initial={reduced ? false : { opacity: 0, x: 32 }}
+        initial={!active ? false : { opacity: 0, x: 32 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 320, damping: 33 }}
+        transition={!active ? { duration: 0 } : { type: "spring", stiffness: 320, damping: 33 }}
       >
       <div className="drawer-heading">
         <h2 id="bag-title">{t("YOUR BAG")}</h2>
