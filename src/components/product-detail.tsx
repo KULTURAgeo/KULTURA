@@ -5,7 +5,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { money, type Product } from "@/lib/catalog";
 import { useCart } from "./cart-provider";
-import { Badge, Button } from "./ui";
+import { Badge } from "./ui";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { trackAddToCart, trackViewItem } from "./analytics";
 import { MAX_QUANTITY } from "@/lib/cart/model";
 import { ProductBadges } from "./product-badges";
@@ -14,6 +15,7 @@ import { WishlistButton } from "./wishlist-button";
 
 export function ProductDetail({ product, wishlistSaved = false }: { product: Product; wishlistSaved?: boolean }) {
   const cart = useCart();
+  const reduced = useReducedMotion();
   const { t, locale } = useLanguage();
   const [size, setSize] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -106,7 +108,8 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
         </div>
         <div className="gallery-thumbs">
           {gallery.map(({ label, src }, i) => (
-            <button
+            <motion.button
+              whileTap={reduced ? undefined : { scale: 0.94 }}
               key={label}
               aria-label={label}
               aria-pressed={view === i}
@@ -114,7 +117,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
             >
               <Image src={src} alt="" width={80} height={90} />
               <span>{label}</span>
-            </button>
+            </motion.button>
           ))}
         </div>
         {sampleImagery && <p className="muted">{t("Illustrative sample imagery. Final garment details may differ.")}</p>}
@@ -208,8 +211,12 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
               ? `${variant.stock} ${t("currently available")}`
               : t("Select your size to check availability")}
         </p>
-        <Button
-          className="add-button"
+        <motion.button
+          className="button add-button"
+          data-motion-action
+          whileHover={reduced ? undefined : { y: -3 }}
+          whileTap={reduced ? undefined : { scale: 0.965 }}
+          transition={{ type: "spring", stiffness: 440, damping: 27 }}
           disabled={!variant || variant.stock === 0 || cart.busy}
           onClick={async () => {
             if (!variant) return;
@@ -240,7 +247,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
         >
           {soldOut ? t("SOLD OUT") : t("ADD TO CART")}{" "}
           <span aria-hidden="true">↗</span>
-        </Button>
+        </motion.button>
         <p role="status">{message}</p>
         <WishlistButton product={product} saved={wishlistSaved} />
         <div className="accordions">
@@ -259,8 +266,13 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
         </div>
       </div>
 
+      <AnimatePresence initial={false}>
       {zoomOpen ? (
-        <div
+        <motion.div
+          initial={reduced ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={reduced ? undefined : { opacity: 0 }}
+          transition={{ duration: 0.21 }}
           className="product-zoom-overlay"
           role="dialog"
           aria-modal="true"
@@ -275,7 +287,14 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
           >
             {t("CLOSE ×")}
           </button>
-          <div className="product-zoom-image" onClick={(event) => event.stopPropagation()}>
+          <motion.div
+            className="product-zoom-image"
+            onClick={(event) => event.stopPropagation()}
+            initial={reduced ? false : { opacity: 0.7, scale: 0.93, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={reduced ? undefined : { opacity: 0, scale: 0.96 }}
+            transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 31 }}
+          >
             <Image
               src={currentImage.src}
               alt={`${currentImage.alt} — enlarged ${currentImage.label}`}
@@ -283,9 +302,10 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
               sizes="95vw"
               priority
             />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       ) : null}
+      </AnimatePresence>
     </div>
   );
 }
