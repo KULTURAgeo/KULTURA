@@ -11,10 +11,12 @@ import { Header } from "@/components/header";
 import { CartProvider } from "@/components/cart-provider";
 import { LazyCartDrawer } from "@/components/lazy-cart-drawer";
 import { Footer } from "@/components/footer";
+import { MotionEnhancements } from "@/components/motion-enhancements";
 import "./globals.css";
 import "./phase3.css";
 import "./commerce-polish.css";
 import "./theme.css";
+import "./premium-motion.css";
 
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 const googleAnalyticsId = /^G-[A-Z0-9]+$/.test(
@@ -109,6 +111,7 @@ export default async function RootLayout({
         <LanguageProvider initialLocale={locale}>
         <CartProvider>
           <Header />
+          <MotionEnhancements />
           <main id="main">{children}</main>
           <LazyCartDrawer />
           <Footer />
