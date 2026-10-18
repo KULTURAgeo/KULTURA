@@ -112,7 +112,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
         <div className="gallery-thumbs">
           {gallery.map(({ label, src }, i) => (
             <motion.button
-              whileTap={active ? { scale: 0.94 }}
+              whileTap={active ? { scale: 0.94 } : undefined}
               key={label}
               aria-label={label}
               aria-pressed={view === i}
@@ -217,8 +217,8 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
         <motion.button
           className="button add-button"
           data-motion-action
-          whileHover={active ? { y: -3 }}
-          whileTap={reduced ? undefined : { scale: 0.965 }}
+          whileHover={active ? { y: -3 } : undefined}
+          whileTap={active ? { scale: 0.965 } : undefined}
           transition={{ type: "spring", stiffness: 440, damping: 27 }}
           disabled={!variant || variant.stock === 0 || cart.busy}
           onClick={async () => {
@@ -293,7 +293,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
           <motion.div
             className="product-zoom-image"
             onClick={(event) => event.stopPropagation()}
-            initial={reduced ? false : { opacity: 0.7, scale: 0.93, y: 16 }}
+            initial={active ? { opacity: 0.7, scale: 0.93, y: 16 } : false}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={reduced ? undefined : { opacity: 0, scale: 0.96 }}
             transition={!active ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 31 }}
