@@ -103,3 +103,43 @@
   .k-motion-reveal { opacity: 1 !important; transform: none !important; }
   .k-product-portal { display: none; }
 }
+
+/* Modern browsers animate native dialog closure without delaying Escape
+   or requiring extra application state. The keyframes above are fallback. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (transition-behavior: allow-discrete) {
+    .cart-drawer, .mobile-dialog {
+      opacity: 0;
+      transition:
+        opacity 320ms ease,
+        transform 430ms cubic-bezier(.22,1,.36,1),
+        overlay 430ms allow-discrete,
+        display 430ms allow-discrete;
+    }
+    .cart-drawer { transform: translate3d(40px,0,0); }
+    .mobile-dialog { transform: translate3d(0,22px,0); }
+    .cart-drawer[open], .mobile-dialog[open] {
+      opacity: 1;
+      transform: translate3d(0,0,0);
+      animation: none;
+    }
+    @starting-style {
+      .cart-drawer[open] { opacity: 0; transform: translate3d(40px,0,0); }
+      .mobile-dialog[open] { opacity: 0; transform: translate3d(0,22px,0); }
+    }
+    .cart-drawer::backdrop, .mobile-dialog::backdrop {
+      opacity: 0;
+      transition:
+        opacity 350ms ease,
+        overlay 430ms allow-discrete,
+        display 430ms allow-discrete;
+    }
+    .cart-drawer[open]::backdrop, .mobile-dialog[open]::backdrop {
+      opacity: 1;
+      animation: none;
+    }
+    @starting-style {
+      .cart-drawer[open]::backdrop, .mobile-dialog[open]::backdrop { opacity: 0; }
+    }
+  }
+}
