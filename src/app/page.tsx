@@ -7,6 +7,7 @@ import { CatalogNotice } from "@/components/catalog-notice";
 import { Newsletter } from "@/components/newsletter";
 import { LocalizedCategoryName } from "@/components/localized-category-name";
 import { HomeMotion } from "@/components/home-motion";
+import { MotionHeroCopy, MotionHeroPeek, MotionRevealLink } from "@/components/motion-editorial";
 import styles from "./home.module.css";
 import { getServerLocale } from "@/lib/i18n-server";
 import { translate } from "@/lib/i18n";
@@ -62,29 +63,21 @@ export default async function Home() {
   return (
     <HomeMotion className={styles.home}>
       <section className={styles.hero} data-hero>
-        <div className={styles.heroInner} data-hero-copy>
-          <h1>{t("STEP INTO KULTURA")}</h1>
-          <p className={styles.heroLead}>
-            {t("Clothing with presence. Strong silhouettes, restrained detail and movement at the center.")}
-          </p>
-          <div className={styles.socials}>
-            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">INSTAGRAM ↗</a>
-            <a
-              href={facebookUrl}
-              target={facebookUrl ? "_blank" : undefined}
-              rel={facebookUrl ? "noopener noreferrer" : undefined}
-              aria-disabled={!facebookUrl}
-            >
-              FACEBOOK ↗
-            </a>
-          </div>
-        </div>
+        <MotionHeroCopy
+          className={styles.heroInner}
+          leadClassName={styles.heroLead}
+          socialsClassName={styles.socials}
+          title={t("STEP INTO KULTURA")}
+          lead={t("Clothing with presence. Strong silhouettes, restrained detail and movement at the center.")}
+          instagramUrl={INSTAGRAM_URL}
+          facebookUrl={facebookUrl}
+        />
 
-        <div className={styles.heroPeek} aria-hidden="true">
+        <MotionHeroPeek className={styles.heroPeek}>
           <Image src={campaignImage} alt="" fill priority sizes="100vw" />
           <span className={styles.heroPeekGrid} />
           <span className={styles.heroPeekWord}>KULTURA</span>
-        </div>
+        </MotionHeroPeek>
       </section>
 
       <section className={styles.demoTrack} data-demo-track>
@@ -330,11 +323,11 @@ export default async function Home() {
         <CatalogNotice status={status} empty={!showcase.length && !categories.length} />
         <div className={styles.galleryGrid}>
           {categoryTiles.map((category, index) => (
-            <Link
+            <MotionRevealLink
               href={`/shop/${category.slug}`}
               className={styles.galleryCard}
-              data-gallery-card
-              data-reveal
+              index={index}
+              gallery
               key={category.slug}
             >
               <Image src={category.image} alt={category.alt} fill sizes="(max-width: 720px) 92vw, 25vw" />
@@ -344,7 +337,7 @@ export default async function Home() {
                 <strong><LocalizedCategoryName name={category.name} slug={category.slug} /></strong>
                 <span>{t("SHOP CATEGORY ↗")}</span>
               </div>
-            </Link>
+            </MotionRevealLink>
           ))}
         </div>
       </section>
