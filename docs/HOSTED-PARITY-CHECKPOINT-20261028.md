@@ -54,3 +54,15 @@ The security advisor also reported executable `SECURITY DEFINER` functions (14 p
 This checkpoint did not inspect secrets, payment gateway account settings, runtime logs, authenticated checkout, backup restore capability or actual browser execution. The separate staging project's presence and deploy SHA alone do not prove its environment variables point at the staging database. The live storefront could not be fetched from the public browsing tool in this session, so no storefront smoke-test claim is made.
 
 **Disposition:** keep PR #48 **draft**. Do not merge it to `main`, apply its October 14 SQL to either hosted database, or declare the security hardening released on the evidence above.
+
+## 2026-10-28 follow-up: merge candidate, security dependencies, and release blockers
+
+- PR #48 was merged **with the current main source as a second commit parent on the draft branch only**, retaining Motion+ (`motion@14.3.0`) and Lenis (`lenis@1.3.23`). Main and production remained unchanged.
+- The original merged-source check suite (`pnpm check`) passed on GitHub Actions run `40738335546`, but its runtime dependency audit found two CRITICAL and one HIGH advisories in `next@16.3.8`. The new draft candidate now pins `next@16.4.3`, `eslint-config-next@16.4.3`, `react@19.2.9` and `react-dom@19.2.9`, and uses a freshly generated frozen lockfile; full post-upgrade CI must still pass.
+- Vercel's existing Production deployment remains at `cc5e2e8` and is **not** the updated candidate.
+- **Additional production blocker:** `public.checkout_submit(uuid,jsonb,text,jsonb,jsonb)` exists in Production, is `SECURITY DEFINER`, is callable by `authenticated`, and has a separate idempotency/stock-decrement implementation. Staging's `checkout_stock_promo_reservations` and `reconcile_security_controls` migrations explicitly reject this alternate RPC. The route must be reconciled and an authorized compatibility phase planned; applying the staging SQL verbatim to Production is invalid.
+- Staging has a scheduled active `cron.job` named `kultura-checkout-reservation-expiry` running `* * * * *`; this is relevant to the 30-minute reservation policy. Its existence is not proof of successful executions or stock accounting. Production does not have the corresponding reservation machinery.
+- Production's Vercel environment metadata currently **does not list `SUPABASE_SECRET_KEY`**; privileged notification dispatch in the draft candidate is therefore not established as configured. This is an environment-variable presence check only; no values were read.
+- The Production Supabase management interface used here did not provide a usable restorable-backup/PITR verification action. A backed-up, tested rollback is still mandatory before destructive or operationally incompatible changes.
+
+Do not mark these features as live until the exact hosted schema, source, migration chain, stock/promo accounting, checkout operations, configured secrets, and application checks have all passed the coordinated rollout gates.
