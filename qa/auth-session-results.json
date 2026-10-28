@@ -1,6 +1,6 @@
 {
   "scope": "Real SSR SDK, auth actions, guards, proxy and callback routes with simulated Supabase HTTP and cookies; not hosted Supabase.",
-  "passed": 18,
+  "passed": 21,
   "checks": [
     "Unauthenticated account redirects to login",
     "Password login persists production cookies and safe next destination",
@@ -11,6 +11,7 @@
     "External next destination is rejected",
     "Browser SSR client sees the server-issued session",
     "Browser password sign-in is persisted for a new server request",
+    "Proxy avoids a second Auth user lookup with fresh cookies",
     "Proxy refresh forwards rotated cookies to browser and downstream server",
     "Registration uses configured production callback and stores PKCE verifier",
     "Email PKCE exchange writes session before account redirect",
@@ -19,6 +20,8 @@
     "Recovery confirmation redirects to password reset",
     "Password update clears cookies and reloads login",
     "Logout clears persisted session after a new login",
+    "Order confirmation refreshes expired cookies and sends private sensitive headers",
+    "Similarly named public route is not treated as order confirmation",
     "Invalid confirmation link cannot create session"
   ]
 }

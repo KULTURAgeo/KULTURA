@@ -80,7 +80,7 @@ try {
   out += "}; CompositeTypes: { [_ in never]: never }; }; };\n";
   const path = "src/lib/supabase/database.types.ts";
   if (process.argv.includes("--check")) {
-    if ((await readFile(path, "utf8")) !== out)
+    if ((await readFile(path, "utf8")).replace(/\r\n/g, "\n") !== out)
       throw new Error("Database types are stale. Run pnpm db:types.");
     console.log("Database types match migrations.");
   } else {
