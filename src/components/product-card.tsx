@@ -1,3 +1,4 @@
+import { MotionProductCard } from "./motion-product-card";
 import Image from "next/image";
 import Link from "next/link";
 import { money, type Product } from "@/lib/catalog";
@@ -6,7 +7,7 @@ import { LocalizedCategoryName } from "./localized-category-name";
 import { LocalizedColorNames } from "./localized-color-names";
 export function ProductCard({ product }: { product: Product }) {
   return (
-    <article className="product-card">
+    <MotionProductCard>
       <Link href={`/product/${product.slug}`}>
         <div className="product-image">
           <Image
@@ -30,6 +31,6 @@ export function ProductCard({ product }: { product: Product }) {
           <LocalizedColorNames colors={[...new Set(product.variants.map(v => v.color))]} /> / <LocalizedCategoryName name={product.category} slug={product.categorySlug} />
         </p>
       </Link>
-    </article>
+    </MotionProductCard>
   );
 }

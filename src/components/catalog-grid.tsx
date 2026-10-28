@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "./language-provider";
+import { AnimatePresence } from "motion/react";
 import { useDeferredValue, useMemo, useState } from "react";
 import type { Product, Category } from "@/lib/catalog";
 import { ProductCard } from "./product-card";
@@ -283,9 +284,11 @@ export function CatalogGrid({
       </div>
 
       <div className="product-grid">
-        {visible.map((product) => (
-          <ProductCard key={product.slug} product={product} />
-        ))}
+        <AnimatePresence initial={false}>
+          {visible.map((product) => (
+            <ProductCard key={product.slug} product={product} />
+          ))}
+        </AnimatePresence>
       </div>
       {visible.length === 0 && (
         <div className="empty-state">
