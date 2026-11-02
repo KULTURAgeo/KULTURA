@@ -251,7 +251,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
           {soldOut ? t("SOLD OUT") : t("ADD TO CART")}{" "}
           <span aria-hidden="true">↗</span>
         </motion.button>
-        <p role="status">{message}</p>
+        <p role={cart.error ? "alert" : "status"}>{cart.error || message}</p>
         <WishlistButton product={product} saved={wishlistSaved} />
         <div className="accordions">
           <details>
