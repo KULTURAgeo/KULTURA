@@ -11,7 +11,11 @@ export function assertSameOrigin(values: Headers) {
     .filter((value): value is string => !!value)
     .map((value) => { try { return new URL(value).origin; } catch { return ""; } });
   const local = process.env.VERCEL !== "1" && ["localhost", "127.0.0.1", "[::1]"].includes(origin.hostname) && origin.host === values.get("host");
-  if (raw !== origin.origin || (!trusted.includes(origin.origin) && !local) || values.get("sec-fetch-site") === "cross-site")
+  // A production deployment can serve the same site through multiple Vercel aliases.
+  // Trust an exact same-origin authority match even when that alias is not SITE_URL.
+  const requestHost = values.get("host")?.toLowerCase();
+  const sameRequestHost = !!requestHost && origin.host.toLowerCase() === requestHost;
+  if (raw !== origin.origin || (!trusted.includes(origin.origin) && !sameRequestHost && !local) || values.get("sec-fetch-site") === "cross-site")
     throw new RequestError(403, "Please reload the page and try again.");
 }
 
@@ -25,5 +29,6 @@ export function requestIp(values: Headers) {
 export async function protectAction(scope = "action", identity?: string) {
   const values = await headers();
   assertSameOrigin(new Headers(values));
-  await rateLimit(scope, identity ?? requestIp(new Headers(values)), scope === "auth" ? 12 : 90, 60);
+  // Cart refresh only reads public catalog data, so a Redis outage must not disable the bag.
+  await rateLimit(scope, identity ?? requestIp(new Headers(values)), scope === "auth" ? 12 : 90, 60, scope === "cart");
 }

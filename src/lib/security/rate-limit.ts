@@ -8,25 +8,29 @@ export class RequestError extends Error {
 const local = new Map<string, { count: number; expires: number }>();
 const script = "local n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('EXPIRE',KEYS[1],ARGV[1]) end; return {n,redis.call('TTL',KEYS[1])}";
 
+function consumeLocal(scope: string, identity: string, seconds: number) {
+  const now = Date.now();
+  for (const [key, value] of local) if (value.expires <= now) local.delete(key);
+  const key = `${scope}:${identity}`;
+  const entry = local.get(key) ?? { count: 0, expires: now + seconds * 1000 };
+  if (local.size > 10000) throw new RequestError(503, "Please try again shortly.");
+  entry.count++;
+  local.set(key, entry);
+  return { count: entry.count, ttl: Math.ceil((entry.expires - now) / 1000) };
+}
+
+
 // An atomic shared counter with expiring HMAC keys: no raw email/IP in Redis.
-// Only local development uses memory. Production failures are closed, never bypassed.
-export async function rateLimit(scope: string, identity: string, limit: number, seconds: number) {
+// Production mutations fail closed. Read-only cart quotes may use a bounded per-instance fallback.
+export async function rateLimit(scope: string, identity: string, limit: number, seconds: number, allowLocalFallback = false) {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   const secret = process.env.RATE_LIMIT_HMAC_KEY;
   const production = process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
   let count: number, ttl: number;
   if (!url || !token || !secret) {
-    if (production) throw new RequestError(503, "This service is temporarily unavailable.");
-    const now = Date.now();
-    for (const [key, value] of local) if (value.expires <= now) local.delete(key);
-    const key = `${scope}:${identity}`;
-    const entry = local.get(key) ?? { count: 0, expires: now + seconds * 1000 };
-    if (local.size > 10000) throw new RequestError(503, "Please try again shortly.");
-    entry.count++;
-    local.set(key, entry);
-    count = entry.count;
-    ttl = Math.ceil((entry.expires - now) / 1000);
+    if (production && !allowLocalFallback) throw new RequestError(503, "This service is temporarily unavailable.");
+    ({ count, ttl } = consumeLocal(scope, identity, seconds));
   } else {
     try {
       const endpoint = new URL(url);
@@ -46,7 +50,10 @@ export async function rateLimit(scope: string, identity: string, limit: number, 
       if (!Array.isArray(data.result) || data.result.length !== 2 || !data.result.every(Number.isSafeInteger)) throw new Error("rate response");
       [count, ttl] = data.result as [number, number];
       if (count < 1 || ttl < 0) throw new Error("rate counter");
-    } catch { throw new RequestError(503, "This service is temporarily unavailable."); }
+    } catch {
+      if (!allowLocalFallback) throw new RequestError(503, "This service is temporarily unavailable.");
+      ({ count, ttl } = consumeLocal(scope, identity, seconds));
+    }
   }
   if (count > limit) throw new RequestError(429, "Too many requests. Please try again shortly.", Math.max(1, ttl));
 }
