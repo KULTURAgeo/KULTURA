@@ -8,6 +8,7 @@ export function text(data: FormData, key: string, max: number, required = true):
             return "";
         throw new InputError(key + " is required.");
     }
+    if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)) throw new InputError("Invalid text characters.");
     const result = value.trim();
     if ((required && !result) || result.length > max)
         throw new InputError(key + " must be " + (required ? "1–" : "at most ") + max + " characters.");

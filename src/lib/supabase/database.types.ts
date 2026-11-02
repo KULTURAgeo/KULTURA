@@ -126,6 +126,8 @@ email_sent_at: string | null;
 sms_sent_at: string | null;
 created_at: string;
 updated_at: string;
+email_claimed_at: string | null;
+sms_claimed_at: string | null;
 };
 Insert: {
 id?: string;
@@ -143,6 +145,8 @@ email_sent_at?: string | null;
 sms_sent_at?: string | null;
 created_at?: string;
 updated_at?: string;
+email_claimed_at?: string | null;
+sms_claimed_at?: string | null;
 };
 Update: {
 id?: string;
@@ -160,6 +164,8 @@ email_sent_at?: string | null;
 sms_sent_at?: string | null;
 created_at?: string;
 updated_at?: string;
+email_claimed_at?: string | null;
+sms_claimed_at?: string | null;
 };
 Relationships: [{"foreignKeyName":"notification_outbox_order_id_fkey","columns":["order_id"],"isOneToOne":false,"referencedRelation":"orders","referencedColumns":["id"]}];
 };
@@ -608,8 +614,10 @@ admin_update_return_request: { Args: { p_request_id: string | null; p_expected_u
 checkout_create_unpaid_order: { Args: { p_cart: Json | null; p_address: Json | null; p_promo_code: string | null }; Returns: string };
 checkout_get_shipping_settings: { Args: { p_request: boolean | null }; Returns: Json };
 checkout_quote_promo: { Args: { p_code: string | null; p_subtotal: string | null }; Returns: Json };
+checkout_submit_order: { Args: { p_request_id: string | null; p_cart: Json | null; p_address: Json | null; p_promo_code: string | null }; Returns: string };
 customer_create_return_request: { Args: { p_order_id: string | null; p_request_type: string | null; p_reason: string | null; p_details: string | null; p_items: Json | null }; Returns: string };
 customer_save_address: { Args: { p_id: string | null; p_address: Json | null }; Returns: string };
+notification_claim: { Args: { p_notification_id: string | null; p_channel: string | null }; Returns: boolean };
 notification_prepare: { Args: { p_order_id: string | null; p_event_type: string | null }; Returns: Json };
 notification_record_delivery: { Args: { p_notification_id: string | null; p_channel: string | null; p_status: string | null }; Returns: undefined };
 }; Enums: {

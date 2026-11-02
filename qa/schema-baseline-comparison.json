@@ -1,0 +1,576 @@
+{
+  "scope": "Offline schema comparison against fresh executable migration chain. See each snapshot_scope for capture timing; this is not live monitoring.",
+  "limitations": [
+    "No hosted writes or migration history changes.",
+    "Function bodies compared after CRLF normalization; owners, grants, RLS flags and auth/storage objects require separate hosted review.",
+    "PG version differences in named NOT NULL constraints may produce differences; never auto-repair based on this report.",
+    "No-op/data-only migrations cannot be certified from object presence.",
+    "Do not replay or backfill historical migrations from this report alone."
+  ],
+  "environments": [
+    {
+      "project_ref": "fpahkxmlcvywspamftma",
+      "snapshot_scope": "Fresh read-only hosted schema capture 2026-10-20; no business rows. Not a backup.",
+      "missing": [],
+      "differing": [],
+      "additional": [],
+      "migrations": [
+        {
+          "filename": "20260923000100_commerce_schema.sql",
+          "sha256": "86691b35d4e84a441473c09603a55bcb7843e32ed7cf450bcd82d46aad463b57",
+          "represented_objects": 260,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260923000200_row_level_security.sql",
+          "sha256": "0f50aaa2b4fba95f36111b96bde9662cbff453fb676bd391e18e0d7495b7f22f",
+          "represented_objects": 14,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260924000100_admin_authorization.sql",
+          "sha256": "1944f826dda83594665e3aa06df2292afec1e68a370e0bf42fa385976f7f1818",
+          "represented_objects": 13,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260924000200_product_storage.sql",
+          "sha256": "854d56618990c662c079001b407f3f06df5f6d7eee6b63a331062e7b0da616b2",
+          "represented_objects": 3,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260924000300_customer_address.sql",
+          "sha256": "f813acea79ae20c39e2833e57000471b539cd2bd4709dd2ec3f831158ce4b6e8",
+          "represented_objects": 1,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260926000100_vercel_upload_limit.sql",
+          "sha256": "c6730f9c03b2f4d82a3443b7212cd646383bae3eb5df0c127e61e046c28f5765",
+          "represented_objects": 0,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260927000100_admin_fulfillment.sql",
+          "sha256": "572d2c8c4f18609cf06e7075b43a56fd6ced997bb2a58b8b6f3e5dedc34c0bdb",
+          "represented_objects": 1,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260927000200_test_checkout.sql",
+          "sha256": "89e6621b66b2b2fd2392321ad4d355b1a360295c30886404fceb0129f5fa969f",
+          "represented_objects": 2,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260927000300_promo_codes.sql",
+          "sha256": "f99b8f36973b45dcd37b3fb220b76f737aea28b589151a82ea2f57b22bf50ac9",
+          "represented_objects": 5,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260930000200_unpaid_checkout.sql",
+          "sha256": "d16fb4c174ebc8556aa3bdabd071b28a029ba1b99f9f7261a5e8cf32ee291d28",
+          "represented_objects": 9,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260930000300_shipping_settings_admin.sql",
+          "sha256": "e791cc4fb7f9c3edce0b2d4eb5b8d249487f8b903719f80051759ad151bef172",
+          "represented_objects": 2,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260930000400_admin_categories.sql",
+          "sha256": "0b9c45878e469e1aa50b8ca94929f198a9018429885d42143213f67629f31812",
+          "represented_objects": 2,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260930000500_wishlist.sql",
+          "sha256": "87b18c41ea07f0d9fb71de014345ec703773436d84b3df6a0f2b00ac7b83d549",
+          "represented_objects": 11,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260930000600_order_notifications.sql",
+          "sha256": "647448194b8bfe824610837374309275ffc1d4f3e84eafb42022883f0c50cf89",
+          "represented_objects": 28,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260930000700_return_requests.sql",
+          "sha256": "cf439d7897e66892b47a232cba4bd6d511ebc5ee9adb287edc8eb5e59c6ee49e",
+          "represented_objects": 35,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20261001000100_query_performance_indexes.sql",
+          "sha256": "c39a26b4d5bc278415c55b38f37bdc0be8986d0dd67cd42d41121b1a14fb7931",
+          "represented_objects": 18,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20261012000100_checkout_null_inputs.sql",
+          "sha256": "c8e69e91877492faeff015eb0af53ad50d2b4abe14bdc5142f562dac5f526f44",
+          "represented_objects": 1,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20261013000100_checkout_notification_security.sql",
+          "sha256": "16300c39517730052449f5cdea7d9dea9e8c9ab93019c4ba23f3d43a72ec6aad",
+          "represented_objects": 26,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20261015201827_repair_staging_checkout_notification_null_guards.sql",
+          "sha256": "7975942e126ec852b0dcf18264c161812aa3a91cc2886c4edca16454f5f92163",
+          "represented_objects": 0,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20261017211555_checkout_stock_promo_reservations.sql",
+          "sha256": "3eb49bfab6377294e6688e5bc1a88df7d0b033d57e8e387ad6f9b952f34717af",
+          "represented_objects": 27,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20261018111916_reconcile_security_controls.sql",
+          "sha256": "4b240cf962edcb2aa60650c3047e5c18b80bc68ca6e28a4e7c1b9fe27c60036d",
+          "represented_objects": 13,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        }
+      ]
+    },
+    {
+      "project_ref": "asnkxfudkodgyhdawhfq",
+      "snapshot_scope": "Fresh read-only hosted schema capture 2026-10-20; no business rows. Not a backup.",
+      "missing": [
+        "column:private.checkout_reservations.resolved_at",
+        "column:private.request_limits.scope",
+        "column:private.checkout_reserved_items.product_id",
+        "column:private.checkout_requests.payload",
+        "column:public.notification_outbox.email_claimed_at",
+        "column:private.checkout_settings.test_checkout_enabled",
+        "column:private.checkout_requests.order_id",
+        "column:private.checkout_reservations.promo_id",
+        "column:private.checkout_requests.customer_id",
+        "column:private.checkout_reservations.state",
+        "column:private.checkout_requests.request_id",
+        "column:private.checkout_reservations.order_id",
+        "column:private.checkout_reservations.expires_at",
+        "column:public.notification_outbox.sms_claimed_at",
+        "column:private.checkout_reserved_items.order_id",
+        "column:private.request_limits.window_start",
+        "column:private.checkout_reserved_items.quantity",
+        "column:private.request_limits.attempts",
+        "column:private.checkout_requests.created_at",
+        "column:private.checkout_reserved_items.variant_id",
+        "column:private.request_limits.customer_id",
+        "index:public.categories_active_sort_id_idx",
+        "index:public.categories_admin_sort_name_id_idx",
+        "index:public.collections_name_id_idx",
+        "index:public.products_active_category_created_id_idx",
+        "index:public.products_active_id_idx",
+        "index:public.products_admin_created_id_idx",
+        "index:public.promo_codes_created_id_idx",
+        "index:public.addresses_owner_default_created_idx",
+        "index:public.product_variants_active_stock_sku_idx",
+        "index:public.product_variants_inactive_stock_sku_idx",
+        "index:public.orders_created_id_idx",
+        "index:public.orders_non_test_created_id_idx",
+        "index:public.orders_non_test_pending_created_id_idx",
+        "index:public.orders_non_test_paid_paid_at_id_idx",
+        "index:public.orders_paid_unfulfilled_created_id_idx",
+        "index:public.order_items_created_order_idx",
+        "index:public.return_requests_type_created_id_idx",
+        "index:public.return_requests_status_type_created_id_idx",
+        "index:private.request_limits_pkey",
+        "index:private.checkout_requests_pkey",
+        "index:private.checkout_reservations_pkey",
+        "index:private.checkout_reserved_items_pkey",
+        "index:private.checkout_reservations_expiry_idx",
+        "trigger:profiles.profiles_write_limit",
+        "trigger:orders.orders_guard_test",
+        "trigger:orders.orders_resolve_checkout_reservation",
+        "trigger:orders.orders_queue_notification",
+        "trigger:addresses.addresses_write_limit",
+        "trigger:wishlist_items.wishlist_write_limit",
+        "function:private.limit_customer_writes()",
+        "function:private.guard_test_order()",
+        "function:private.assert_object_fields(jsonb,text[])",
+        "function:notification_claim(uuid,text)",
+        "function:private.queue_order_notification()",
+        "function:private.customer_rate_limit(text,integer,integer)",
+        "function:checkout_submit_order(uuid,jsonb,jsonb,text)",
+        "function:private.reserve_checkout_order(uuid,uuid)",
+        "function:private.resolve_checkout_reservation()",
+        "function:private.expire_checkout_reservations(integer)",
+        "constraint:private.checkout_requests.checkout_requests_order_id_fkey",
+        "constraint:private.request_limits.request_limits_attempts_check",
+        "constraint:private.request_limits.request_limits_pkey",
+        "constraint:private.request_limits.request_limits_customer_id_fkey",
+        "constraint:private.checkout_requests.checkout_requests_pkey",
+        "constraint:private.checkout_requests.checkout_requests_customer_id_fkey",
+        "constraint:private.checkout_reservations.checkout_reservations_state_check",
+        "constraint:private.checkout_reservations.checkout_reservations_check",
+        "constraint:private.checkout_reservations.checkout_reservations_pkey",
+        "constraint:private.checkout_reservations.checkout_reservations_order_id_fkey",
+        "constraint:private.checkout_reservations.checkout_reservations_promo_id_fkey",
+        "constraint:private.checkout_reserved_items.checkout_reserved_items_quantity_check",
+        "constraint:private.checkout_reserved_items.checkout_reserved_items_pkey",
+        "constraint:private.checkout_reserved_items.checkout_reserved_items_order_id_fkey",
+        "constraint:private.checkout_reserved_items.checkout_reserved_items_product_id_fkey",
+        "constraint:private.checkout_reserved_items.checkout_reserved_items_variant_id_fkey"
+      ],
+      "differing": [
+        "function:admin_save_product(uuid,timestamp with time zone,jsonb,uuid[])",
+        "function:customer_save_address(uuid,jsonb)",
+        "function:admin_create_test_order_v2(jsonb,jsonb,text)",
+        "function:checkout_create_unpaid_order(jsonb,jsonb,text)",
+        "function:private.resolve_promo(text,integer)",
+        "function:admin_advance_fulfillment(uuid,timestamp with time zone,fulfillment_status)",
+        "function:checkout_quote_promo(text,integer)",
+        "function:notification_prepare(uuid,text)",
+        "function:customer_create_return_request(uuid,text,text,text,jsonb)",
+        "function:notification_record_delivery(uuid,text,text)",
+        "function:admin_save_promo(uuid,timestamp with time zone,jsonb)",
+        "constraint:private.checkout_settings.checkout_settings_free_shipping_threshold_check"
+      ],
+      "additional": [
+        "column:public.orders.checkout_key",
+        "column:public.orders.checkout_request_hash",
+        "column:public.orders.delivery_notes",
+        "index:public.orders_customer_checkout_key",
+        "function:private.checkout_price(jsonb,text)",
+        "function:checkout_quote(jsonb,text)",
+        "function:checkout_submit(uuid,jsonb,text,jsonb,jsonb)",
+        "constraint:orders.orders_delivery_notes_check"
+      ],
+      "migrations": [
+        {
+          "filename": "20260923000100_commerce_schema.sql",
+          "sha256": "86691b35d4e84a441473c09603a55bcb7843e32ed7cf450bcd82d46aad463b57",
+          "represented_objects": 260,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260923000200_row_level_security.sql",
+          "sha256": "0f50aaa2b4fba95f36111b96bde9662cbff453fb676bd391e18e0d7495b7f22f",
+          "represented_objects": 14,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260924000100_admin_authorization.sql",
+          "sha256": "1944f826dda83594665e3aa06df2292afec1e68a370e0bf42fa385976f7f1818",
+          "represented_objects": 13,
+          "missing_objects": [],
+          "final_definition_drift": [
+            "function:admin_save_product(uuid,timestamp with time zone,jsonb,uuid[])"
+          ],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260924000200_product_storage.sql",
+          "sha256": "854d56618990c662c079001b407f3f06df5f6d7eee6b63a331062e7b0da616b2",
+          "represented_objects": 3,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260924000300_customer_address.sql",
+          "sha256": "f813acea79ae20c39e2833e57000471b539cd2bd4709dd2ec3f831158ce4b6e8",
+          "represented_objects": 1,
+          "missing_objects": [],
+          "final_definition_drift": [
+            "function:customer_save_address(uuid,jsonb)"
+          ],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260926000100_vercel_upload_limit.sql",
+          "sha256": "c6730f9c03b2f4d82a3443b7212cd646383bae3eb5df0c127e61e046c28f5765",
+          "represented_objects": 0,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260927000100_admin_fulfillment.sql",
+          "sha256": "572d2c8c4f18609cf06e7075b43a56fd6ced997bb2a58b8b6f3e5dedc34c0bdb",
+          "represented_objects": 1,
+          "missing_objects": [],
+          "final_definition_drift": [
+            "function:admin_advance_fulfillment(uuid,timestamp with time zone,fulfillment_status)"
+          ],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260927000200_test_checkout.sql",
+          "sha256": "89e6621b66b2b2fd2392321ad4d355b1a360295c30886404fceb0129f5fa969f",
+          "represented_objects": 2,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260927000300_promo_codes.sql",
+          "sha256": "f99b8f36973b45dcd37b3fb220b76f737aea28b589151a82ea2f57b22bf50ac9",
+          "represented_objects": 5,
+          "missing_objects": [],
+          "final_definition_drift": [
+            "function:admin_save_promo(uuid,timestamp with time zone,jsonb)",
+            "function:admin_create_test_order_v2(jsonb,jsonb,text)",
+            "function:private.resolve_promo(text,integer)",
+            "function:checkout_quote_promo(text,integer)"
+          ],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260930000200_unpaid_checkout.sql",
+          "sha256": "d16fb4c174ebc8556aa3bdabd071b28a029ba1b99f9f7261a5e8cf32ee291d28",
+          "represented_objects": 9,
+          "missing_objects": [],
+          "final_definition_drift": [
+            "function:checkout_create_unpaid_order(jsonb,jsonb,text)",
+            "constraint:private.checkout_settings.checkout_settings_free_shipping_threshold_check"
+          ],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260930000300_shipping_settings_admin.sql",
+          "sha256": "e791cc4fb7f9c3edce0b2d4eb5b8d249487f8b903719f80051759ad151bef172",
+          "represented_objects": 2,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260930000400_admin_categories.sql",
+          "sha256": "0b9c45878e469e1aa50b8ca94929f198a9018429885d42143213f67629f31812",
+          "represented_objects": 2,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260930000500_wishlist.sql",
+          "sha256": "87b18c41ea07f0d9fb71de014345ec703773436d84b3df6a0f2b00ac7b83d549",
+          "represented_objects": 11,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260930000600_order_notifications.sql",
+          "sha256": "647448194b8bfe824610837374309275ffc1d4f3e84eafb42022883f0c50cf89",
+          "represented_objects": 28,
+          "missing_objects": [],
+          "final_definition_drift": [
+            "function:notification_prepare(uuid,text)",
+            "function:notification_record_delivery(uuid,text,text)"
+          ],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20260930000700_return_requests.sql",
+          "sha256": "cf439d7897e66892b47a232cba4bd6d511ebc5ee9adb287edc8eb5e59c6ee49e",
+          "represented_objects": 35,
+          "missing_objects": [],
+          "final_definition_drift": [
+            "function:customer_create_return_request(uuid,text,text,text,jsonb)"
+          ],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20261001000100_query_performance_indexes.sql",
+          "sha256": "c39a26b4d5bc278415c55b38f37bdc0be8986d0dd67cd42d41121b1a14fb7931",
+          "represented_objects": 0,
+          "missing_objects": [
+            "index:public.categories_active_sort_id_idx",
+            "index:public.categories_admin_sort_name_id_idx",
+            "index:public.collections_name_id_idx",
+            "index:public.products_active_category_created_id_idx",
+            "index:public.products_active_id_idx",
+            "index:public.products_admin_created_id_idx",
+            "index:public.promo_codes_created_id_idx",
+            "index:public.addresses_owner_default_created_idx",
+            "index:public.product_variants_active_stock_sku_idx",
+            "index:public.product_variants_inactive_stock_sku_idx",
+            "index:public.orders_created_id_idx",
+            "index:public.orders_non_test_created_id_idx",
+            "index:public.orders_non_test_pending_created_id_idx",
+            "index:public.orders_non_test_paid_paid_at_id_idx",
+            "index:public.orders_paid_unfulfilled_created_id_idx",
+            "index:public.order_items_created_order_idx",
+            "index:public.return_requests_type_created_id_idx",
+            "index:public.return_requests_status_type_created_id_idx"
+          ],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20261012000100_checkout_null_inputs.sql",
+          "sha256": "c8e69e91877492faeff015eb0af53ad50d2b4abe14bdc5142f562dac5f526f44",
+          "represented_objects": 1,
+          "missing_objects": [],
+          "final_definition_drift": [
+            "function:checkout_create_unpaid_order(jsonb,jsonb,text)"
+          ],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20261013000100_checkout_notification_security.sql",
+          "sha256": "16300c39517730052449f5cdea7d9dea9e8c9ab93019c4ba23f3d43a72ec6aad",
+          "represented_objects": 2,
+          "missing_objects": [
+            "column:private.request_limits.scope",
+            "column:private.checkout_requests.payload",
+            "column:public.notification_outbox.email_claimed_at",
+            "column:private.checkout_requests.order_id",
+            "column:private.checkout_requests.customer_id",
+            "column:private.checkout_requests.request_id",
+            "column:public.notification_outbox.sms_claimed_at",
+            "column:private.request_limits.window_start",
+            "column:private.request_limits.attempts",
+            "column:private.checkout_requests.created_at",
+            "column:private.request_limits.customer_id",
+            "index:private.request_limits_pkey",
+            "index:private.checkout_requests_pkey",
+            "trigger:orders.orders_queue_notification",
+            "function:notification_claim(uuid,text)",
+            "function:private.queue_order_notification()",
+            "function:private.customer_rate_limit(text,integer,integer)",
+            "function:checkout_submit_order(uuid,jsonb,jsonb,text)",
+            "constraint:private.checkout_requests.checkout_requests_order_id_fkey",
+            "constraint:private.request_limits.request_limits_attempts_check",
+            "constraint:private.request_limits.request_limits_pkey",
+            "constraint:private.request_limits.request_limits_customer_id_fkey",
+            "constraint:private.checkout_requests.checkout_requests_pkey",
+            "constraint:private.checkout_requests.checkout_requests_customer_id_fkey"
+          ],
+          "final_definition_drift": [
+            "function:notification_prepare(uuid,text)",
+            "function:notification_record_delivery(uuid,text,text)"
+          ],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20261015201827_repair_staging_checkout_notification_null_guards.sql",
+          "sha256": "7975942e126ec852b0dcf18264c161812aa3a91cc2886c4edca16454f5f92163",
+          "represented_objects": 0,
+          "missing_objects": [],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20261017211555_checkout_stock_promo_reservations.sql",
+          "sha256": "3eb49bfab6377294e6688e5bc1a88df7d0b033d57e8e387ad6f9b952f34717af",
+          "represented_objects": 0,
+          "missing_objects": [
+            "column:private.checkout_reservations.resolved_at",
+            "column:private.checkout_reserved_items.product_id",
+            "column:private.checkout_reservations.promo_id",
+            "column:private.checkout_reservations.state",
+            "column:private.checkout_reservations.order_id",
+            "column:private.checkout_reservations.expires_at",
+            "column:private.checkout_reserved_items.order_id",
+            "column:private.checkout_reserved_items.quantity",
+            "column:private.checkout_reserved_items.variant_id",
+            "index:private.checkout_reservations_pkey",
+            "index:private.checkout_reserved_items_pkey",
+            "index:private.checkout_reservations_expiry_idx",
+            "trigger:orders.orders_resolve_checkout_reservation",
+            "function:checkout_submit_order(uuid,jsonb,jsonb,text)",
+            "function:private.reserve_checkout_order(uuid,uuid)",
+            "function:private.resolve_checkout_reservation()",
+            "function:private.expire_checkout_reservations(integer)",
+            "constraint:private.checkout_reservations.checkout_reservations_state_check",
+            "constraint:private.checkout_reservations.checkout_reservations_check",
+            "constraint:private.checkout_reservations.checkout_reservations_pkey",
+            "constraint:private.checkout_reservations.checkout_reservations_order_id_fkey",
+            "constraint:private.checkout_reservations.checkout_reservations_promo_id_fkey",
+            "constraint:private.checkout_reserved_items.checkout_reserved_items_quantity_check",
+            "constraint:private.checkout_reserved_items.checkout_reserved_items_pkey",
+            "constraint:private.checkout_reserved_items.checkout_reserved_items_order_id_fkey",
+            "constraint:private.checkout_reserved_items.checkout_reserved_items_product_id_fkey",
+            "constraint:private.checkout_reserved_items.checkout_reserved_items_variant_id_fkey"
+          ],
+          "final_definition_drift": [],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        },
+        {
+          "filename": "20261018111916_reconcile_security_controls.sql",
+          "sha256": "4b240cf962edcb2aa60650c3047e5c18b80bc68ca6e28a4e7c1b9fe27c60036d",
+          "represented_objects": 5,
+          "missing_objects": [
+            "column:private.checkout_settings.test_checkout_enabled",
+            "trigger:profiles.profiles_write_limit",
+            "trigger:orders.orders_guard_test",
+            "trigger:addresses.addresses_write_limit",
+            "trigger:wishlist_items.wishlist_write_limit",
+            "function:private.limit_customer_writes()",
+            "function:private.guard_test_order()",
+            "function:private.assert_object_fields(jsonb,text[])"
+          ],
+          "final_definition_drift": [
+            "function:admin_save_product(uuid,timestamp with time zone,jsonb,uuid[])",
+            "function:customer_save_address(uuid,jsonb)",
+            "function:checkout_quote_promo(text,integer)",
+            "function:customer_create_return_request(uuid,text,text,text,jsonb)",
+            "function:admin_save_promo(uuid,timestamp with time zone,jsonb)"
+          ],
+          "history_action": "NOT_RECORDED: object presence is not proof that original SQL executed"
+        }
+      ]
+    }
+  ]
+}

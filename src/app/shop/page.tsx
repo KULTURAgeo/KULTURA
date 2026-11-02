@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/site";
 import { Container } from "@/components/ui";

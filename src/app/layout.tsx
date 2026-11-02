@@ -1,3 +1,6 @@
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
+import { unknownRootRoute } from "@/lib/security/routes";
 import { LanguageProvider } from "@/components/language-provider";
 import { getServerLocale } from "@/lib/i18n-server";
 import { translate } from "@/lib/i18n";
@@ -63,11 +66,16 @@ export const metadata: Metadata = {
   },
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const requestHeaders = await headers();
+  if (unknownRootRoute(requestHeaders.get("x-kultura-pathname"))) notFound();
+  const nonce = requestHeaders.get("x-nonce") ?? undefined;
   const locale = await getServerLocale();
   const origin = siteUrl();
   const organizationId = new URL("/#organization", origin).href;
@@ -100,11 +108,11 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: "try { var theme = localStorage.getItem(\"kultura-theme\"); document.documentElement.dataset.theme = theme === \"light\" ? \"light\" : \"dark\"; } catch { document.documentElement.dataset.theme = \"dark\"; }" }} />
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: "try { var theme = localStorage.getItem(\"kultura-theme\"); document.documentElement.dataset.theme = theme === \"light\" ? \"light\" : \"dark\"; } catch { document.documentElement.dataset.theme = \"dark\"; }" }} />
       </head>
       <body>
         <StructuredData data={structuredData} />
-        <CookieConsent
+        <CookieConsent nonce={nonce}
           googleAnalyticsId={googleAnalyticsId}
           metaPixelId={metaPixelId}
         />
@@ -112,7 +120,7 @@ export default async function RootLayout({
         <a className="skip-link" href="#main">
           {translate(locale, "Skip to content")}
         </a>
-        <MotionPreviewProvider>
+        <MotionPreviewProvider nonce={nonce}>
         <LanguageProvider initialLocale={locale}>
         <CartProvider>
           <Header />

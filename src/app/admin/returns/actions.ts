@@ -1,8 +1,9 @@
 "use server";
+import { strictForm } from "@/lib/security/input";
 
 import { revalidatePath } from "next/cache";
 import { safeFailure, type ActionState } from "@/lib/actions";
-import { requireActor } from "@/lib/auth/guards";
+import { requireActionActor } from "@/lib/auth/guards";
 import { id, InputError, text, version } from "@/lib/validation";
 
 const RETURN_STATUSES = ["requested", "under_review", "approved", "rejected", "resolved"] as const;
@@ -12,7 +13,8 @@ export async function updateReturnRequest(
   data: FormData,
 ): Promise<ActionState> {
   try {
-    const { client } = await requireActor(true);
+    strictForm(data, ["request_id", "updated_at", "status", "admin_note"], []);
+    const { client } = await requireActionActor(true);
     const requestId = id(data.get("request_id"), "return request");
     const expectedUpdatedAt = version(data);
     const status = text(data, "status", 30);

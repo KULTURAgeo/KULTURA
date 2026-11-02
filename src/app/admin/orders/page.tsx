@@ -59,9 +59,9 @@ export default async function Orders({ searchParams }: {
 }) {
   const query = await searchParams;
   const requestedPage = Math.floor(Math.max(1, Math.min(10000, Number(query.page) || 1)));
-  const search = (query.search ?? "").slice(0, 80);
-  const payment = query.payment ?? "";
-  const fulfillment = query.fulfillment ?? "";
+  const search = (typeof query.search === "string" ? query.search : "").slice(0, 80);
+  const payment = typeof query.payment === "string" ? query.payment : "";
+  const fulfillment = typeof query.fulfillment === "string" ? query.fulfillment : "";
 
   const statsPromise = adminOrderStats();
   const result = await adminOrders({ page: requestedPage, search, payment, fulfillment });

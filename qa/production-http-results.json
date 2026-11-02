@@ -1,6 +1,6 @@
 {
   "scope": "Latest production build; Supabase unconfigured; prelaunch indexing disabled",
-  "passed": 24,
+  "passed": 29,
   "checks": [
     "Public route and security headers /",
     "Public route and security headers /shop",
@@ -19,6 +19,11 @@
     "Unknown information page is 404 /constructor",
     "Unknown information page is 404 /toString",
     "Unknown information page is 404 /this-page-does-not-exist",
+    "Reject XML request bodies",
+    "Reject +xml request bodies",
+    "CSP uses a fresh nonce matching inline framework scripts",
+    "Missing and cross-site Origin cannot invoke actions",
+    "Extension-like action target cannot bypass CSRF",
     "Prelaunch robots blocks indexing",
     "Prelaunch sitemap excludes URLs",
     "Metadata asset /social-card.png",

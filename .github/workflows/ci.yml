@@ -8,6 +8,9 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    # Bound tooling failures (including the unpatched development-only braces
+    # stack-exhaustion advisory); never pass user-supplied glob expressions.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,6 +20,17 @@ jobs:
       - run: corepack pnpm install --frozen-lockfile
       - run: corepack pnpm exec next typegen
       - run: corepack pnpm check
+      - name: Real PostgreSQL concurrent checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          pg_bin="$(pg_config --bindir)"
+          pg_dir="$RUNNER_TEMP/kultura-concurrency-pg"
+          "$pg_bin/initdb" -D "$pg_dir" -A trust -U postgres
+          trap '"$pg_bin/pg_ctl" -D "$pg_dir" -m immediate -w stop' EXIT
+          "$pg_bin/pg_ctl" -D "$pg_dir" -l "$RUNNER_TEMP/kultura-concurrency-pg.log" -o "-h 127.0.0.1 -p 55432" -w start
+          "$pg_bin/createdb" -h 127.0.0.1 -p 55432 -U postgres kultura_concurrency_test
+          node scripts/test-postgres-concurrency.mjs "$pg_bin/psql" 55432
       # High-severity advisories block production/runtime dependencies.
       - run: corepack pnpm audit --prod --audit-level=high
       # Critical advisories block the entire dependency graph, including dev tools.

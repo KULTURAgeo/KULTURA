@@ -23,6 +23,10 @@ try{
  const env={...original,SITE_URL:"http://localhost:3000",SUPABASE_URL:"https://example.supabase.co",SUPABASE_PUBLISHABLE_KEY:"sb_secret_TEST_ONLY_NOT_REAL"};
  check("Production build rejects insecure/test configuration without printing values",()=>{const failures=validateProductionEnv(env);assert.ok(failures.length>0);assert.ok(!failures.join(" ").includes(env.SUPABASE_PUBLISHABLE_KEY));});
  const config=JSON.parse(await readFile("vercel.json","utf8"));
+ check("Shared Redis requires an explicit valid project namespace",()=>{
+  for(const value of [undefined,"","UPPER","unsafe:scope"]){assert.ok(validateProductionEnv({...env,RATE_LIMIT_NAMESPACE:value}).some(x=>x.startsWith("RATE_LIMIT_NAMESPACE")));}
+  assert.ok(!validateProductionEnv({...env,RATE_LIMIT_NAMESPACE:"kultura-production"}).some(x=>x.startsWith("RATE_LIMIT_NAMESPACE")));
+ });
  check("Vercel invokes deployment environment validation",()=>assert.equal(config.buildCommand,"pnpm run build:vercel"));
  await writeFile("qa/production-unit-results.json",JSON.stringify({passed:passed.length,checks:passed},null,2));console.log(passed.length+" production configuration checks passed.");
 }finally{for(const key of Object.keys(process.env))if(!(key in original))delete process.env[key];Object.assign(process.env,original);}

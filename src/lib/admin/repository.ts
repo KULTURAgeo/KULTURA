@@ -31,10 +31,10 @@ export type AdminOrderFilters = {
 };
 
 function safeSearch(value: string | undefined) {
-  return (value ?? "")
+  return (typeof value === "string" ? value : "")
     .trim()
     .slice(0, 80)
-    .replace(/[^a-zA-Z0-9@._+\- ]/g, "");
+    .replace(/[^a-zA-Z0-9@.+\- ]/g, "");
 }
 
 function isPaymentStatus(

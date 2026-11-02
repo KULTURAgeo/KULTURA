@@ -1,4 +1,8 @@
 @import "tailwindcss";
+body.kultura-motion-home .announcement,
+body.kultura-motion-home .header {
+  display: none !important;
+}
 :root {
   --background: #080808;
   --foreground: #f0efeb;

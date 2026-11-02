@@ -1,8 +1,9 @@
 "use server";
+import { strictForm } from "@/lib/security/input";
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { requireActor } from "@/lib/auth/guards";
+import { requireActionActor } from "@/lib/auth/guards";
 import { productInput, text, InputError } from "@/lib/validation";
 import { safeFailure, type ActionState } from "@/lib/actions";
 import { processProductImage } from "@/lib/admin/image";
@@ -22,7 +23,8 @@ export async function createProductWithImage(
   data: FormData,
 ): Promise<ActionState> {
   try {
-    const { client } = await requireActor(true);
+    strictForm(data, ["name", "slug", "description", "price", "compare_at_price", "status", "featured", "is_drop", "category_id", "seo_title", "seo_description", "collections", "image", "image_alt_text", "id", "updated_at"], ["collections"]);
+    const { client } = await requireActionActor(true);
     const { product, collectionIds } = productInput(data);
 
     const file = data.get("image");

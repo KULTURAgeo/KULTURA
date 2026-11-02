@@ -1,7 +1,8 @@
 "use server";
+import { strictForm } from "@/lib/security/input";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { requireActor } from "@/lib/auth/guards";
+import { requireActionActor } from "@/lib/auth/guards";
 import { productInput, variantInput, promoInput, text, id, version, InputError } from "@/lib/validation";
 import { safeFailure, type ActionState } from "@/lib/actions";
 import { processProductImage } from "@/lib/admin/image";
@@ -13,7 +14,8 @@ function refresh() {
 }
 export async function saveProduct(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
-        const { client } = await requireActor(true);
+    strictForm(data, ["name", "slug", "description", "price", "compare_at_price", "status", "featured", "is_drop", "category_id", "seo_title", "seo_description", "collections", "id", "updated_at"], ["collections"]);
+        const { client } = await requireActionActor(true);
         const raw = data.get("id");
         const productId = raw ? id(raw) : null;
         const { product, collectionIds } = productInput(data);
@@ -29,7 +31,8 @@ export async function saveProduct(_state: ActionState, data: FormData): Promise<
 }
 export async function archiveProduct(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
-        const { client } = await requireActor(true);
+    strictForm(data, ["id", "updated_at", "confirm_archive"], []);
+        const { client } = await requireActionActor(true);
         if (data.get("confirm_archive") !== "on")
             throw new InputError("Confirm that this product should be archived.");
         const { error } = await client.from("products").update({ status: "archived" }).eq("id", id(data.get("id"))).eq("updated_at", version(data)).select("id").single();
@@ -44,7 +47,8 @@ export async function archiveProduct(_state: ActionState, data: FormData): Promi
 }
 export async function saveVariant(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
-        const { client } = await requireActor(true);
+    strictForm(data, ["product_id", "id", "updated_at", "sku", "size", "color", "stock_quantity", "is_active"], []);
+        const { client } = await requireActionActor(true);
         const productId = id(data.get("product_id"));
         const values = variantInput(data), variantId = data.get("id");
         const result = variantId ? await client.from("product_variants").update(values).eq("id", id(variantId)).eq("product_id", productId).eq("updated_at", version(data)).select("id").single() : await client.from("product_variants").insert({ ...values, product_id: productId }).select("id").single();
@@ -59,7 +63,8 @@ export async function saveVariant(_state: ActionState, data: FormData): Promise<
 }
 export async function uploadImage(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
-        const { client } = await requireActor(true);
+    strictForm(data, ["product_id", "alt_text", "image"], []);
+        const { client } = await requireActionActor(true);
         const productId = id(data.get("product_id"));
         const { data: product, error: productError } = await client.from("products").select("id").eq("id", productId).single();
         if (productError || !product)
@@ -87,7 +92,8 @@ export async function uploadImage(_state: ActionState, data: FormData): Promise<
 }
 export async function updateImage(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
-        const { client } = await requireActor(true);
+    strictForm(data, ["id", "product_id", "updated_at", "alt_text"], []);
+        const { client } = await requireActionActor(true);
         const { error } = await client.from("product_images").update({ alt_text: text(data, "alt_text", 500, false) || null }).eq("id", id(data.get("id"))).eq("product_id", id(data.get("product_id"))).eq("updated_at", version(data)).select("id").single();
         if (error)
             throw error;
@@ -100,7 +106,8 @@ export async function updateImage(_state: ActionState, data: FormData): Promise<
 }
 export async function removeImage(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
-        const { client } = await requireActor(true);
+    strictForm(data, ["id", "product_id", "updated_at"], []);
+        const { client } = await requireActionActor(true);
         const { data: removed, error } = await client.from("product_images").delete().eq("id", id(data.get("id"))).eq("product_id", id(data.get("product_id"))).eq("updated_at", version(data)).select("storage_path").single();
         if (error)
             throw error;
@@ -118,7 +125,8 @@ export async function removeImage(_state: ActionState, data: FormData): Promise<
 }
 export async function moveImage(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
-        const { client } = await requireActor(true);
+    strictForm(data, ["id", "product_id", "updated_at", "direction"], []);
+        const { client } = await requireActionActor(true);
         const productId = id(data.get("product_id")), imageId = id(data.get("id"));
         const direction = data.get("direction");
         if (direction !== "up" && direction !== "down")
@@ -145,7 +153,8 @@ export async function moveImage(_state: ActionState, data: FormData): Promise<Ac
 
 export async function advanceFulfillment(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
-        const { client } = await requireActor(true);
+    strictForm(data, ["order_id", "updated_at", "next_status"], []);
+        const { client } = await requireActionActor(true);
         const orderId = id(data.get("order_id"), "order");
         const expectedUpdatedAt = version(data);
         const nextStatus = text(data, "next_status", 30);
@@ -181,7 +190,8 @@ export async function advanceFulfillment(_state: ActionState, data: FormData): P
 
 export async function savePromo(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
-        const { client } = await requireActor(true);
+    strictForm(data, ["id", "updated_at", "code", "kind", "amount", "minimum_subtotal", "maximum_discount", "max_uses", "starts_at", "expires_at", "is_active"], []);
+        const { client } = await requireActionActor(true);
         const rawId = data.get("id");
         const promoId = rawId ? id(rawId, "promo") : null;
         const promo = promoInput(data);

@@ -214,7 +214,7 @@ const ka: Record<string, string> = {
   "APPLY": "გამოყენება",
   "APPLYING…": "მუშავდება…",
   "Your bag changed. Apply the promo code again.": "კალათა შეიცვალა. გამოიყენეთ პრომოკოდი ხელახლა.",
-  "No card details are collected and this action does not charge money. Payment status will remain PENDING until a verified payment gateway is connected.": "ბარათის მონაცემები არ გროვდება და თანხა არ ჩამოგეჭრებათ. გადახდის სტატუსი დარჩება მოლოდინში ბანკის სისტემის ჩართვამდე.",
+  "No card details are collected and this action does not charge money. New orders reserve stock and promo use for 30 minutes. Unpaid orders are then cancelled automatically and their reservations released.": "ბარათის მონაცემები არ გროვდება და თანხა არ ჩამოგეჭრებათ. ახალი შეკვეთა მარაგსა და პრომოკოდის გამოყენებას 30 წუთით ჯავშნის. გადაუხდელი შეკვეთა შემდეგ ავტომატურად გაუქმდება და ჯავშანი გათავისუფლდება.",
   "ORDER SUMMARY": "შეკვეთის შეჯამება",
   "EDIT ↗": "შეცვლა ↗",
   "RETURN TO SHOP ↗": "მაღაზიაში დაბრუნება ↗",
