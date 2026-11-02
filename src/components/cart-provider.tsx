@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { refreshCart } from "@/app/cart/actions";
 import { beginNewCheckoutIntent } from "@/lib/cart/checkout-request";
 import {
   CART_KEY,
@@ -35,6 +34,10 @@ type CartContextValue = {
   refresh: () => Promise<boolean>;
   clear: () => void;
 };
+
+type CartRefreshResponse =
+  | { ok: true; quote: CartQuote }
+  | { ok: false; message: string };
 
 const EMPTY_QUOTE: CartQuote = { lines: [], subtotal: 0 };
 const FOCUS_REFRESH_INTERVAL = 30_000;
@@ -83,7 +86,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setBusy(true);
       setError("");
       try {
-        const result = await refreshCart(lines);
+        const response = await fetch("/api/cart/refresh", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(lines),
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error("Cart refresh request failed.");
+        const result = (await response.json()) as CartRefreshResponse;
         if (!result.ok) {
           setError(result.message);
           return false;

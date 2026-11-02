@@ -78,10 +78,11 @@ export async function proxy(request: NextRequest) {
       if (length && (!/^\d+$/.test(length) || Number(length) > 4 * 1024 * 1024)) throw new RequestError(413, "Request is too large.");
       const type = request.headers.get("content-type")?.split(";", 1)[0]?.trim();
       if (!["text/plain", "multipart/form-data", "application/x-www-form-urlencoded", "application/json"].includes(type ?? "")) throw new RequestError(415, "Unsupported Media Type");
-      // Only the dedicated POST route can bypass Redis, never a Server Action.
+      // Only the read-only cart quote route may use a bounded local fallback.
+      const cartRefreshRoute = request.method === "POST" && pathname === "/api/cart/refresh";
       const logout = request.method === "POST" && pathname === "/auth/logout" && !request.headers.has("next-action");
       if (!logout) {
-        await rateLimit("requests", requestIp(request.headers), 90, 60);
+        await rateLimit("requests", requestIp(request.headers), 90, 60, cartRefreshRoute);
         if (EXACT_SENSITIVE_PATHS.has(pathname)) await rateLimit("auth-requests", requestIp(request.headers), 12, 60);
       }
     } catch (error) {
