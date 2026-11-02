@@ -4,13 +4,14 @@ import { useLanguage } from "./language-provider";
 import { colorDisplayName } from "@/lib/category-i18n";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
 import { money } from "@/lib/catalog";
 import type { Database } from "@/lib/supabase/database.types";
 import { createTestOrder, quotePromo } from "@/app/checkout/actions";
 import { createUnpaidOrder } from "@/app/checkout/unpaid-actions";
+import { checkoutRequestId, finishCheckoutRequest } from "@/lib/cart/checkout-request";
 
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 
@@ -58,6 +59,11 @@ export function Checkout({
   testCheckoutEnabled,
 }: CheckoutProps) {
   const cart = useCart();
+  const { ready, busy, refresh } = cart;
+  const submissionInFlight = useRef(false);
+  useEffect(() => {
+    if (!ready && !busy) void refresh();
+  }, [ready, busy, refresh]);
   const { t, locale } = useLanguage();
   const router = useRouter();
   const [testPending, startTestTransition] = useTransition();
@@ -194,7 +200,7 @@ export function Checkout({
     startPromoTransition(async () => {
       const result = await quotePromo({
         code: promoInput,
-        lines: checkoutLines(),
+        lines: checkoutLines().map(({ productId, variantId, quantity }) => ({ productId, variantId, quantity })),
       });
 
       if (!result.ok) {
@@ -218,7 +224,7 @@ export function Checkout({
     setTestMessage("");
     startTestTransition(async () => {
       const result = await createTestOrder({
-        lines: checkoutLines(),
+        lines: checkoutLines().map(({ productId, variantId, quantity }) => ({ productId, variantId, quantity })),
         address: activeAddress,
         promoCode: activePromoCode,
       });
@@ -235,23 +241,33 @@ export function Checkout({
   };
 
   const runUnpaidCheckout = () => {
-    if (!canCreateUnpaidOrder || !activeAddress) return;
+    if (!canCreateUnpaidOrder || !activeAddress || submissionInFlight.current) return;
+    submissionInFlight.current = true;
     setOrderMessage("");
     startOrderTransition(async () => {
-      const result = await createUnpaidOrder({
-        lines: checkoutLines(),
-        address: activeAddress,
-        promoCode: activePromoCode,
-      });
+      try {
+        const input = {
+          lines: checkoutLines().map(({ productId, variantId, quantity }) => ({ productId, variantId, quantity })).sort((a, b) => a.variantId.localeCompare(b.variantId)),
+          address: activeAddress,
+          promoCode: activePromoCode,
+        };
+        const requestId = await checkoutRequestId(profile.email, input);
+        const result = await createUnpaidOrder({ ...input, requestId });
 
-      if (!result.ok || !result.orderId) {
-        setOrderMessage(result.message || "The order could not be created.");
-        return;
+        if (!result.ok || !result.orderId) {
+          setOrderMessage(result.message || "The order could not be created.");
+          return;
+        }
+
+        cart.clear();
+        finishCheckoutRequest(requestId);
+        router.push(`/order-confirmation/${result.orderId}`);
+        router.refresh();
+      } catch {
+        setOrderMessage("We could not confirm your order. Check your order history before trying again.");
+      } finally {
+        submissionInFlight.current = false;
       }
-
-      cart.clear();
-      router.push(`/order-confirmation/${result.orderId}`);
-      router.refresh();
     });
   };
 
@@ -524,7 +540,7 @@ export function Checkout({
           </div>
 
           <p className="muted">
-            {t("No card details are collected and this action does not charge money. Payment status will remain PENDING until a verified payment gateway is connected.")}
+            {t("No card details are collected and this action does not charge money. New orders reserve stock and promo use for 30 minutes. Unpaid orders are then cancelled automatically and their reservations released.")}
           </p>
         </section>
       </div>
@@ -542,7 +558,14 @@ export function Checkout({
           </div>
 
           {!cart.ready ? <p>{t("Loading your bag…")}</p> : null}
-          {cart.error ? <p role="alert">{cart.error}</p> : null}
+          {cart.error ? (
+            <div role="alert">
+              <p>{cart.error}</p>
+              <button type="button" className="button secondary" disabled={busy} onClick={() => void refresh()}>
+                {t("TRY AGAIN")}
+              </button>
+            </div>
+          ) : null}
 
           {cart.ready && !cart.quote.lines.length ? (
             <div className="empty-state">

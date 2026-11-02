@@ -1,0 +1,52 @@
+{
+  "scope": "Real local PostgreSQL, independent psql connections, fresh disposable DB; Auth/Storage SQL shim. No hosted DB, GoTrue, PostgREST or providers contacted.",
+  "transport": "Network-disabled disposable container / Unix socket",
+  "engine": "PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit",
+  "migrations": [
+    "20260923000100_commerce_schema.sql",
+    "20260923000200_row_level_security.sql",
+    "20260924000100_admin_authorization.sql",
+    "20260924000200_product_storage.sql",
+    "20260924000300_customer_address.sql",
+    "20260926000100_vercel_upload_limit.sql",
+    "20260927000100_admin_fulfillment.sql",
+    "20260927000200_test_checkout.sql",
+    "20260927000300_promo_codes.sql",
+    "20260930000200_unpaid_checkout.sql",
+    "20260930000300_shipping_settings_admin.sql",
+    "20260930000400_admin_categories.sql",
+    "20260930000500_wishlist.sql",
+    "20260930000600_order_notifications.sql",
+    "20260930000700_return_requests.sql",
+    "20261001000100_query_performance_indexes.sql",
+    "20261012000100_checkout_null_inputs.sql",
+    "20261013000100_checkout_notification_security.sql",
+    "20261015201827_repair_staging_checkout_notification_null_guards.sql",
+    "20261017211555_checkout_stock_promo_reservations.sql",
+    "20261018111916_reconcile_security_controls.sql"
+  ],
+  "first": {
+    "pid": 262,
+    "started": "2026-10-22T07:35:04.357824+00:00",
+    "finished": "2026-10-22T07:35:08.382883+00:00",
+    "order_id": "5a397874-b54c-4dc0-ab96-621c5b7bf616"
+  },
+  "second": {
+    "pid": 277,
+    "started": "2026-10-22T07:35:04.730101+00:00",
+    "finished": "2026-10-22T07:35:08.387641+00:00",
+    "order_id": "5a397874-b54c-4dc0-ab96-621c5b7bf616"
+  },
+  "checks": [
+    "Independent backend PIDs",
+    "Measured transaction overlap while customer profile lock held",
+    "Same customer/key creates exactly one order",
+    "Ambiguous-response retry returns existing order",
+    "Changed payload denied",
+    "New key creates legitimate new order",
+    "Same key scoped to another customer",
+    "Trusted quantity/totals and pending payment"
+  ],
+  "status": "PASSED",
+  "fixtures": "Retained only inside disposable local database until server shutdown; never real customer data"
+}

@@ -6,7 +6,7 @@ import {
   getCachedProductBySlug,
   getRelatedProducts,
 } from "@/lib/catalog/repository";
-import { getActiveProductSlugs } from "@/lib/catalog/static-params";
+
 import { CatalogNotice } from "@/components/catalog-notice";
 import { Container } from "@/components/ui";
 import { ProductDetail } from "@/components/product-detail";
@@ -16,12 +16,7 @@ import { RecentlyViewed } from "@/components/recently-viewed";
 import { LocalizedLabel } from "@/components/localized-label";
 import { LocalizedCategoryName } from "@/components/localized-category-name";
 
-export const revalidate = 300;
-
-export async function generateStaticParams() {
-  const slugs = await getActiveProductSlugs();
-  return slugs.map((slug) => ({ slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

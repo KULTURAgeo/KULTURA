@@ -13,6 +13,8 @@ async function as(who,fn,role="authenticated"){await db.exec("begin");try{await 
 async function denied(who,sql,args=[],code="42501"){await as(who,()=>assert.rejects(()=>db.query(sql,args),e=>e.code===code));}
 const form=obj=>{const f=new FormData();for(const [k,v]of Object.entries(obj))f.set(k,String(v));return f;};
 try{
+// Explicitly opt this disposable database into admin-only synthetic checkout.
+await db.exec('update private.checkout_settings set test_checkout_enabled=true where singleton');
 await db.query("insert into auth.users(id,email,raw_user_meta_data) values ($1,'a@example.invalid','{\"role\":\"admin\"}'),($2,'b@example.invalid','{}'),($3,'admin@example.invalid','{}')",[a,b,admin]);
 await db.query("update profiles set role='admin' where id=$1",[admin]);
 const p=(await db.query("select * from products order by slug limit 1")).rows[0];
@@ -43,7 +45,8 @@ await check("Negative inventory rejected",()=>denied(admin,"update product_varia
 await check("Invalid SKU rejected",()=>denied(admin,"update product_variants set sku='bad sku' where id=$1",[v.id],"23514"));
 await check("Valid admin inventory update succeeds",()=>as(admin,async()=>assert.equal((await db.query("update product_variants set stock_quantity=7 where id=$1 returning stock_quantity",[v.id])).rows[0].stock_quantity,7)));
 await check("Customer profile isolation",()=>as(a,async()=>assert.deepEqual((await db.query("select id from profiles")).rows.map(r=>r.id),[a])));
-const address={recipient_name:"Test",phone:"123456",country_code:"GE",city:"Tbilisi",address_line_1:"Test 1",address_line_2:null,postal_code:null,is_default:true,profile_id:b};
+const address={recipient_name:"Test",phone:"123456",country_code:"GE",city:"Tbilisi",address_line_1:"Test 1",address_line_2:null,postal_code:null,is_default:true};
+await check("Forged address owner field rejected",()=>denied(a,"select customer_save_address(null,$1::jsonb)",[JSON.stringify({...address,profile_id:b})],"22023"));
 await check("Address owner comes from authenticated identity and default switches atomically",()=>as(a,async()=>{
 await db.query("select customer_save_address(null,$1::jsonb)",[JSON.stringify(address)]);
 await db.query("select customer_save_address(null,$1::jsonb)",[JSON.stringify(address)]);
@@ -58,6 +61,8 @@ await check("Admin can read real orders",()=>as(admin,async()=>assert.equal((awa
 for(const who of [a,admin])await check("Order total/payment writes denied: "+who,()=>denied(who,"update orders set payment_status='paid',final_total=0"));
 const testCart=JSON.stringify([{product_id:p.id,variant_id:v.id,quantity:1}]);
 const testAddress=JSON.stringify({recipient_name:"KULTURA TEST",phone:"555000000",city:"Tbilisi",address_line_1:"Test 1",address_line_2:null,postal_code:"0170"});
+await check("Unpaid checkout rejects SQL NULL cart before creating an empty order",()=>denied(a,"select checkout_submit_order('20000000-0000-4000-8000-000000000099',null,$1::jsonb,null)",[testAddress],"22023"));
+await check("Unpaid checkout rejects SQL NULL delivery input",()=>denied(a,"select checkout_submit_order('20000000-0000-4000-8000-000000000099',$1::jsonb,null,null)",[testCart],"22023"));
 await check("Customer cannot create paid test checkout",()=>denied(a,"select admin_create_test_order($1::jsonb,$2::jsonb)",[testCart,testAddress]));
 await check("Admin test checkout reprices server-side and does not decrement stock",()=>as(admin,async()=>{
 const before=(await db.query("select stock_quantity from product_variants where id=$1",[v.id])).rows[0].stock_quantity;

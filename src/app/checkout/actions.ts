@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireActor } from "@/lib/auth/guards";
-import { normalizeLines, quoteLines } from "@/lib/cart/model";
+import { requireActionActor } from "@/lib/auth/guards";
+import { quoteLines } from "@/lib/cart/model";
 import { getProductsByIds } from "@/lib/catalog/repository";
 import { money } from "@/lib/catalog";
+import { checkoutLines, strictObject, addressKeys } from "@/lib/security/input";
 import { InputError } from "@/lib/validation";
 import { safeFailure } from "@/lib/actions";
 
@@ -74,11 +75,12 @@ export async function quotePromo(input: {
   lines?: unknown;
 }): Promise<PromoQuoteResult> {
   try {
-    const { client } = await requireActor();
+    const { client } = await requireActionActor();
+    strictObject(input, ["code", "lines"]);
     const code = promoCode(input.code);
     if (!code) throw new InputError("Enter a promo code.");
 
-    const lines = normalizeLines(input.lines);
+    const lines = checkoutLines(input.lines);
     if (!lines.length) throw new InputError("Your bag is empty.");
 
     const catalog = await getProductsByIds([
@@ -163,12 +165,14 @@ export async function createTestOrder(
   input: TestCheckoutInput,
 ): Promise<TestCheckoutResult> {
   try {
-    const { client } = await requireActor(true);
-    const lines = normalizeLines(input.lines);
+    const { client } = await requireActionActor(true);
+    if (process.env.VERCEL_ENV === "production" || process.env.ENABLE_TEST_CHECKOUT !== "true") throw new InputError("Test checkout is disabled.");
+    strictObject(input, ["lines", "address", "promoCode"]);
+    const lines = checkoutLines(input.lines);
 
     if (!lines.length) throw new InputError("Your bag is empty.");
 
-    const address = input.address ?? {};
+    const address = strictObject(input.address, addressKeys);
     const payload = {
       recipient_name: requiredString(
         address.recipient_name,

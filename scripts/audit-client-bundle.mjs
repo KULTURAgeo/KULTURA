@@ -10,6 +10,7 @@ async function walk(path) {
 }
 const files = (await walk(".next/static")).filter((f) => f.endsWith(".js"));
 const forbidden = [
+  "SUPABASE_SECRET_KEY",
   "SUPABASE_PUBLISHABLE_KEY",
   "SUPABASE_URL",
   "TEST_ONLY_NOT_A_REAL_KEY",

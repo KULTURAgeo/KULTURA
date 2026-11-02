@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-19",
+  "project_ref": "asnkxfudkodgyhdawhfq",
+  "scope": "Authenticated dashboard read-only",
+  "scheduled_backups": {
+    "status": "UNAVAILABLE_ON_CURRENT_PLAN",
+    "observed_message": "Free Plan does not include project backups."
+  },
+  "restore_to_new_project": {
+    "status": "UNAVAILABLE_ON_CURRENT_PLAN",
+    "observed_message": "To restore to a new project, you need to upgrade to a Pro Plan and have physical backups enabled."
+  },
+  "full_backup_obtained": true,
+  "restore_verified": false,
+  "plan_changed": false,
+  "production_modified": false,
+  "release_gate": "BLOCKED",
+  "alternative": "Database logical archive created and integrity verified; isolated restore, cluster-role and Storage coverage remain pending.",
+  "archive_verified": true,
+  "archive_sha256": "EF4F2B2832B8D5D74D1773CA08C614D33E9DCCB8787BB7BB56DF69402FFD125B"
+}

@@ -1,7 +1,9 @@
 "use server";
+import { strictForm } from "@/lib/security/input";
 
+import { protectAction } from "@/lib/security/request";
 import { revalidatePath } from "next/cache";
-import { requireActor } from "@/lib/auth/guards";
+import { requireActionActor } from "@/lib/auth/guards";
 import { createSessionClient } from "@/lib/supabase/session";
 import { id, InputError, text } from "@/lib/validation";
 import { safeFailure, type ActionState } from "@/lib/actions";
@@ -13,6 +15,7 @@ export type WishlistState = {
 
 export async function getWishlistState(productId: string): Promise<WishlistState> {
   try {
+    await protectAction("wishlist");
     const safeProductId = id(productId, "product");
     const client = await createSessionClient();
     if (!client) return { authenticated: false, saved: false };
@@ -46,7 +49,8 @@ export async function setWishlist(
   data: FormData,
 ): Promise<ActionState> {
   try {
-    const { client, user } = await requireActor();
+    strictForm(data, ["product_id", "product_slug", "mode"], []);
+    const { client, user } = await requireActionActor();
     const productId = id(data.get("product_id"), "product");
     const slug = text(data, "product_slug", 160);
     if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug))

@@ -1,5 +1,5 @@
 {
-  "passed": 14,
+  "passed": 15,
   "checks": [
     "Local metadata origin defaults safely",
     "Vercel requires explicit origin",
@@ -14,6 +14,7 @@
     "Supabase credential-bearing URLs rejected",
     "Upload leaves room beneath Vercel payload limit",
     "Production build rejects insecure/test configuration without printing values",
+    "Shared Redis requires an explicit valid project namespace",
     "Vercel invokes deployment environment validation"
   ]
 }

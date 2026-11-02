@@ -1,5 +1,6 @@
 import "server-only";
 
+import { notificationClient } from "./client";
 import { Buffer } from "node:buffer";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/lib/supabase/database.types";
@@ -360,11 +361,13 @@ async function recordResult(
 }
 
 export async function notifyOrderEvent(
-  client: Client,
+  _sessionClient: Client,
   orderId: string,
   event: OrderNotificationEvent,
 ) {
   try {
+    const client = notificationClient();
+    if (!client) return; // The database outbox retains queued events until configured.
     const { data, error } = await client.rpc("notification_prepare", {
       p_order_id: orderId,
       p_event_type: event,
@@ -378,28 +381,24 @@ export async function notifyOrderEvent(
     if (!notification) return;
     const copy = copyFor(notification);
 
-    const emailPromise =
-      notification.emailStatus === "sent" || notification.emailStatus === "skipped"
-        ? Promise.resolve<SendResult>("skipped")
-        : sendEmail(notification, copy);
-    const smsPromise =
-      notification.smsStatus === "sent" || notification.smsStatus === "skipped"
-        ? Promise.resolve<SendResult>("skipped")
-        : sendSms(notification, copy);
-
-    const [emailResult, smsResult] = await Promise.all([emailPromise, smsPromise]);
-
-    if (notification.emailStatus !== "sent" && notification.emailStatus !== "skipped")
-      await recordResult(client, notification.id, "email", emailResult);
-    if (notification.smsStatus !== "sent" && notification.smsStatus !== "skipped")
-      await recordResult(client, notification.id, "sms", smsResult);
+    const deliver = async (channel: "email" | "sms") => {
+      const configured = channel === "email"
+        ? process.env.RESEND_API_KEY && process.env.NOTIFICATION_EMAIL_FROM
+        : process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && (process.env.TWILIO_FROM || process.env.TWILIO_MESSAGING_SERVICE_SID);
+      if (!configured) return;
+      const claim = await client.rpc("notification_claim", { p_notification_id: notification.id, p_channel: channel });
+      if (claim.error || claim.data !== true) return;
+      const result = channel === "email" ? await sendEmail(notification, copy) : await sendSms(notification, copy);
+      await recordResult(client, notification.id, channel, result);
+    };
+    await Promise.all([deliver("email"), deliver("sms")]);
   } catch {
     console.error(`[notifications] ${event} delivery failed safely.`);
   }
 }
 
 export async function notifyFulfillmentStatus(
-  client: Client,
+  _sessionClient: Client,
   orderId: string,
   status: Database["public"]["Enums"]["fulfillment_status"],
 ) {
@@ -415,11 +414,11 @@ export async function notifyFulfillmentStatus(
             : status === "returned"
               ? "returned"
               : null;
-  if (event) await notifyOrderEvent(client, orderId, event);
+  if (event) await notifyOrderEvent(_sessionClient, orderId, event);
 }
 
 export async function notifyPaymentStatus(
-  client: Client,
+  _sessionClient: Client,
   orderId: string,
   status: Database["public"]["Enums"]["payment_status"],
 ) {
@@ -431,5 +430,5 @@ export async function notifyPaymentStatus(
         : status === "refunded" || status === "partially_refunded"
           ? "payment_refunded"
           : null;
-  if (event) await notifyOrderEvent(client, orderId, event);
+  if (event) await notifyOrderEvent(_sessionClient, orderId, event);
 }

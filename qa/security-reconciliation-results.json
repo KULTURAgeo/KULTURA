@@ -1,0 +1,17 @@
+{
+  "scope": "These assertions execute only in disposable local PostgreSQL; hosted migration verified separately",
+  "passed": 11,
+  "checks": [
+    "Reconciliation preserves existing inventory, promo counts and orders",
+    "Existing public function owners and ACLs remain unchanged",
+    "Repeat is idempotent",
+    "New test checkout is disabled by default",
+    "Unexpected customer address fields rejected",
+    "Normal customer still denied admin promo mutation",
+    "Customer cannot execute internal quota trigger",
+    "Promo quota remains fail-closed",
+    "Return quota remains fail-closed",
+    "Direct profile mutation cannot bypass database quota",
+    "Unknown function refuses entire reconciliation without overwriting it"
+  ]
+}

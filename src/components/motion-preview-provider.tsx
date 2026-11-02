@@ -1,5 +1,6 @@
 "use client";
 
+import { MotionConfig } from "motion/react";
 import { createContext, useContext, type ReactNode } from "react";
 
 /**
@@ -15,6 +16,6 @@ export function useMotionPreview() {
   return useContext(Context);
 }
 
-export function MotionPreviewProvider({ children }: { children: ReactNode }) {
-  return <Context.Provider value={motionState}>{children}</Context.Provider>;
+export function MotionPreviewProvider({ children, nonce }: { children: ReactNode; nonce?: string }) {
+  return <MotionConfig nonce={nonce}><Context.Provider value={motionState}>{children}</Context.Provider></MotionConfig>;
 }

@@ -1,7 +1,8 @@
 "use server";
+import { strictForm } from "@/lib/security/input";
 
 import { revalidatePath } from "next/cache";
-import { requireActor } from "@/lib/auth/guards";
+import { requireActionActor } from "@/lib/auth/guards";
 import { id, version, InputError } from "@/lib/validation";
 import { safeFailure, type ActionState } from "@/lib/actions";
 import { invalidateStorefrontCatalog } from "@/lib/catalog/invalidate";
@@ -23,7 +24,8 @@ export async function saveInventoryStock(
   data: FormData,
 ): Promise<ActionState> {
   try {
-    const { client } = await requireActor(true);
+    strictForm(data, ["variant_id", "product_id", "stock_quantity", "updated_at"], []);
+    const { client } = await requireActionActor(true);
     const variantId = id(data.get("variant_id"), "variant");
     const productId = id(data.get("product_id"), "product");
     const stock = stockQuantity(data.get("stock_quantity"));

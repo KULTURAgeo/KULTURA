@@ -1,0 +1,762 @@
+{
+  "date": "2026-10-19",
+  "base": "cc5e2e8285b063ac0415ca5246f17d78cbfaa031",
+  "method": "Git ancestry and exact changed-file blob comparison; divergence is not proof that functionality is missing",
+  "branches": [
+    {
+      "branch": "origin/admin-account-performance",
+      "head": "a1c7adbc47f39622bd9ed2105b7b90289468df66",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/admin-first-render-performance",
+      "head": "076e4a0a825d87f3ffffa8298a74f7be563db92a",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/admin-fulfillment-controls",
+      "head": "247466bb379f4ac3e786608c2235e17b8a9b6c8b",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "supabase/migrations/20260927000100_admin_fulfillment.sql"
+      ],
+      "changed_files_differing_from_main": [
+        "src/app/admin/actions.ts",
+        "src/app/admin/orders/[id]/page.tsx",
+        "src/app/phase3.css",
+        "src/lib/supabase/database.types.ts"
+      ]
+    },
+    {
+      "branch": "origin/admin-inventory-panel",
+      "head": "c8fcc366c12b48031cec065bc3f2e81e0352ae1a",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/admin-orders-dashboard",
+      "head": "f9adf93d940a348bbad597b45d4cdfdd5019bb2f",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        "src/app/admin/orders/[id]/page.tsx",
+        "src/app/admin/orders/page.tsx",
+        "src/app/phase3.css",
+        "src/components/order-list.tsx",
+        "src/lib/admin/repository.ts"
+      ]
+    },
+    {
+      "branch": "origin/admin-shipping-settings",
+      "head": "b765fbadfde7b23ec06254de1f380b9f6ae3d23b",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/analytics-meta-pixel",
+      "head": "67e0e9742c72ed2e621592cdaec051c3c2e5f6ff",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        ".env.example",
+        "src/app/layout.tsx",
+        "src/components/analytics.tsx",
+        "src/components/product-detail.tsx"
+      ]
+    },
+    {
+      "branch": "origin/animejs-home-motion",
+      "head": "fcb0e4b001aa6894bb919093e8ba2f56f0959ca6",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/audit/master-hardening-20261012",
+      "head": "56c082f15415ea60a8bd89cc14ce17e1199ef124",
+      "classification": "SELECTIVELY_INTEGRATED_REQUIRES_FINAL_REVIEW",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        ".env.example",
+        "docs/MASTER-AUDIT-BASELINE.md",
+        "docs/MASTER-AUDIT-REPORT.md",
+        "package.json",
+        "qa/auth-session-results.json",
+        "qa/master-database-boundary-audit.json",
+        "qa/phase3-results.json",
+        "qa/repository-secret-audit.json",
+        "qa/secret-audit.json",
+        "scripts/audit-client-bundle.mjs",
+        "scripts/audit-database-boundaries.mjs",
+        "scripts/database-harness.mjs",
+        "scripts/generate-database-types.mjs",
+        "scripts/test-audit-migration.mjs",
+        "scripts/test-audit-regressions.mjs",
+        "scripts/test-auth-session.mjs",
+        "scripts/test-notification-security.mjs",
+        "scripts/test-phase3.mjs",
+        "src/app/checkout/page.tsx",
+        "src/app/checkout/unpaid-actions.ts",
+        "src/components/cart-provider.tsx",
+        "src/components/checkout.tsx",
+        "src/lib/cart/checkout-request.ts",
+        "src/lib/notifications/client.ts",
+        "src/lib/notifications/order-notifications.ts",
+        "src/lib/supabase/database.types.ts",
+        "src/proxy.ts",
+        "supabase/migrations/20261012000100_checkout_null_inputs.sql",
+        "supabase/migrations/20261013000100_checkout_notification_security.sql"
+      ]
+    },
+    {
+      "branch": "origin/backup/pre-cleanup-2026-10-07",
+      "head": "52b15fd262755ae7ae51bbb88b7c5853d4b7f0b6",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/categories-admin-shop",
+      "head": "3d5b29d9bb12cc658d99a9104e3ff614c618ab07",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/checkout-page",
+      "head": "14cde5de3dfefe61d31a897e866feb75e8642134",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        "scripts/test-phase3.mjs",
+        "src/app/checkout/page.tsx",
+        "src/app/phase3.css",
+        "src/components/cart-view.tsx",
+        "src/components/checkout.tsx",
+        "src/lib/validation.ts"
+      ]
+    },
+    {
+      "branch": "origin/cookie-consent",
+      "head": "6af61d653f61898918b0e299f6ded2a0d9877dfb",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "src/lib/cookie-consent.ts"
+      ],
+      "changed_files_differing_from_main": [
+        "src/app/[page]/page.tsx",
+        "src/app/globals.css",
+        "src/app/layout.tsx",
+        "src/components/analytics.tsx",
+        "src/components/cookie-consent.tsx",
+        "src/components/cookie-settings-button.tsx",
+        "src/components/footer.tsx"
+      ]
+    },
+    {
+      "branch": "origin/customer-order-detail",
+      "head": "9d6b41e6845b07145d5abceb298dbc79f646b3ac",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/customer-order-status-ui",
+      "head": "834617641281111b34970757f6baff348a051d8a",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/edit-product-image-preview",
+      "head": "89f39e00e02fbb31d46b084e83ca6ce5ee5c0c83",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/email-sms-notifications",
+      "head": "73b3ff3d33ea26c93597221f56bb189e1100e86b",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/feature/full-commerce-polish-20261001",
+      "head": "26559ec1a15dbd3625d0b16b038cda2914997123",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/feature/georgian-english-language-switcher",
+      "head": "35b7f2d94523802078f1abdfe379490f99a0291b",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "src/app/cart/page.tsx",
+        "src/app/drops/page.tsx",
+        "src/app/theme.css",
+        "src/components/catalog-notice.tsx",
+        "src/components/cookie-settings-button.tsx",
+        "src/components/floating-home-nav.tsx",
+        "src/components/footer.tsx",
+        "src/components/header.tsx",
+        "src/components/language-provider.tsx",
+        "src/components/language-switcher.tsx",
+        "src/components/localized-label.tsx",
+        "src/components/newsletter.tsx",
+        "src/components/product-badges.tsx",
+        "src/components/size-guide.tsx",
+        "src/lib/i18n-server.ts",
+        "src/lib/i18n.ts"
+      ],
+      "changed_files_differing_from_main": [
+        "src/app/layout.tsx",
+        "src/app/page.tsx",
+        "src/app/product/[slug]/page.tsx",
+        "src/app/shop/[category]/page.tsx",
+        "src/app/shop/page.tsx",
+        "src/components/cart-view.tsx",
+        "src/components/catalog-grid.tsx",
+        "src/components/checkout.tsx",
+        "src/components/header-interactions.tsx",
+        "src/components/product-detail.tsx",
+        "src/components/review-order.tsx"
+      ]
+    },
+    {
+      "branch": "origin/fix-order-total-fit",
+      "head": "2d1f38988e0dbcd1d392b8b162bf3579c035050d",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        "src/app/phase3.css"
+      ]
+    },
+    {
+      "branch": "origin/fix/checkout-refresh-retry-20261012",
+      "head": "aaadff35536b864ba1a68bbc6d99e779100adbcf",
+      "classification": "OVERLAPS_AUDIT_BRANCH_DO_NOT_MERGE_SEPARATELY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        "scripts/test-phase3-browser.mjs",
+        "src/components/checkout.tsx"
+      ]
+    },
+    {
+      "branch": "origin/fix/full-georgian-pages-and-categories",
+      "head": "99fc598f345aaad228ddfd729419835509472a4c",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "src/app/[page]/page.tsx",
+        "src/app/globals.css",
+        "src/app/product/[slug]/page.tsx",
+        "src/app/shop/[category]/page.tsx",
+        "src/components/checkout.tsx",
+        "src/components/localized-category-name.tsx",
+        "src/components/localized-color-names.tsx",
+        "src/components/review-order.tsx",
+        "src/lib/category-i18n.ts"
+      ],
+      "changed_files_differing_from_main": [
+        "src/app/page.tsx",
+        "src/app/shop/page.tsx",
+        "src/components/cart-view.tsx",
+        "src/components/catalog-grid.tsx",
+        "src/components/information-content.tsx",
+        "src/components/product-card.tsx",
+        "src/components/product-detail.tsx",
+        "src/lib/information-pages-ka.ts"
+      ]
+    },
+    {
+      "branch": "origin/fix/kultura-logo-assets",
+      "head": "4ae5aceb1cfe49628be60a7b974d029e2d4a2ba9",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/fix/kultura-logo-preview",
+      "head": "6f698117fff5b2aef6913ebb80ddb7ae9f735f1a",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        "public/images/kultura-globe-phone.webp",
+        "public/images/kultura-globe-scene.webp",
+        "src/app/home.module.css",
+        "src/app/page.tsx"
+      ]
+    },
+    {
+      "branch": "origin/fix/localized-cart-color-labels",
+      "head": "29a135752ea815e7ff763671767f619059194d22",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "src/components/checkout.tsx",
+        "src/components/review-order.tsx"
+      ],
+      "changed_files_differing_from_main": [
+        "src/components/cart-view.tsx",
+        "src/components/catalog-grid.tsx"
+      ]
+    },
+    {
+      "branch": "origin/fix/mobile-cinematic-visuals-20261018",
+      "head": "f5c9968d52853ef58c784a4d3935f3064889ea15",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "src/app/home.module.css",
+        "src/app/mobile-polish.css",
+        "src/components/home-motion.tsx"
+      ],
+      "changed_files_differing_from_main": [
+        "src/app/layout.tsx"
+      ]
+    },
+    {
+      "branch": "origin/internal-pages-performance",
+      "head": "850e5cd0b703ea4ba31ded5edc47aaa6155d2665",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/maintenance/cleanup-2026-10-07",
+      "head": "98d904e9931794d9ed7c9a117a430a671d08601a",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        "docs/branch-cleanup-recovery-2026-10-07.md"
+      ]
+    },
+    {
+      "branch": "origin/order-confirmation-production",
+      "head": "0b41c617909b0af70d601753738bf24cc380c703",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "src/app/order-confirmation/[orderId]/error.tsx",
+        "src/app/order-confirmation/[orderId]/loading.tsx",
+        "src/app/order-confirmation/[orderId]/not-found.tsx",
+        "supabase/migrations/20260930000200_unpaid_checkout.sql"
+      ],
+      "changed_files_differing_from_main": [
+        "src/app/checkout/unpaid-actions.ts",
+        "src/app/order-confirmation/[orderId]/page.tsx",
+        "src/components/checkout.tsx",
+        "src/lib/supabase/database.types.ts"
+      ]
+    },
+    {
+      "branch": "origin/performance-cleanup-ui",
+      "head": "8596e1550ba84af713ae9c07818ac470b8618056",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        "src/app/layout.tsx",
+        "src/components/header-interactions.tsx",
+        "src/components/header.tsx",
+        "src/components/lazy-cart-drawer.tsx"
+      ]
+    },
+    {
+      "branch": "origin/performance-optimization",
+      "head": "1ebb3ed9aca5b26cc61d7f73cf8b2728dfb7bd18",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "src/app/admin/actions.ts",
+        "src/app/admin/categories/actions.ts",
+        "src/app/admin/inventory/actions.ts",
+        "src/components/auth-session.tsx",
+        "src/components/cookie-consent.tsx",
+        "src/lib/catalog.ts",
+        "src/lib/catalog/cache-config.ts",
+        "src/lib/catalog/invalidate.ts"
+      ],
+      "changed_files_differing_from_main": [
+        "next.config.ts",
+        "src/app/drops/page.tsx",
+        "src/app/page.tsx",
+        "src/app/product/[slug]/page.tsx",
+        "src/app/shop/[category]/page.tsx",
+        "src/app/shop/page.tsx",
+        "src/components/cart-provider.tsx",
+        "src/components/catalog-grid.tsx",
+        "src/components/home-motion.tsx",
+        "src/lib/catalog/repository.ts"
+      ]
+    },
+    {
+      "branch": "origin/performance-pass-2",
+      "head": "f9472e880d86de78f027badedec2a32a76abec67",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "src/components/cart-provider.tsx",
+        "src/components/lazy-cart-drawer.tsx"
+      ],
+      "changed_files_differing_from_main": [
+        "src/app/layout.tsx",
+        "src/components/cart-view.tsx",
+        "src/components/header-interactions.tsx",
+        "src/components/header.tsx",
+        "src/components/home-motion.tsx"
+      ]
+    },
+    {
+      "branch": "origin/polish-customer-order-detail",
+      "head": "63577ee9057260170739f33bd78fa75e1cf3a2a2",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/preview/motion-react-ui-20261018",
+      "head": "64adc4fb63c39da80d315d172a715b6c43c7095d",
+      "classification": "CHANGED_FILES_ALREADY_MATCH_MAIN",
+      "changed_files_matching_main": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "src/app/layout.tsx",
+        "src/app/motion-react.css",
+        "src/app/page.tsx",
+        "src/app/shop/page.tsx",
+        "src/components/cart-view.tsx",
+        "src/components/catalog-grid.tsx",
+        "src/components/header-interactions.tsx",
+        "src/components/motion-editorial.tsx",
+        "src/components/motion-enhancements.tsx",
+        "src/components/motion-preview-provider.tsx",
+        "src/components/motion-product-card.tsx",
+        "src/components/product-card.tsx",
+        "src/components/product-detail.tsx"
+      ],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/preview/premium-motion-20261018",
+      "head": "53bac92f989b2012942ebe0b808196f02465aa6f",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "src/app/premium-motion.css",
+        "src/components/premium-scroll.tsx"
+      ],
+      "changed_files_differing_from_main": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "src/app/layout.tsx",
+        "src/components/home-motion.tsx",
+        "src/components/motion-enhancements.tsx"
+      ]
+    },
+    {
+      "branch": "origin/privacy-policy",
+      "head": "e82bddee0788d6b5b94629b201c6d2c3cc1b8d91",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        "src/app/[page]/page.tsx"
+      ]
+    },
+    {
+      "branch": "origin/product-image-on-create",
+      "head": "926a3783b5336debd46179fafee7d44399dbffd6",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/product-image-preview",
+      "head": "f35a2c0294a04adf95ffd876a124825c115bba48",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/product-quantity-selector",
+      "head": "ad0eb7f836c94dc7208aa1e3cafab00a73166b9e",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "src/components/analytics.tsx"
+      ],
+      "changed_files_differing_from_main": [
+        "src/app/globals.css",
+        "src/components/product-detail.tsx"
+      ]
+    },
+    {
+      "branch": "origin/promo-codes",
+      "head": "8ee7cd36b4ea8f0de442258cc5c70ec03ebb9ff0",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "scripts/test-phase3.mjs",
+        "src/app/admin/promos/[id]/page.tsx",
+        "src/app/admin/promos/new/page.tsx",
+        "src/app/phase3.css",
+        "src/components/admin/promo-editor.tsx",
+        "supabase/migrations/20260927000300_promo_codes.sql"
+      ],
+      "changed_files_differing_from_main": [
+        "src/app/admin/actions.ts",
+        "src/app/admin/layout.tsx",
+        "src/app/admin/promos/page.tsx",
+        "src/app/checkout/actions.ts",
+        "src/components/checkout.tsx",
+        "src/lib/admin/repository.ts",
+        "src/lib/supabase/database.types.ts",
+        "src/lib/validation.ts"
+      ]
+    },
+    {
+      "branch": "origin/return-refund-requests",
+      "head": "32ec0ab32449d5743c7ae6fddcb0b47fe708e2cf",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/search-filters",
+      "head": "0e7d7cdd8d486f56da087c46aa9cb0d070b1b68f",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/security-hardening-2026-10-06",
+      "head": "d7a34bd7cf7905f39a6c547a213a0d7854da672d",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        ".github/workflows/ci.yml",
+        "next.config.ts",
+        "pnpm-workspace.yaml",
+        "scripts/test-production-http.mjs"
+      ],
+      "changed_files_differing_from_main": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "src/proxy.ts"
+      ]
+    },
+    {
+      "branch": "origin/security/production-hardening",
+      "head": "5449fdf803b64269e4aa344800a07236e9af58a0",
+      "classification": "SELECTIVELY_INTEGRATED_REQUIRES_FINAL_REVIEW",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        ".env.example",
+        ".github/workflows/ci.yml",
+        ".gitignore",
+        "SECURITY-DEPLOYMENT-REVIEW.json",
+        "SECURITY-HARDENING.md",
+        "next.config.ts",
+        "package.json",
+        "qa/auth-session-results.json",
+        "qa/git-history-secret-audit.json",
+        "qa/phase3-results.json",
+        "qa/production-http-results.json",
+        "qa/repository-secret-audit.json",
+        "qa/secret-audit.json",
+        "qa/security-audit-all.json",
+        "qa/security-audit-production.json",
+        "qa/security-changed-files.txt",
+        "qa/security-results.json",
+        "scripts/audit-client-bundle.mjs",
+        "scripts/audit-git-history.mjs",
+        "scripts/test-auth-session.mjs",
+        "scripts/test-phase3.mjs",
+        "scripts/test-production-http.mjs",
+        "scripts/test-security.mjs",
+        "scripts/validate-production-env.mjs",
+        "src/app/account/actions.ts",
+        "src/app/account/layout.tsx",
+        "src/app/account/orders/[orderId]/actions.ts",
+        "src/app/account/wishlist/actions.ts",
+        "src/app/admin/actions.ts",
+        "src/app/admin/categories/actions.ts",
+        "src/app/admin/inventory/actions.ts",
+        "src/app/admin/orders/page.tsx",
+        "src/app/admin/products/new/actions.ts",
+        "src/app/admin/returns/actions.ts",
+        "src/app/admin/shipping/actions.ts",
+        "src/app/auth/actions.ts",
+        "src/app/auth/callback/route.ts",
+        "src/app/auth/confirm/route.ts",
+        "src/app/auth/logout/route.ts",
+        "src/app/cart/actions.ts",
+        "src/app/checkout/actions.ts",
+        "src/app/checkout/page.tsx",
+        "src/app/checkout/unpaid-actions.ts",
+        "src/app/layout.tsx",
+        "src/app/product/[slug]/page.tsx",
+        "src/app/shop/[category]/page.tsx",
+        "src/components/analytics.tsx",
+        "src/components/checkout.tsx",
+        "src/components/cookie-consent.tsx",
+        "src/components/structured-data.tsx",
+        "src/lib/actions.ts",
+        "src/lib/admin/repository.ts",
+        "src/lib/auth/guards.ts",
+        "src/lib/notifications/client.ts",
+        "src/lib/notifications/order-notifications.ts",
+        "src/lib/security/csp.ts",
+        "src/lib/security/input.ts",
+        "src/lib/security/origin.ts",
+        "src/lib/security/rate-limit.ts",
+        "src/lib/security/request.ts",
+        "src/lib/security/routes.ts",
+        "src/lib/supabase/database.types.ts",
+        "src/lib/validation.ts",
+        "src/proxy.ts",
+        "supabase/migrations/20261007000100_security_hardening.sql",
+        "supabase/verify-security.sql"
+      ]
+    },
+    {
+      "branch": "origin/seo-google-setup",
+      "head": "3d9a011bf89545439c1656a6aa91ba2f07398e8d",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "src/app/robots.ts",
+        "src/components/structured-data.tsx"
+      ],
+      "changed_files_differing_from_main": [
+        ".env.example",
+        "src/app/layout.tsx",
+        "src/app/product/[slug]/page.tsx",
+        "src/app/sitemap.ts"
+      ]
+    },
+    {
+      "branch": "origin/seo-hide-test-content",
+      "head": "e9455df9e660ee5cc027e9cf4c6315916b41b6e1",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "src/app/sitemap.ts",
+        "src/lib/seo-indexing.ts"
+      ],
+      "changed_files_differing_from_main": [
+        "src/app/product/[slug]/page.tsx",
+        "src/app/shop/[category]/page.tsx"
+      ]
+    },
+    {
+      "branch": "origin/shipping-returns-policy",
+      "head": "2d80cb43a45d9e253f57d38ec8d6b51a6c2224e5",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        "src/app/[page]/page.tsx",
+        "src/app/globals.css"
+      ]
+    },
+    {
+      "branch": "origin/static-product-pages",
+      "head": "57d41755c45426b39d9c764ec76fc3933985ae27",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/storefront-engagement-analytics",
+      "head": "e3a84402c6776280f4e4d9f364555a1442620ff9",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/stripe-test-checkout",
+      "head": "23408f83e7b1c4a62f180e6fc18ba5a3e501c267",
+      "classification": "EXCLUDED_UNSELECTED_PAYMENT_PROVIDER",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        ".env.example",
+        "README.md",
+        "scripts/validate-production-env.mjs",
+        "src/app/api/checkout/route.ts",
+        "src/app/api/stripe/webhook/route.ts",
+        "src/app/checkout/cancelled/page.tsx",
+        "src/app/checkout/success/page.tsx",
+        "src/components/cart-view.tsx",
+        "src/components/checkout-button.tsx",
+        "src/components/checkout-success-client.tsx",
+        "src/lib/checkout.ts",
+        "src/lib/stripe.ts",
+        "src/lib/supabase/admin.ts",
+        "src/proxy.ts"
+      ]
+    },
+    {
+      "branch": "origin/supabase-query-performance",
+      "head": "d14e1b755fb40f17590593592ac94c264d9d05f6",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/terms-conditions",
+      "head": "75fc9d6e727227c1d49566c49ada6fc819102c47",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        "src/app/[page]/page.tsx"
+      ]
+    },
+    {
+      "branch": "origin/test-checkout-flow",
+      "head": "7b0dd86c620b8b831d8400c298230600303ae69a",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [
+        "scripts/database-harness.mjs",
+        "src/app/admin/orders/[id]/page.tsx",
+        "supabase/migrations/20260927000200_test_checkout.sql"
+      ],
+      "changed_files_differing_from_main": [
+        "scripts/test-phase3.mjs",
+        "src/app/account/orders/page.tsx",
+        "src/app/checkout/actions.ts",
+        "src/app/checkout/page.tsx",
+        "src/app/phase3.css",
+        "src/components/cart-provider.tsx",
+        "src/components/checkout.tsx",
+        "src/components/order-list.tsx",
+        "src/lib/admin/repository.ts",
+        "src/lib/supabase/database.types.ts"
+      ]
+    },
+    {
+      "branch": "origin/tinker-faithful-motion-v3",
+      "head": "a1fe9546e1ea55f465b88050a84c27429b6226aa",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/tinker-inspired-home",
+      "head": "a18f619fce83ef44603ab5146769f74caf18b636",
+      "classification": "ALREADY_IN_MAIN_BY_ANCESTRY",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": []
+    },
+    {
+      "branch": "origin/tinker-inspired-scroll-v2",
+      "head": "64c2f6bc775085e05db38dd041b7f13a515d64c2",
+      "classification": "DIVERGENT_HISTORY_REQUIRES_SEMANTIC_REVIEW_NOT_AUTO_MERGE",
+      "changed_files_matching_main": [],
+      "changed_files_differing_from_main": [
+        "src/app/home.module.css",
+        "src/app/intro-scroll.module.css",
+        "src/app/page.tsx",
+        "src/components/floating-home-nav.module.css",
+        "src/components/floating-home-nav.tsx",
+        "src/components/home-motion.tsx",
+        "src/components/intro-device-showcase.module.css",
+        "src/components/intro-device-showcase.tsx"
+      ]
+    }
+  ]
+}

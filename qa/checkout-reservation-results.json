@@ -1,0 +1,23 @@
+{
+  "scope": "Disposable local PGlite; SQL auth shim, no hosted writes or payments",
+  "passed": 17,
+  "checks": [
+    "New unpaid order holds stock and one promo use for 30 minutes",
+    "Idempotent replay does not deduct twice",
+    "Other customer cannot oversell held stock",
+    "Other customer cannot consume a reserved promo slot",
+    "Expiry restores exact inventory and promo slot once",
+    "Expired retry returns old cancelled order, not a hidden new purchase",
+    "Late payment cannot consume a released reservation",
+    "Trusted payment consumes reservation without double deduction",
+    "Refund does not automatically restock uninspected goods or reuse paid promo",
+    "Explicit unpaid cancellation restores stock once",
+    "Customers cannot call expiry or mutate reservation ledger",
+    "Payment after deadline is denied even before expiry worker runs",
+    "Failure releases new hold and failed orders cannot resurrect payment",
+    "Invalid expiry batch refused",
+    "Patch refuses reapplication atomically instead of overwriting accounting",
+    "Historical orders and promo counters unchanged; no inferred reservations",
+    "Unknown checkout body refused before DDL; no partial ledger"
+  ]
+}

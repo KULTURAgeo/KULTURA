@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireActor } from "@/lib/auth/guards";
-import { normalizeLines } from "@/lib/cart/model";
-import { InputError } from "@/lib/validation";
+import { requireActionActor } from "@/lib/auth/guards";
+import { checkoutLines, strictObject, addressKeys } from "@/lib/security/input";
+import { InputError, id } from "@/lib/validation";
 import { safeFailure } from "@/lib/actions";
 import { notifyOrderEvent } from "@/lib/notifications/order-notifications";
 
@@ -17,6 +17,7 @@ type AddressInput = {
 };
 
 type CheckoutInput = {
+  requestId?: unknown;
   lines?: unknown;
   address?: AddressInput;
   promoCode?: unknown;
@@ -58,11 +59,14 @@ export async function createUnpaidOrder(
   input: CheckoutInput,
 ): Promise<UnpaidCheckoutResult> {
   try {
-    const { client } = await requireActor();
-    const lines = normalizeLines(input.lines);
-    if (!lines.length) throw new InputError("Your bag is empty.");
+    const { client } = await requireActionActor();
+    strictObject(input, ["requestId", "lines", "address", "promoCode"]);
+    const requestId = id(input.requestId, "checkout request");
+    const lines = checkoutLines(input.lines);
+    if (!lines.length || !Array.isArray(input.lines) || lines.length !== input.lines.length || input.lines.length > 50)
+      throw new InputError("Review your bag and try again.");
 
-    const address = input.address ?? {};
+    const address = strictObject(input.address, addressKeys);
     const payload = {
       recipient_name: requiredString(address.recipient_name, "Recipient name", 200),
       phone: requiredString(address.phone, "Phone", 40),
@@ -78,7 +82,8 @@ export async function createUnpaidOrder(
       quantity: line.quantity,
     }));
 
-    const { data, error } = await client.rpc("checkout_create_unpaid_order", {
+    const { data, error } = await client.rpc("checkout_submit_order", {
+      p_request_id: requestId,
       p_cart: cart,
       p_address: payload,
       p_promo_code: promoCode(input.promoCode),

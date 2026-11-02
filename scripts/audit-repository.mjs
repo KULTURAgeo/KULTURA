@@ -1,5 +1,5 @@
 import {readdir,readFile,writeFile} from "node:fs/promises";
-const skip=new Set(["node_modules",".next",".git",".vercel"]);
+const skip=new Set(["node_modules",".pnpm-store",".next",".git",".vercel"]);
 const findings=[];let scanned=0;
 async function walk(dir){for(const entry of await readdir(dir,{withFileTypes:true})){
  if(skip.has(entry.name))continue;
