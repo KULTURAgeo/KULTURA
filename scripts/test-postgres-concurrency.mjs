@@ -41,7 +41,9 @@ function sql(query) {
     child.stdin.end("set statement_timeout='15s'; set lock_timeout='10s';\n" + query);
   });
 }
-const identity = JSON.parse(await sql("select json_build_object('database',current_database(),'host',inet_server_addr()::text,'empty',not exists(select 1 from information_schema.tables where table_schema='public'));"));
+// PostgreSQL 18's inet text output includes the host mask (for example,
+// 127.0.0.1/32); host() normalizes it across supported server versions.
+const identity = JSON.parse(await sql("select json_build_object('database',current_database(),'host',host(inet_server_addr()),'empty',not exists(select 1 from information_schema.tables where table_schema='public'));"));
 assert.equal(identity.database, database); assert.equal(identity.host, dockerMode ? null : '127.0.0.1'); assert.equal(identity.empty, true, 'Refuse nonempty database; never reset it');
 if (dockerMode) assert.equal(await sql('show cron.launch_active_jobs;'), 'off', 'Scheduled jobs must remain disabled in the synthetic test');
 await sql(TEST_BOOTSTRAP_SQL);
@@ -104,3 +106,4 @@ const report = { scope: 'Real local PostgreSQL, independent psql connections, fr
   status: 'PASSED', fixtures: 'Retained only inside disposable local database until server shutdown; never real customer data' };
 await writeFile('qa/postgres-concurrency-results.json', JSON.stringify(report, null, 2) + '\n');
 console.log(JSON.stringify(report, null, 2));
+
