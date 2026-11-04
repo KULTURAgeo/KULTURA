@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { adminOrder } from "@/lib/admin/repository";
 import { UUID } from "@/lib/validation";
 import { ActionForm } from "@/components/action-form";
-import { advanceFulfillment } from "@/app/admin/actions";
+import { Field } from "@/components/form-field";
+import { advanceFulfillment, deleteOrder } from "@/app/admin/actions";
 
 function statusClass(value: string) {
     return "status-badge status-" + value.replaceAll("_", "-");
@@ -226,6 +227,31 @@ export default async function Order({ params }: {
                         {statusLabel(order.fulfillment_status)}
                     </span>
                 )}
+            </section>
+
+            <section className="panel admin-order-delete-control">
+                <p className="eyebrow">DANGER ZONE</p>
+                <h2>PERMANENTLY DELETE ORDER</h2>
+                <p className="muted">
+                    This permanently removes the order, its item snapshots, checkout requests, queued notifications,
+                    and return requests. It does not issue a refund or restock inventory. The order cannot be restored.
+                    Held inventory reservations must expire or be cancelled first.
+                </p>
+                <ActionForm
+                    action={deleteOrder}
+                    label="DELETE ORDER PERMANENTLY"
+                    confirm={`Permanently delete ${order.order_number} and its item, checkout, notification and return records? This does not refund or restock anything.`}
+                >
+                    <input type="hidden" name="order_id" value={order.id} />
+                    <input type="hidden" name="updated_at" value={order.updated_at} />
+                    <Field
+                        label={`TYPE ${order.order_number} TO CONFIRM`}
+                        name="confirm_order_number"
+                        required
+                        maxLength={100}
+                        autoComplete="off"
+                    />
+                </ActionForm>
             </section>
         </>
     );
