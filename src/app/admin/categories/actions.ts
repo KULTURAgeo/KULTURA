@@ -77,3 +77,55 @@ export async function saveCategory(
     return safeFailure(error);
   }
 }
+
+export async function deleteCategory(
+  _state: ActionState,
+  data: FormData,
+): Promise<ActionState> {
+  try {
+    strictForm(data, ["id", "updated_at"]);
+    const { client } = await requireActionActor(true);
+    const categoryId = id(data.get("id"), "category");
+    const expectedUpdatedAt = version(data);
+
+    const { count, error: productsError } = await client
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("category_id", categoryId);
+
+    if (productsError) throw productsError;
+    if ((count ?? 0) > 0) {
+      return {
+        ok: false,
+        message: `This category is used by ${count} product${count === 1 ? "" : "s"}. Move them to another category before deleting it.`,
+      };
+    }
+
+    const { data: deleted, error } = await client
+      .from("categories")
+      .delete()
+      .eq("id", categoryId)
+      .eq("updated_at", expectedUpdatedAt)
+      .select("id")
+      .maybeSingle();
+
+    if (error?.code === "23503") {
+      return {
+        ok: false,
+        message: "A product still uses this category. Move it to another category before deleting.",
+      };
+    }
+    if (error) throw error;
+    if (!deleted) {
+      return {
+        ok: false,
+        message: "This category changed or was removed. Reload the page and try again.",
+      };
+    }
+
+    refreshCategories();
+    return { ok: true, message: "Category deleted." };
+  } catch (error) {
+    return safeFailure(error);
+  }
+}

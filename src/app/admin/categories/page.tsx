@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ActionForm, Field } from "@/components/action-form";
 import { adminCategories } from "./repository";
-import { saveCategory } from "./actions";
+import { deleteCategory, saveCategory } from "./actions";
 
 type Category = Awaited<ReturnType<typeof adminCategories>>[number];
 
@@ -151,6 +151,18 @@ export default async function CategoriesAdmin() {
                     />
                     <CategoryFields category={category} />
                   </ActionForm>
+                  <ActionForm
+                    action={deleteCategory}
+                    label="DELETE CATEGORY"
+                    confirm={`Delete "${category.name}"? This cannot be undone. Categories with products will be kept.`}
+                  >
+                    <input type="hidden" name="id" value={category.id} />
+                    <input
+                      type="hidden"
+                      name="updated_at"
+                      value={category.updated_at}
+                    />
+                  </ActionForm>
                 </details>
               ))}
             </div>
@@ -158,7 +170,7 @@ export default async function CategoriesAdmin() {
         )}
 
         <p className="muted">
-          Categories are not deleted because products keep a permanent category reference. Turn a category inactive to hide it from the store.
+          Categories can be deleted only when no products use them. Move every product to a different category first; product and order history stay protected.
         </p>
       </section>
     </>
