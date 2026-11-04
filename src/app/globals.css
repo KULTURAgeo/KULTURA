@@ -440,11 +440,15 @@ p {
 }
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
+  max-width: 1024px;
+  min-width: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   border-top: 1px solid var(--line);
   border-left: 1px solid var(--line);
 }
 .category-grid a {
+  min-width: 0;
   padding: 25px;
   min-height: 180px;
   border-right: 1px solid var(--line);
