@@ -605,6 +605,7 @@ Relationships: [{"foreignKeyName":"wishlist_items_product_id_fkey","columns":["p
 admin_advance_fulfillment: { Args: { p_order_id: string | null; p_expected_updated_at: string | null; p_next_status: string | null }; Returns: string };
 admin_attach_image: { Args: { p_product_id: string | null; p_storage_path: string | null; p_alt_text: string | null }; Returns: string };
 admin_create_test_order: { Args: { p_cart: Json | null; p_address: Json | null }; Returns: string };
+admin_delete_product: { Args: { p_id: string | null; p_expected_updated_at: string | null; p_confirm_name: string | null }; Returns: string[] };
 admin_create_test_order_v2: { Args: { p_cart: Json | null; p_address: Json | null; p_promo_code: string | null }; Returns: string };
 admin_reorder_images: { Args: { p_product_id: string | null; p_ids: string[] | null; p_expected_ids: string[] | null }; Returns: undefined };
 admin_save_checkout_settings: { Args: { p_shipping_total: string | null; p_free_shipping_threshold: string | null }; Returns: Json };

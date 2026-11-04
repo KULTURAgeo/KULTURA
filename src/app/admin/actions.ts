@@ -217,3 +217,47 @@ export async function savePromo(_state: ActionState, data: FormData): Promise<Ac
         return safeFailure(error);
     }
 }
+
+export async function deleteProduct(_state: ActionState, data: FormData): Promise<ActionState> {
+    try {
+        strictForm(data, ["id", "updated_at", "confirm_name"], []);
+        const { client } = await requireActionActor(true);
+        const productId = id(data.get("id"), "product");
+        const expectedUpdatedAt = version(data);
+        const confirmName = text(data, "confirm_name", 200);
+        const { data: storagePaths, error } = await client.rpc("admin_delete_product", {
+            p_id: productId,
+            p_expected_updated_at: expectedUpdatedAt,
+            p_confirm_name: confirmName,
+        });
+        if (error) {
+            if (error.code === "23503")
+                return { ok: false, message: "This product is in an order or checkout and must be kept for history. Archive it instead." };
+            if (error.code === "22023")
+                return { ok: false, message: "The product name did not match. Reload the page and try again." };
+            if (error.code === "40001")
+                return { ok: false, message: "This product changed. Reload the page and try again." };
+            throw error;
+        }
+
+        refresh();
+        revalidatePath("/admin/products");
+        revalidatePath("/admin/products/[id]", "page");
+
+        if (storagePaths?.length) {
+            const { error: storageError } = await client.storage.from("product-images").remove(storagePaths);
+            if (storageError) {
+                return {
+                    ok: true,
+                    message: "Product deleted, but some stored images could not be removed.",
+                    redirectTo: "/admin/products?notice=image-cleanup-needed",
+                };
+            }
+        }
+
+        return { ok: true, message: "Product permanently deleted.", redirectTo: "/admin/products" };
+    }
+    catch (error) {
+        return safeFailure(error);
+    }
+}

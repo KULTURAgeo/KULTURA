@@ -3,7 +3,7 @@ import { adminProducts } from "@/lib/admin/repository";
 import { money } from "@/lib/catalog";
 
 export default async function Products({ searchParams }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; notice?: string }>;
 }) {
   const query = await searchParams;
   const requestedPage = Math.floor(
@@ -17,6 +17,7 @@ export default async function Products({ searchParams }: {
         <h1>PRODUCTS</h1>
         <Link className="button" href="/admin/products/new">NEW PRODUCT ↗</Link>
       </div>
+      {query.notice === "image-cleanup-needed" && <p className="form-error" role="alert">Product deleted, but some stored images could not be removed. Clean up unused files in the product-images Storage bucket.</p>}
       {!products.length ? (
         <div className="empty-state">No products here yet. Create your first piece.</div>
       ) : (
