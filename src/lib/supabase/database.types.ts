@@ -603,6 +603,7 @@ Relationships: [{"foreignKeyName":"wishlist_items_product_id_fkey","columns":["p
 };
 }; Views: { [_ in never]: never }; Functions: {
 admin_advance_fulfillment: { Args: { p_order_id: string | null; p_expected_updated_at: string | null; p_next_status: string | null }; Returns: string };
+admin_delete_order: { Args: { p_order_id: string | null; p_expected_updated_at: string | null; p_confirm_order_number: string | null }; Returns: undefined };
 admin_attach_image: { Args: { p_product_id: string | null; p_storage_path: string | null; p_alt_text: string | null }; Returns: string };
 admin_create_test_order: { Args: { p_cart: Json | null; p_address: Json | null }; Returns: string };
 admin_delete_product: { Args: { p_id: string | null; p_expected_updated_at: string | null; p_confirm_name: string | null }; Returns: string[] };

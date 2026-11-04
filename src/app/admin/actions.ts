@@ -188,6 +188,40 @@ export async function advanceFulfillment(_state: ActionState, data: FormData): P
 }
 
 
+export async function deleteOrder(_state: ActionState, data: FormData): Promise<ActionState> {
+    try {
+        strictForm(data, ["order_id", "updated_at", "confirm_order_number"], []);
+        const { client } = await requireActionActor(true);
+        const orderId = id(data.get("order_id"), "order");
+        const expectedUpdatedAt = version(data);
+        const confirmOrderNumber = text(data, "confirm_order_number", 100);
+
+        const { error } = await client.rpc("admin_delete_order", {
+            p_order_id: orderId,
+            p_expected_updated_at: expectedUpdatedAt,
+            p_confirm_order_number: confirmOrderNumber,
+        });
+
+        if (error) {
+            if (error.code === "23503")
+                return { ok: false, message: "This order still holds inventory. Wait for its reservation to expire or cancel it, then reload and try again." };
+            if (error.code === "22023")
+                return { ok: false, message: "The order number did not match. Reload the order and try again." };
+            if (error.code === "40001")
+                return { ok: false, message: "This order changed. Reload it and try again." };
+            throw error;
+        }
+
+        revalidatePath("/admin");
+        revalidatePath("/admin/orders");
+        revalidatePath("/account/orders");
+        return { ok: true, message: "Order permanently deleted.", redirectTo: "/admin/orders" };
+    }
+    catch (error) {
+        return safeFailure(error);
+    }
+}
+
 export async function savePromo(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
     strictForm(data, ["id", "updated_at", "code", "kind", "amount", "minimum_subtotal", "maximum_discount", "max_uses", "starts_at", "expires_at", "is_active"], []);
