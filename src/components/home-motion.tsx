@@ -212,8 +212,14 @@ export function HomeMotion({
           // near p=.936. The phone itself retains its settled scale.
           // Everything is progress-based, including reverse scrolling.
           const backdropDive = smooth(range(p, 0.922, 0.999));
+          // Follow the phone's entrance and close-up with a gentler background
+          // camera move. Preserve its settled zoom through the product feed
+          // and continue seamlessly into the existing globe-button dive.
+          const phoneBackdropZoom =
+            mix(1, 1.025, entry) * mix(1, 1.105, zoom);
           const backdropScale =
-            mix(1, viewportWidth < 720 ? 1.22 : 1.30, buttonGrow)
+            phoneBackdropZoom
+            * mix(1, viewportWidth < 720 ? 1.22 : 1.30, buttonGrow)
             * mix(1, viewportWidth < 720 ? 1.34 : 1.43, backdropDive);
           const backdropLift =
             mix(0, -16, buttonGrow) + mix(0, -22, backdropDive);
