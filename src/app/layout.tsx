@@ -26,6 +26,7 @@ import "./premium-motion.css";
 import "./mobile-polish.css";
 import "./motion-react.css";
 import "./page-transitions.css";
+import "./desktop-scale.css";
 
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 const googleAnalyticsId = /^G-[A-Z0-9]+$/.test(
