@@ -1,16 +1,66 @@
 /*
- * KULTURA desktop density
+ * Match KULTURA's requested 80% desktop density at browser zoom 100%.
  *
- * At normal browser zoom, display the desktop storefront at the visual scale
- * customers previously saw at about 80% browser zoom. CSS zoom participates
- * in layout (unlike transform: scale, which leaves inaccessible blank space).
- * Keep touch/tablet/mobile at native scale for legible controls and forms.
- *
- * This is an intentional desktop-only brand preference. Browser zoom and
- * accessibility settings still remain under the visitor's control.
+ * CSS zoom reduces the visual viewport footprint of fixed-width and
+ * viewport-sized content. Give the body the inverse layout width, then
+ * compensate cinematic full-screen sections for the same scale.
  */
 @media screen and (min-width: 1101px) and (pointer: fine) {
   body {
     zoom: 0.8;
+    width: 125%;
+    max-width: none;
   }
+
+  /* The homepage must fill the actual viewport despite desktop density. */
+  body.kultura-motion-home .hero,
+  body.kultura-motion-home [data-hero] {
+    min-height: 125svh;
+  }
+  body.kultura-motion-home [data-demo-track] > [class*="demoSticky"],
+  body.kultura-motion-home [class*="orbitSticky"] {
+    height: 125svh;
+  }
+
+  /* The portal is inline-styled by HomeMotion: cover the complete screen. */
+  body.kultura-motion-home [data-phone-transition] {
+    width: 125vw !important;
+    height: 125svh !important;
+  }
+
+  /* All screen-height visual scenes need the inverse zoom factor. */
+  body.kultura-motion-home [class*="bothSection"],
+  body.kultura-motion-home [class*="endScene"] {
+    min-height: 119svh;
+  }
+
+  /* Readable rhythm at compact desktop density: no labels touching cards. */
+  #main:not(:has([data-hero])) .page-title {
+    line-height: 1.04;
+    margin-bottom: 18px;
+  }
+  #main:not(:has([data-hero])) .page-title + .muted {
+    margin-bottom: 30px;
+    line-height: 1.5;
+  }
+  #main:not(:has([data-hero])) .category-grid {
+    margin-top: 12px;
+  }
+  #main:not(:has([data-hero])) .category-grid a {
+    padding: 32px;
+    min-height: 195px;
+    gap: 8px;
+  }
+  #main:not(:has([data-hero])) .category-grid h3 {
+    line-height: 1.12;
+    overflow-wrap: break-word;
+  }
+  #main:not(:has([data-hero])) .page-section {
+    padding-top: clamp(65px, 7svh, 110px);
+    padding-bottom: 100px;
+  }
+}
+
+@media screen and (min-width: 1101px) and (pointer: fine) and (max-height: 680px) {
+  body.kultura-motion-home [data-hero] { min-height: 125svh; }
 }
