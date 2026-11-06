@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Run the full TypeScript API checker and page workers in worker threads.
   experimental: {
-    viewTransition: true,
     useTypeScriptCli: false,
     workerThreads: true,
     serverActions: { bodySizeLimit: "4mb" },
