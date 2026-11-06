@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { ViewTransition } from "react";
 import { notFound } from "next/navigation";
 import { unknownRootRoute } from "@/lib/security/routes";
 import { LanguageProvider } from "@/components/language-provider";
@@ -24,6 +25,7 @@ import "./theme.css";
 import "./premium-motion.css";
 import "./mobile-polish.css";
 import "./motion-react.css";
+import "./page-transitions.css";
 
 const googleSiteVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 const googleAnalyticsId = /^G-[A-Z0-9]+$/.test(
@@ -126,7 +128,7 @@ export default async function RootLayout({
           <Header />
           <MotionEnhancements />
           <PremiumScroll />
-          <main id="main">{children}</main>
+          <main id="main"><ViewTransition name="kultura-page" default="kultura-page-change">{children}</ViewTransition></main>
           <LazyCartDrawer />
           <Footer />
         </CartProvider>
