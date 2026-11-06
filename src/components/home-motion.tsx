@@ -82,20 +82,15 @@ export function HomeMotion({
     const transitionCenter = node.querySelector<HTMLElement>("[data-transition-center]");
     const transitionFloats = Array.from(node.querySelectorAll<HTMLElement>("[data-transition-float]"));
 
-    const desktopZoom = () => {
-      const value = Number.parseFloat(getComputedStyle(document.body).zoom);
-      return Number.isFinite(value) && value > 0 ? value : 1;
-    };
-
     if (demoTrack) {
       // Sticky runway for the in-phone feed, globe enlargement and handoff.
       // The phone never gets a second zoom after the feed completes.
-      demoTrack.style.height = `${(window.innerWidth < 720 ? 390 : 460) / desktopZoom()}svh`;
+      demoTrack.style.height = window.innerWidth < 720 ? "390svh" : "460svh";
     }
 
     if (phoneTransition) {
-      phoneTransition.style.width = `${100 / desktopZoom()}vw`;
-      phoneTransition.style.height = `${100 / desktopZoom()}svh`;
+      phoneTransition.style.width = "100vw";
+      phoneTransition.style.height = "100svh";
       phoneTransition.style.top = "50%";
       phoneTransition.style.transform = "translate(-50%, -50%)";
       phoneTransition.style.willChange = "clip-path, opacity, transform";
@@ -108,10 +103,6 @@ export function HomeMotion({
 
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
-      // CSS zoom changes physical DOMRect sizes without changing CSS transform units.
-      const pageZoom = desktopZoom();
-      const cssViewportWidth = viewportWidth / pageZoom;
-      const cssViewportHeight = viewportHeight / pageZoom;
 
       // Read geometry before mutating styles to avoid forced layouts while scrolling.
       const heroRect = hero?.getBoundingClientRect() ?? null;
@@ -155,19 +146,19 @@ export function HomeMotion({
         // First frame: the full phone is visible, ~82% of viewport height.
         const initialScale = Math.min(
           2.2,
-          viewportHeight * 0.82 / (phoneHeight * pageZoom),
-          viewportWidth * (viewportWidth < 720 ? 0.80 : 0.60) / (phoneWidth * pageZoom),
+          viewportHeight * 0.82 / phoneHeight,
+          viewportWidth * (viewportWidth < 720 ? 0.80 : 0.60) / phoneWidth,
         );
         // Second frame: a modest close-up (~1.34x, bounded on phones).
         // Keep the surrounding editorial backdrop visible.
         const zoomTarget = Math.max(initialScale, Math.min(
           initialScale * 1.34,
-          viewportWidth * (viewportWidth < 720 ? 0.89 : 0.56) / (phoneWidth * pageZoom),
-          viewportHeight * 1.23 / (phoneHeight * pageZoom),
+          viewportWidth * (viewportWidth < 720 ? 0.89 : 0.56) / phoneWidth,
+          viewportHeight * 1.23 / phoneHeight,
         ));
         const scale = mix(initialScale * 0.82, initialScale, entry)
           * mix(1, zoomTarget / initialScale, zoom);
-        const entryOffset = mix(cssViewportHeight * 0.62, 0, entry);
+        const entryOffset = mix(viewportHeight * 0.62, 0, entry);
         // The product feed finishes at p=.73. DO NOT ZOOM THE PHONE AGAIN.
         // The phone only moves up until its bottom globe is at screen centre.
         // No background zoom or camera transform occurs in this chapter.
@@ -203,11 +194,11 @@ export function HomeMotion({
           // the globe approach ends at p=.84.
           const globeRect = phoneLogo?.getBoundingClientRect();
           const globeCx = globeRect
-            ? (globeRect.left + globeRect.width / 2) / pageZoom : cssViewportWidth / 2;
+            ? globeRect.left + globeRect.width / 2 : viewportWidth / 2;
           const globeCy = globeRect
-            ? (globeRect.top + globeRect.height / 2) / pageZoom : cssViewportHeight / 2;
-          const globePhysicalWidth = globeRect ? globeRect.width / pageZoom : globeWidth * scale;
-          const globePhysicalHeight = globeRect ? globeRect.height / pageZoom : globeHeight * scale;
+            ? globeRect.top + globeRect.height / 2 : viewportHeight / 2;
+          const globePhysicalWidth = globeRect?.width ?? globeWidth * scale;
+          const globePhysicalHeight = globeRect?.height ?? globeHeight * scale;
 
           // The globe icon becomes a wide button inside the phone, similar
           // to the reference, before that SAME button becomes the new page.
@@ -230,18 +221,18 @@ export function HomeMotion({
             `translate3d(0, ${backdropLift}px, 0) scale(${backdropScale})`;
           const sceneIn = smooth(range(p, 0.970, 0.998));
           const panelWidth = Math.min(
-            cssViewportWidth * 0.88, phoneWidth * scale * 0.86,
+            viewportWidth * 0.88, phoneWidth * scale * 0.86,
           );
           const panelHeight = Math.min(
-            cssViewportHeight * 0.17,
+            viewportHeight * 0.17,
             Math.max(globePhysicalHeight * 1.7, 48),
           );
           const portalWidth = mix(globePhysicalWidth, panelWidth, buttonGrow);
           const portalHeight = mix(globePhysicalHeight, panelHeight, buttonGrow);
           const insetLeft = Math.max(0, globeCx - portalWidth / 2);
-          const insetRight = Math.max(0, cssViewportWidth - globeCx - portalWidth / 2);
+          const insetRight = Math.max(0, viewportWidth - globeCx - portalWidth / 2);
           const insetTop = Math.max(0, globeCy - portalHeight / 2);
-          const insetBottom = Math.max(0, cssViewportHeight - globeCy - portalHeight / 2);
+          const insetBottom = Math.max(0, viewportHeight - globeCy - portalHeight / 2);
           const portalRadius = mix(
             Math.min(globePhysicalHeight / 2, 24), 17, buttonGrow,
           );
@@ -265,7 +256,7 @@ export function HomeMotion({
           if (sceneLogo) {
             const logoIn = smooth(range(p, 0.955, 0.991));
             const logoSettle = smooth(range(p, 0.953, 0.994));
-            const logoY = mix(cssViewportHeight * 0.035, 0, logoSettle);
+            const logoY = mix(viewportHeight * 0.035, 0, logoSettle);
             sceneLogo.style.opacity = String(logoIn);
             sceneLogo.style.transform = `translate(-50%, calc(-50% + ${logoY}px)) scale(${mix(.18, 1, logoSettle)})`;
           }
@@ -288,8 +279,8 @@ export function HomeMotion({
             const local = smooth(range(p, start, Math.min(end, 0.995)));
 
             // Each card begins over the central product and fans out to its final slot.
-            const fromX = index % 2 === 0 ? cssViewportWidth * 0.34 : -cssViewportWidth * 0.34;
-            const fromY = index < 2 ? cssViewportHeight * 0.29 : -cssViewportHeight * 0.29;
+            const fromX = index % 2 === 0 ? viewportWidth * 0.34 : -viewportWidth * 0.34;
+            const fromY = index < 2 ? viewportHeight * 0.29 : -viewportHeight * 0.29;
             const x = mix(fromX, 0, local);
             const y = mix(fromY, 0, local);
             const cardScale = mix(0.34, 1, local);
