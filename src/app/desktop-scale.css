@@ -1,0 +1,16 @@
+/*
+ * KULTURA desktop density
+ *
+ * At normal browser zoom, display the desktop storefront at the visual scale
+ * customers previously saw at about 80% browser zoom. CSS zoom participates
+ * in layout (unlike transform: scale, which leaves inaccessible blank space).
+ * Keep touch/tablet/mobile at native scale for legible controls and forms.
+ *
+ * This is an intentional desktop-only brand preference. Browser zoom and
+ * accessibility settings still remain under the visitor's control.
+ */
+@media screen and (min-width: 1101px) and (pointer: fine) {
+  body {
+    zoom: 0.8;
+  }
+}
