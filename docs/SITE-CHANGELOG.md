@@ -2,6 +2,15 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Client-side 4:5 product photo preview and upload
+
+- ProductImagePicker now prepares the actual selected image on a white 4:5 canvas as soon as the user chooses it.
+- Image conversion preserves the full product without cropping, stretching or artificial upscaling, using high-quality WebP with a 3 MB limit.
+- The transformed WebP is assigned back to the real file input, so the form submits the processed file rather than the original.
+- The preview renders the same selected processed file and identifies it as ready; submission is blocked until conversion succeeds.
+- Applies to the new-product form and the existing-product image-upload form.
+- Server-side image verification and re-encoding still enforce file type and upload limits. Existing product images are not rewritten.
+
 ## 2026-11-10 — Fix overriding product-card background rule
 
 - Root cause: a later shared CSS rule `.product-image, .gallery-main { background: #8b8b8b }` was overriding the earlier white product-card background.
