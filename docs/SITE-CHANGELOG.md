@@ -2,6 +2,12 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Shop division heading labels
+
+- `/shop/x` now displays **X - WOMAN**, `/shop/y` displays **Y - MEN**.
+- `/shop/unisex` remains **UNISEX**; catalog products and filters remain unchanged.
+- The generated page title metadata uses the same labels.
+
 ## 2026-11-10 — XYS product visibility in all three divisions
 
 - Admin Product Editor SHOP DIVISION now includes XYS — All 3 divisions.
