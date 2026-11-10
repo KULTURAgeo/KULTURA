@@ -45,6 +45,14 @@ export function HeaderInteractions({ theme, onThemeChange }: {
         <Link className="icon-button" href="/account" aria-label={t("ACCOUNT")}>
           <Icon name="account" />
         </Link>
+        <Link
+          className="icon-button header-wishlist-button"
+          href="/account/wishlist"
+          aria-label="Wishlist — saved products"
+          title="Wishlist"
+        >
+          <Icon name="heart" />
+        </Link>
         <motion.button
           whileTap={press}
           className="icon-button bag-button"

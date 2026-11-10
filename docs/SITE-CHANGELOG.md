@@ -2,6 +2,13 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Wishlist heart next to the shopping bag
+
+- Added a small outlined heart directly before the cart icon in the shared site header.
+- Heart links to the existing protected `/account/wishlist` page and reuses the same accessible icon treatment in both light and dark themes.
+- On the narrowest phones the duplicate account button is hidden (the account remains in the mobile menu), keeping the heart and bag visible.
+- Existing wishlist data, account security and bag behavior are unchanged.
+
 ## 2026-11-10 — Full-screen theme ripple on every visible UI section
 
 - Expanded the established SHOP / DROPS / ABOUT view-transition ripple to visible titles, descriptions, buttons, form fields, controls, cards, icons, product imagery and footer elements.

@@ -378,3 +378,25 @@ html[data-theme="light"] .cookie-consent .button { background: #d3d3d5; color: #
 .mobile-language-choice { padding: 18px 0 8px; }
 .mobile-language-choice .kultura-language-switcher select { min-height: 42px; min-width: 116px; padding-inline: 10px; }
 @media (max-width: 767px) { .theme-header-right > .kultura-language-switcher:not(.mobile) { display: none; } }
+
+/* Header wishlist uses the same minimal icon treatment as the shopping bag.
+   On narrow phones, account access remains available in the mobile menu. */
+.header-wishlist-button svg {
+  width: 21px;
+  height: 21px;
+  transition: transform 220ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .header-wishlist-button:hover svg { transform: scale(1.12); }
+}
+@media (max-width: 370px) {
+  .theme-header .header-actions > a[href="/account"] { display: none; }
+  .theme-header .header-actions > .icon-button,
+  .theme-header .header-actions > .mobile-menu {
+    width: 34px;
+    min-width: 34px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .header-wishlist-button svg { transition: none; }
+}

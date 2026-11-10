@@ -63,7 +63,7 @@ export function SectionHeading({
 export function Icon({
   name,
 }: {
-  name: "search" | "account" | "bag" | "menu" | "close";
+  name: "search" | "account" | "bag" | "heart" | "menu" | "close";
 }) {
   return (
     <svg
@@ -85,6 +85,8 @@ export function Icon({
           <circle cx="12" cy="7" r="3.5" />
           <path d="M4 22v-3a8 8 0 0 1 16 0v3" />
         </>
+      ) : name === "heart" ? (
+        <path d="M20.8 4.8a5.2 5.2 0 0 0-7.4 0L12 6.2l-1.4-1.4a5.2 5.2 0 0 0-7.4 7.4L12 21l8.8-8.8a5.2 5.2 0 0 0 0-7.4Z" strokeLinejoin="round" strokeLinecap="round" />
       ) : name === "bag" ? (
         <>
           <path d="M5 7h14l1 15H4L5 7Z" />
