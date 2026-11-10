@@ -155,7 +155,6 @@ export function Header() {
 
   return (
     <>
-      <div className="announcement">{t("INDEPENDENT SPIRIT. EVERYDAY UNIFORM.")}</div>
       <header className="header theme-header"
         data-wave-direction={ripple?.direction}>
         <div className="theme-header-left">

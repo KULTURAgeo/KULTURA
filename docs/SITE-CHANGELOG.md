@@ -2,6 +2,15 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Full-viewport three-column SHOP landing
+
+- Removed the global "INDEPENDENT SPIRIT. EVERYDAY UNIFORM." announcement strip from the Header component.
+- The SHOP gateway title now starts closer to the header with compact spacing.
+- X, Y and UNISEX category cards appear in **one horizontal row** on desktop, with viewport-height responsive cards to show the complete entry layout without vertical scrolling on typical desktop screens.
+- The UNISEX group image uses a dual background treatment: an uncropped contain layer over a cover layer.
+- On mobile, the three cards remain in one horizontally swipeable row with scroll snapping instead of shrinking to illegible narrow tiles.
+- Links, admin controls, product division membership, and product photos are unchanged.
+
 ## 2026-11-10 — Redirect to admin products after deletion
 
 - Product deletion now returns a full-page redirect to `/admin/products`, including the image-cleanup-warning outcome.
