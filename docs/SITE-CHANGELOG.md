@@ -2,6 +2,13 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Division Switcher navigation
+
+- Added a three-option switcher between the X / Y / UNISEX page heading and catalog filters on all shop division pages.
+- Current division has a white background and `aria-current="page"`; other divisions link directly without returning to the SHOP landing page.
+- Styled for desktop and mobile using scoped CSS, keyboard focus indicators and accessible navigation label.
+- This is presentation-only: product visibility, inventory and admin behavior remain unchanged.
+
 ## 2026-11-10 — Shop division heading labels
 
 - `/shop/x` now displays **X - WOMAN**, `/shop/y` displays **Y - MEN**.

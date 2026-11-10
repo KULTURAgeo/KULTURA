@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import styles from "./division-switcher.module.css";
 import { isShopDivision } from "@/lib/catalog/divisions";
 import { pageMetadata } from "@/lib/site";
 import { isSearchIndexableCategorySlug } from "@/lib/seo-indexing";
@@ -50,6 +52,18 @@ export default async function Category({
       <Container className="page-section">
         <p className="eyebrow"><LocalizedLabel source="THE COLLECTION" /></p>
         <h1 className="page-title">{divisionLabel(category)}</h1>
+        <nav className={styles.switcher} aria-label="Switch shop division">
+          {(["x", "y", "unisex"] as const).map((division) => (
+            <Link
+              key={division}
+              href={"/shop/" + division}
+              className={styles.option + (division === category ? " " + styles.active : "")}
+              aria-current={division === category ? "page" : undefined}
+            >
+              {divisionLabel(division)}
+            </Link>
+          ))}
+        </nav>
         {status !== "ready" ? <CatalogNotice status={status} /> : (
           <CatalogGrid products={products} categories={categories} />
         )}
