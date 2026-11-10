@@ -251,8 +251,28 @@ html[data-theme="light"] .commerce-skeleton { background: #dedbd3; }
 html[data-theme="light"] .newsletter .eyebrow,
 html[data-theme="light"] .footer-top .muted,
 html[data-theme="light"] .text-link:hover { color: #666; }
+/* Elements with intentionally dark backgrounds keep readable light text. */
 html[data-theme="light"] .status-badge,
-html[data-theme="light"] .badge { color: inherit; }
+html[data-theme="light"] .badge {
+  color: #f8f8f8;
+}
+/* Category filter controls should not fade into the pale page background. */
+html[data-theme="light"] .category-filters button {
+  color: #353535;
+  border-color: #8b8983;
+  background: transparent;
+}
+html[data-theme="light"] .category-filters button:hover:not(.active) {
+  color: #111111;
+  background: #e5e3dc;
+}
+html[data-theme="light"] .category-filters button.active {
+  color: #fafafa;
+  background: #202020;
+  border-color: #202020;
+}
+html[data-theme="light"] .form-error { color: #9b3025; }
+html[data-theme="light"] .form-success { color: #276033; }
 
 /* Floating panels that stay intentionally dark even in Light mode */
 html[data-theme="light"] .cookie-consent,

@@ -53,7 +53,7 @@ export default async function Category({
         <p className="eyebrow"><LocalizedLabel source="THE COLLECTION" /></p>
         <h1 className="page-title">{divisionLabel(category)}</h1>
         <nav className={styles.switcher} aria-label="Switch shop division">
-          {(["x", "y", "unisex"] as const).map((division) => (
+          {(["x", "unisex", "y"] as const).map((division) => (
             <Link
               key={division}
               href={"/shop/" + division}

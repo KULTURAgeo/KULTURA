@@ -1,8 +1,9 @@
+/* Both site themes share the same readable, three-way division navigation. */
 .switcher {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
-  border: 1px solid #3d3d3d;
+  border: 1px solid var(--line);
   padding: 4px;
   margin: 22px 0 26px;
   width: 100%;
@@ -15,7 +16,7 @@
   padding: 14px 8px;
   min-height: 48px;
   background: transparent;
-  color: #f4f4f4;
+  color: var(--foreground);
   font-size: clamp(10px, 1.05vw, 14px);
   font-weight: 600;
   letter-spacing: .06em;
@@ -24,9 +25,19 @@
   text-decoration: none;
   transition: background-color .18s ease, color .18s ease;
 }
-.option:hover:not(.active) { background: #212121; }
-.option:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
-.active { background: #f0f0f0; color: #080808; cursor: default; }
+.option:hover:not(.active) {
+  background: color-mix(in srgb, var(--foreground) 9%, transparent);
+}
+.option:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: -2px;
+}
+.option.active,
+.option[aria-current="page"] {
+  background: var(--foreground);
+  color: var(--background);
+  cursor: default;
+}
 @media (max-width: 500px) {
   .switcher { gap: 2px; padding: 3px; margin: 18px 0 22px; }
   .option { padding: 12px 4px; font-size: 10px; letter-spacing: 0; min-height: 44px; }

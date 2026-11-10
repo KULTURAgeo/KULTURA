@@ -2,6 +2,14 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Match division navigation order and repair light-theme contrast
+
+- Product division switcher now lists X → UNISEX → Y, matching the SHOP landing page.
+- Switcher colors use site theme variables in light and dark mode; inactive options, hover and active tab all remain readable.
+- Light-theme category buttons use stronger text/border colors and a dark active selection for clear state.
+- Preserved light-on-dark text for product badges and order status badges, plus legible light-theme form success/error colors.
+- No product, catalog assignment, routing or stored assets changed.
+
 ## 2026-11-10 — Center UNISEX on the SHOP landing
 
 - Reordered the three full-height shop cards to X → UNISEX → Y on desktop and mobile.
