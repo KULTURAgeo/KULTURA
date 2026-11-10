@@ -278,7 +278,6 @@ export async function deleteProduct(_state: ActionState, data: FormData): Promis
 
         refresh();
         revalidatePath("/admin/products");
-        revalidatePath("/admin/products/[id]", "page");
 
         if (storagePaths?.length) {
             const { error: storageError } = await client.storage.from("product-images").remove(storagePaths);
@@ -287,11 +286,12 @@ export async function deleteProduct(_state: ActionState, data: FormData): Promis
                     ok: true,
                     message: "Product deleted, but some stored images could not be removed.",
                     redirectTo: "/admin/products?notice=image-cleanup-needed",
+                    reload: true,
                 };
             }
         }
 
-        return { ok: true, message: "Product permanently deleted.", redirectTo: "/admin/products" };
+        return { ok: true, message: "Product permanently deleted.", redirectTo: "/admin/products", reload: true };
     }
     catch (error) {
         return safeFailure(error);

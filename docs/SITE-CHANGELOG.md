@@ -2,6 +2,13 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Redirect to admin products after deletion
+
+- Product deletion now returns a full-page redirect to `/admin/products`, including the image-cleanup-warning outcome.
+- Client-side action form starts the full navigation as soon as a successful destructive action returns, without waiting for the deleted product page to re-render.
+- Removed direct revalidation of the deleted `/admin/products/[id]` detail route, which could trigger a 404 before navigation.
+- Failed deletion stays on the existing edit form with a visible error. No product data was changed in this code update.
+
 ## 2026-11-10 — Client-side 4:5 product photo preview and upload
 
 - ProductImagePicker now prepares the actual selected image on a white 4:5 canvas as soon as the user chooses it.

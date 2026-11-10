@@ -23,7 +23,13 @@ export function ActionForm({
   const [state, formAction, pending] = useActionState(
     async (previous: ActionState, data: FormData): Promise<ActionState> => {
       try {
-        return await action(previous, data);
+        const result = await action(previous, data);
+        // Delete/other destructive actions can invalidate the current detail route.
+        // Navigate immediately instead of waiting for a state effect to render a 404.
+        if (result.ok && result.reload && result.redirectTo) {
+          window.location.replace(result.redirectTo);
+        }
+        return result;
       } catch {
         return {
           ok: false,
