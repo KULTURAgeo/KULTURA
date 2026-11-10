@@ -54,8 +54,6 @@ export function HomeMotion({
       revealNodes.forEach((item) => item.setAttribute("data-visible", "true"));
       const staticPhone = node.querySelector<HTMLElement>("[data-phone]");
       const staticBackdrop = node.querySelector<HTMLElement>("[data-demo-backdrop]");
-      const staticTrack = node.querySelector<HTMLElement>("[data-demo-track]");
-      if (staticTrack) staticTrack.style.height = "100svh";
       if (staticPhone) {
         staticPhone.style.transform = "translate3d(-50%, -50%, 0) scale(1)";
         staticPhone.style.opacity = "1";
@@ -82,11 +80,8 @@ export function HomeMotion({
     const transitionCenter = node.querySelector<HTMLElement>("[data-transition-center]");
     const transitionFloats = Array.from(node.querySelectorAll<HTMLElement>("[data-transition-float]"));
 
-    if (demoTrack) {
-      // Sticky runway for the in-phone feed, globe enlargement and handoff.
-      // The phone never gets a second zoom after the feed completes.
-      demoTrack.style.height = window.innerWidth < 720 ? "390svh" : "460svh";
-    }
+    // The sticky runway height is reserved in CSS (including reduced-motion)
+    // so hydration and resizes do not change document layout.
 
     if (phoneTransition) {
       phoneTransition.style.width = "100vw";
@@ -316,7 +311,6 @@ export function HomeMotion({
       if (!frame) frame = requestAnimationFrame(render);
     };
     const onResize = () => {
-      if (demoTrack) demoTrack.style.height = window.innerWidth < 720 ? "390svh" : "460svh";
       requestRender();
     };
 
@@ -334,7 +328,7 @@ export function HomeMotion({
   }, []);
 
   return (
-    <div ref={root} className={className}>
+    <div ref={root} className={className} data-kultura-home>
       <FloatingHomeNav />
       {children}
     </div>

@@ -1,4 +1,8 @@
 @import "tailwindcss";
+/* Reserve the homepage layout on first render, before HomeMotion hydrates.
+   Keep the body-class selector as a fallback for browsers without :has(). */
+body:has([data-kultura-home]) .announcement,
+body:has([data-kultura-home]) .header,
 body.kultura-motion-home .announcement,
 body.kultura-motion-home .header {
   display: none !important;
