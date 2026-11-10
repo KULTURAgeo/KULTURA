@@ -35,6 +35,15 @@ function CategoryFields({ category }: { category?: Category }) {
         />
       </div>
       <label className="k-field">
+        <span>SHOP DIVISION</span>
+        <select name="audience" required defaultValue={category?.audience ?? ""}>
+          <option value="" disabled>Choose X, Y or UNISEX</option>
+          <option value="x">X — Women</option>
+          <option value="y">Y — Men</option>
+          <option value="unisex">UNISEX — Both</option>
+        </select>
+      </label>
+      <label className="k-field">
         <span>DESCRIPTION</span>
         <textarea
           name="description"
@@ -73,7 +82,7 @@ export default async function CategoriesAdmin() {
       <section className="panel">
         <h2>NEW CATEGORY</h2>
         <p className="muted">
-          Create the sections customers see first when they open Shop.
+          Choose whether this category belongs to X (Women), Y (Men), or UNISEX (Both). Existing products keep their current assignment.
         </p>
         <ActionForm action={saveCategory} label="CREATE CATEGORY">
           <CategoryFields />
@@ -103,6 +112,7 @@ export default async function CategoriesAdmin() {
                     <th>ORDER</th>
                     <th>NAME</th>
                     <th>SLUG</th>
+                    <th>DIVISION</th>
                     <th>STATUS</th>
                     <th>STORE</th>
                   </tr>
@@ -113,6 +123,7 @@ export default async function CategoriesAdmin() {
                       <td>{category.sort_position}</td>
                       <td><strong>{category.name}</strong></td>
                       <td>{category.slug}</td>
+                      <td>{category.audience?.toUpperCase() ?? "NOT ASSIGNED"}</td>
                       <td>
                         <span
                           className={

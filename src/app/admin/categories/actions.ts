@@ -19,7 +19,7 @@ export async function saveCategory(
   data: FormData,
 ): Promise<ActionState> {
   try {
-    strictForm(data, ["id", "updated_at", "name", "slug", "description", "sort_position", "is_active"], []);
+    strictForm(data, ["id", "updated_at", "name", "slug", "description", "sort_position", "is_active", "audience"], []);
     const { client } = await requireActionActor(true);
     const rawId = data.get("id");
     const categoryId = rawId ? id(rawId, "category") : null;
@@ -31,8 +31,28 @@ export async function saveCategory(
       );
     }
 
+    const audience = text(data, "audience", 10);
+    if (!["x", "y", "unisex"].includes(audience)) {
+      throw new InputError("Choose X, Y, or UNISEX.");
+    }
+    if (categoryId) {
+      // Prevent recategorizing populated categories without reviewing all products.
+      const { data: existing, error: existingError } = await client.from("categories")
+        .select("audience").eq("id", categoryId).single();
+      if (existingError) throw existingError;
+      if (existing.audience !== audience) {
+        const { count, error: countError } = await client.from("products")
+          .select("id", { count: "exact", head: true }).eq("category_id", categoryId);
+        if (countError) throw countError;
+        if ((count ?? 0) > 0) {
+          throw new InputError("This category contains products. Move its products before changing the shop division.");
+        }
+      }
+    }
+
     const values = {
       name: text(data, "name", 120),
+      audience: audience as "x" | "y" | "unisex",
       slug,
       description: text(data, "description", 10000, false),
       sort_position: integer(

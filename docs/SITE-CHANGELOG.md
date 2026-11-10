@@ -2,6 +2,15 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Category division assignments
+
+- Added SHOP DIVISION (X / Y / UNISEX) to Admin → Categories create/edit forms and category summary table.
+- A category now stores its own division; existing categories remain unassigned until explicitly edited.
+- Saving a product rejects a mismatch between its shop division and its category division.
+- To prevent silently moving products, a populated category cannot be reassigned to a different division; reassign its products first.
+- Production and staging Supabase schema updated with a nullable `categories.audience` check-constrained column.
+- Each source change is tracked in Git and included in the existing source-backup workflow.
+
 ## 2026-11-10 — Initial preservation baseline
 
 - SHOP landing changed from direct OUTERWEAR/SHOES category tiles to three divisions: **X** (women), **Y** (men), and full-width **UNISEX**.

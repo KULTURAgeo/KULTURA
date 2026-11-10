@@ -9,7 +9,7 @@ export async function adminCategories() {
   for (let offset = 0; ; offset += 100) {
     const { data, error } = await client
       .from("categories")
-      .select("id,name,slug,description,is_active,sort_position,updated_at")
+      .select("id,name,slug,description,is_active,sort_position,updated_at,audience")
       .order("sort_position")
       .order("name")
       .order("id")

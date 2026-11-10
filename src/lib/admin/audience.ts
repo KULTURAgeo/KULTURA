@@ -20,6 +20,16 @@ export async function resolveAudienceCollections(
   if (error || !rows || rows.length !== 3) {
     throw new InputError("Shop divisions are not configured.");
   }
+  // Categories with an explicit division may only contain matching products.
+  // Legacy categories without a division remain usable until assigned.
+  const categoryId = data.get("category_id");
+  if (typeof categoryId !== "string") throw new InputError("Choose a category.");
+  const { data: category, error: categoryError } = await client
+    .from("categories").select("audience").eq("id", categoryId).maybeSingle();
+  if (categoryError || !category) throw new InputError("Category unavailable.");
+  if (category.audience && category.audience !== audience) {
+    throw new InputError("This category belongs to " + category.audience.toUpperCase() + ". Choose a matching shop division or category.");
+  }
   const chosen = rows.find((row) => row.slug === "shop-" + audience);
   if (!chosen) throw new InputError("Shop division unavailable.");
   const divisionIds = new Set(rows.map((row) => row.id));

@@ -86,7 +86,7 @@ export async function adminOptions() {
     for (let offset = 0; ; offset += 100) {
       const { data, error } = await client
         .from("categories")
-        .select("id,name,is_active")
+        .select("id,name,is_active,audience")
         .order("sort_position")
         .order("id")
         .range(offset, offset + 99);
