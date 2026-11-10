@@ -2,6 +2,15 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — XYS product visibility in all three divisions
+
+- Admin Product Editor SHOP DIVISION now includes XYS — All 3 divisions.
+- XYS products are linked to all three existing shop collections (X, Y and UNISEX) by the existing atomic admin product-save RPC.
+- Editing a product back to a single division removes its other two shop-collection associations.
+- XYS products require a category marked XYS so shared items have a valid category in all three shop sections.
+- The editor detects three existing shop-collection links and selects XYS when reopening the product; no products were reassigned automatically.
+- X/Y/UNISEX-exclusive products and category behavior remain unchanged; new Git commit is included in the backup history.
+
 ## 2026-11-10 — XYS shared category availability
 
 - Added XYS to the Admin Categories shop division dropdown.
