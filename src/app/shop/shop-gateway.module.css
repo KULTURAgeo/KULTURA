@@ -3,8 +3,8 @@
 .tile::before {content:"";position:absolute;inset:0;background-size:cover;background-position:center 28%;filter:grayscale(100%);transition:transform .7s ease,filter .7s ease;z-index:-2}
 .tile::after {content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.65),transparent 55%);z-index:-1}
 .tile:hover::before,.tile:focus-visible::before {transform:scale(1.045);filter:grayscale(65%)}
-.x::before {background-image:url("https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1200&q=85")}
-.y::before {background-image:url("https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?auto=format&fit=crop&w=1200&q=85")}
+.x::before {background-image:url("/images/campaign.jpg")}
+.y::before {background-image:url("/images/hoodie.jpg")}
 .unisex::before {background-image:url("/images/campaign.jpg");background-position:center 46%;filter:grayscale(100%) brightness(.67)}
 .unisex {grid-column:1/-1;min-height:390px}
 .title {font-weight:800;font-size:clamp(52px,7vw,105px);line-height:1;letter-spacing:-.06em;margin-bottom:55px;text-shadow:0 3px 22px rgba(0,0,0,.3)}
