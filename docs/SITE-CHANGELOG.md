@@ -2,6 +2,12 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Center UNISEX on the SHOP landing
+
+- Reordered the three full-height shop cards to X → UNISEX → Y on desktop and mobile.
+- Made the center UNISEX column wider so its group photo has more room.
+- Updated visible sequence labels 01 / 02 / 03; links, images, product assignments and the one-screen layout are unchanged.
+
 ## 2026-11-10 — Full-viewport three-column SHOP landing
 
 - Removed the global "INDEPENDENT SPIRIT. EVERYDAY UNIFORM." announcement strip from the Header component.

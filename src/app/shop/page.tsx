@@ -19,14 +19,14 @@ export default function Shop() {
           <span className={styles.title}>X</span>
           <span className={styles.arrow} aria-hidden="true">↗</span>
         </Link>
-        <Link href="/shop/y" className={styles.tile + " " + styles.y} aria-label="Shop Y — Men">
+        <Link href="/shop/unisex" className={styles.tile + " " + styles.unisex} aria-label="Shop UNISEX">
           <span className={styles.micro}>KULTURA / 02</span>
-          <span className={styles.title}>Y</span>
+          <span className={styles.title}>UNISEX</span>
           <span className={styles.arrow} aria-hidden="true">↗</span>
         </Link>
-        <Link href="/shop/unisex" className={styles.tile + " " + styles.unisex} aria-label="Shop UNISEX">
+        <Link href="/shop/y" className={styles.tile + " " + styles.y} aria-label="Shop Y — Men">
           <span className={styles.micro}>KULTURA / 03</span>
-          <span className={styles.title}>UNISEX</span>
+          <span className={styles.title}>Y</span>
           <span className={styles.arrow} aria-hidden="true">↗</span>
         </Link>
       </nav>

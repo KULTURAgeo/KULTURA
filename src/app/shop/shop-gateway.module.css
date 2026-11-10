@@ -30,7 +30,7 @@
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.45fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr) minmax(0, 1fr);
   gap: clamp(6px, .75vw, 12px);
 }
 .tile {
