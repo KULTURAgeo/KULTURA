@@ -1,11 +1,11 @@
 .gateway { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:25px; }
 .tile { position:relative;display:flex;align-items:flex-end;justify-content:center;min-height:550px;overflow:hidden;background:#181818;color:#fff;text-decoration:none;isolation:isolate; }
-.tile::before {content:"";position:absolute;inset:0;background-size:cover;background-position:center 28%;filter:grayscale(100%);transition:transform .7s ease,filter .7s ease;z-index:-2}
+.tile::before {content:"";position:absolute;inset:0;background-size:cover;background-position:center 28%;transition:transform .7s ease,filter .7s ease;z-index:-2}
 .tile::after {content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.65),transparent 55%);z-index:-1}
-.tile:hover::before,.tile:focus-visible::before {transform:scale(1.045);filter:grayscale(65%)}
-.x::before {background-image:url("/images/campaign.jpg")}
-.y::before {background-image:url("/images/hoodie.jpg")}
-.unisex::before {background-image:url("/images/campaign.jpg");background-position:center 46%;filter:grayscale(100%) brightness(.67)}
+.tile:hover::before,.tile:focus-visible::before {transform:scale(1.045);filter:brightness(1.08)}
+.x::before {background-image:url("/images/shop-x.webp");background-position:center 30%}
+.y::before {background-image:url("/images/shop-y.webp");background-position:center 30%}
+.unisex::before {background-image:url("/images/shop-unisex.webp");background-position:center 40%}
 .unisex {grid-column:1/-1;min-height:390px}
 .title {font-weight:800;font-size:clamp(52px,7vw,105px);line-height:1;letter-spacing:-.06em;margin-bottom:55px;text-shadow:0 3px 22px rgba(0,0,0,.3)}
 .unisex .title {font-size:clamp(46px,6vw,82px)}
