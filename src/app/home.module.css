@@ -88,6 +88,23 @@
   overflow: hidden;
   border-radius: 28px 28px 0 0;
   background: #314e3e;
+  transition: transform 350ms cubic-bezier(.22, 1, .36, 1);
+}
+
+/* The first viewport is visible in SSR HTML, even before React hydrates.
+   Subtle transform-only entrances retain the editorial feel without hiding
+   the headline or campaign image behind JavaScript-driven opacity. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero h1 { animation: kultura-hero-rise 420ms cubic-bezier(.22, 1, .36, 1); }
+  .heroLead { animation: kultura-hero-rise 550ms cubic-bezier(.22, 1, .36, 1); }
+  .socials { animation: kultura-hero-rise 650ms cubic-bezier(.22, 1, .36, 1); }
+  .heroPeek { animation: kultura-hero-rise 560ms cubic-bezier(.22, 1, .36, 1); }
+  .heroPeek:hover { transform: scale(1.012); }
+}
+
+@keyframes kultura-hero-rise {
+  from { transform: translate3d(0, 16px, 0); }
+  to { transform: translate3d(0, 0, 0); }
 }
 
 .heroPeek img {

@@ -7,10 +7,11 @@ import { CatalogNotice } from "@/components/catalog-notice";
 import { Newsletter } from "@/components/newsletter";
 import { LocalizedCategoryName } from "@/components/localized-category-name";
 import { HomeMotion } from "@/components/home-motion";
-import { MotionHeroCopy, MotionHeroPeek, MotionRevealLink } from "@/components/motion-editorial";
+import { MotionRevealLink } from "@/components/motion-editorial";
+import { Suspense } from "react";
 import styles from "./home.module.css";
 import { getServerLocale } from "@/lib/i18n-server";
-import { translate } from "@/lib/i18n";
+import { translate, type Locale } from "@/lib/i18n";
 
 export const metadata = pageMetadata("KULTURA — Step Into Kultura", "/");
 
@@ -33,11 +34,64 @@ function facebookProfileUrl(): string | undefined {
   return undefined;
 }
 
+/**
+ * The editorial first viewport is independent of the product database.
+ * Stream all catalog-driven visual scenes below it without blocking LCP.
+ */
 export default async function Home() {
   const locale = await getServerLocale();
   const t = (source: string) => translate(locale, source);
-  const { products: showcase, categories, status } = await getHomepageCatalog();
   const facebookUrl = facebookProfileUrl();
+
+  return (
+    <HomeMotion className={styles.home}>
+      <section className={styles.hero} data-hero>
+        <div className={styles.heroInner} data-hero-copy>
+          <h1>{t("STEP INTO KULTURA")}</h1>
+          <p className={styles.heroLead}>
+            {t("Clothing with presence. Strong silhouettes, restrained detail and movement at the center.")}
+          </p>
+          <div className={styles.socials}>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">INSTAGRAM ↗</a>
+            <a href={facebookUrl} target={facebookUrl ? "_blank" : undefined}
+              rel={facebookUrl ? "noopener noreferrer" : undefined}
+              aria-disabled={!facebookUrl}>FACEBOOK ↗</a>
+          </div>
+        </div>
+
+        <div className={styles.heroPeek} aria-hidden="true">
+          <Image src={campaignImage} alt="" fill priority sizes="100vw" />
+          <span className={styles.heroPeekGrid} />
+          <span className={styles.heroPeekWord}>KULTURA</span>
+        </div>
+      </section>
+
+      <Suspense fallback={<HomeCatalogFallback />}>
+        <HomeCatalog locale={locale} />
+      </Suspense>
+    </HomeMotion>
+  );
+}
+
+/** Reserve the identical cinematic track height while catalog data streams. */
+function HomeCatalogFallback() {
+  return (
+    <section className={styles.demoTrack} aria-label="Loading collection" aria-busy="true">
+      <div className={styles.demoSticky}>
+        <div className={styles.demoBackdrop}>
+          <Image src={campaignImage} alt="" fill sizes="100vw" />
+          <div className={styles.demoShade} />
+          <div className={styles.demoGrid} />
+          <div className={styles.demoLogoField} aria-hidden="true">KULTURA</div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+async function HomeCatalog({ locale }: { locale: Locale }) {
+  const t = (source: string) => translate(locale, source);
+  const { products: showcase, categories, status } = await getHomepageCatalog();
 
   const heroProduct = showcase[0] ?? null;
   const secondProduct = showcase[1] ?? heroProduct;
@@ -61,25 +115,7 @@ export default async function Home() {
   });
 
   return (
-    <HomeMotion className={styles.home}>
-      <section className={styles.hero} data-hero>
-        <MotionHeroCopy
-          className={styles.heroInner}
-          leadClassName={styles.heroLead}
-          socialsClassName={styles.socials}
-          title={t("STEP INTO KULTURA")}
-          lead={t("Clothing with presence. Strong silhouettes, restrained detail and movement at the center.")}
-          instagramUrl={INSTAGRAM_URL}
-          facebookUrl={facebookUrl}
-        />
-
-        <MotionHeroPeek className={styles.heroPeek}>
-          <Image src={campaignImage} alt="" fill priority sizes="100vw" />
-          <span className={styles.heroPeekGrid} />
-          <span className={styles.heroPeekWord}>KULTURA</span>
-        </MotionHeroPeek>
-      </section>
-
+    <>
       <section className={styles.demoTrack} data-demo-track>
         <div className={styles.demoSticky}>
           <div className={styles.demoBackdrop} data-demo-backdrop>
@@ -353,6 +389,6 @@ export default async function Home() {
       </section>
 
       <Newsletter />
-    </HomeMotion>
+    </>
   );
 }

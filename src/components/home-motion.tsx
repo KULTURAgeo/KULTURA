@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { FloatingHomeNav } from "./floating-home-nav";
 
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
@@ -22,12 +22,37 @@ export function HomeMotion({
   className?: string;
 }) {
   const root = useRef<HTMLDivElement>(null);
+  const [catalogReady, setCatalogReady] = useState(false);
 
+  // The hero is streamed immediately; install the full phone/globe scroll
+  // controller only once the catalog scene has arrived in the DOM.
   useEffect(() => {
     const node = root.current;
     if (!node) return;
-
     document.body.classList.add("kultura-motion-home");
+
+    const hasScene = () => Boolean(node.querySelector("[data-demo-track]"));
+    if (hasScene()) {
+      setCatalogReady(true);
+      return () => document.body.classList.remove("kultura-motion-home");
+    }
+
+    const pending = new MutationObserver(() => {
+      if (hasScene()) {
+        pending.disconnect();
+        setCatalogReady(true);
+      }
+    });
+    pending.observe(node, { childList: true, subtree: true });
+    return () => {
+      pending.disconnect();
+      document.body.classList.remove("kultura-motion-home");
+    };
+  }, []);
+
+  useEffect(() => {
+    const node = root.current;
+    if (!node || !catalogReady) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const revealNodes = Array.from(node.querySelectorAll<HTMLElement>("[data-reveal]"));
@@ -61,7 +86,6 @@ export function HomeMotion({
       if (staticBackdrop) staticBackdrop.style.opacity = "1";
       return () => {
         observer.disconnect();
-        document.body.classList.remove("kultura-motion-home");
       };
     }
 
@@ -323,9 +347,8 @@ export function HomeMotion({
       window.removeEventListener("scroll", requestRender);
       window.removeEventListener("resize", onResize);
       observer.disconnect();
-      document.body.classList.remove("kultura-motion-home");
     };
-  }, []);
+  }, [catalogReady]);
 
   return (
     <div ref={root} className={className} data-kultura-home>
