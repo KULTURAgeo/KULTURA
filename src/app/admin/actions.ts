@@ -1,5 +1,6 @@
 "use server";
 import { strictForm } from "@/lib/security/input";
+import { resolveAudienceCollections } from "@/lib/admin/audience";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { requireActionActor } from "@/lib/auth/guards";
@@ -14,12 +15,13 @@ function refresh() {
 }
 export async function saveProduct(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
-    strictForm(data, ["name", "slug", "description", "price", "compare_at_price", "status", "featured", "is_drop", "category_id", "seo_title", "seo_description", "collections", "id", "updated_at"], ["collections"]);
+    strictForm(data, ["name", "slug", "description", "price", "compare_at_price", "status", "featured", "is_drop", "category_id", "seo_title", "seo_description", "collections", "audience", "id", "updated_at"], ["collections"]);
         const { client } = await requireActionActor(true);
         const raw = data.get("id");
         const productId = raw ? id(raw) : null;
         const { product, collectionIds } = productInput(data);
-        const { data: result, error } = await client.rpc("admin_save_product", { p_id: productId, p_expected_updated_at: productId ? version(data) : null, p_product: product, p_collection_ids: collectionIds });
+        const audienceCollectionIds = await resolveAudienceCollections(client, data, collectionIds);
+        const { data: result, error } = await client.rpc("admin_save_product", { p_id: productId, p_expected_updated_at: productId ? version(data) : null, p_product: product, p_collection_ids: audienceCollectionIds });
         if (error)
             throw error;
         refresh();
