@@ -102,7 +102,7 @@ export async function adminOptions() {
     for (let offset = 0; ; offset += 100) {
       const { data, error } = await client
         .from("collections")
-        .select("id,name,is_active")
+        .select("id,name,slug,is_active")
         .order("name")
         .order("id")
         .range(offset, offset + 99);
