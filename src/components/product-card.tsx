@@ -14,6 +14,7 @@ export function ProductCard({ product }: { product: Product }) {
             src={product.image}
             alt={product.images[0]?.alt ?? product.name}
             fill
+            quality={90}
             sizes="(max-width: 767px) 50vw, 25vw"
           />
           <div className="product-badge">

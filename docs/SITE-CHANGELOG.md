@@ -2,6 +2,14 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Consistent, high-quality product image presentation
+
+- Product cards now show images inside a uniform 4:5 frame with `object-fit: contain`, preserving every edge instead of cropping or stretching differing aspect ratios.
+- New product image uploads retain original proportions and EXIF orientation; only source files exceeding 2400px on an edge are downscaled, never upscaled.
+- Upload WebP encoding now attempts quality 95, 92, 88, then 85 if necessary to stay within the preexisting 3 MB upload limit.
+- Product card delivery requests Next.js optimized image quality 90; permitted optimized quality values are explicit in Next.js config.
+- Existing stored product photos are not destructively rewritten. Source images that are already blurry cannot gain missing details.
+
 ## 2026-11-10 — Division Switcher navigation
 
 - Added a three-option switcher between the X / Y / UNISEX page heading and catalog filters on all shop division pages.

@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
       ? [new URL("/storage/v1/object/public/product-images/**", origin)]
       : [],
     formats: ["image/avif", "image/webp"],
+    qualities: [75, 90],
     minimumCacheTTL: 86_400,
   },
   async headers() {

@@ -352,7 +352,8 @@ p {
   overflow: hidden;
 }
 .product-image img {
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   transition: transform 0.5s;
 }
 .product-card a:hover img {
