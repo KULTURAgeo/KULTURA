@@ -2,6 +2,13 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Fix overriding product-card background rule
+
+- Root cause: a later shared CSS rule `.product-image, .gallery-main { background: #8b8b8b }` was overriding the earlier white product-card background.
+- Separated the styles to keep `.product-image` white while preserving the detail gallery's grey styling.
+- Existing photos now display white letterboxing rather than gray/brown bands, with `object-fit: contain` and no garment cropping or pixel distortion.
+- No product data or original photo files were changed.
+
 ## 2026-11-10 — Remove letterbox bars and auto-pad new product photos
 
 - Changed the product card fallback background from grey to white so existing white-background products no longer show grey horizontal bands.
