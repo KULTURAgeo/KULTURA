@@ -12,6 +12,9 @@ import {
   getShopDivision,
 } from "@/lib/catalog/repository";
 
+const divisionLabel = (division: "x" | "y" | "unisex") =>
+  division === "x" ? "X - WOMAN" : division === "y" ? "Y - MEN" : "UNISEX";
+
 export const dynamic = "force-dynamic";
 
 
@@ -24,7 +27,7 @@ export async function generateMetadata({
   const { category } = await params;
   const result = isShopDivision(category) ? null : await getCategoryCatalog(category);
   const metadata = pageMetadata(
-    isShopDivision(category) ? category.toUpperCase() : (result?.category?.name ?? "Category unavailable"),
+    isShopDivision(category) ? divisionLabel(category) : (result?.category?.name ?? "Category unavailable"),
     "/shop/" + category,
   );
 
@@ -46,7 +49,7 @@ export default async function Category({
     return (
       <Container className="page-section">
         <p className="eyebrow"><LocalizedLabel source="THE COLLECTION" /></p>
-        <h1 className="page-title">{category.toUpperCase()}</h1>
+        <h1 className="page-title">{divisionLabel(category)}</h1>
         {status !== "ready" ? <CatalogNotice status={status} /> : (
           <CatalogGrid products={products} categories={categories} />
         )}
