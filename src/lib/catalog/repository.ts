@@ -203,6 +203,42 @@ const loadShopCategories = async (): Promise<{
   }
 };
 
+const loadShopDivision = async (division: "x" | "y" | "unisex"): Promise<{
+  status: CatalogStatus;
+  products: Product[];
+}> => {
+  try {
+    const client = createCatalogClient();
+    if (!client) return { status: "unconfigured", products: [] };
+    const { data: collection, error: collectionError } = await client.from("collections")
+      .select("id").eq("slug", "shop-" + division).eq("is_active", true).maybeSingle();
+    if (collectionError) throw collectionError;
+    if (!collection) return { status: "ready", products: [] };
+    const ids: string[] = [];
+    for (let offset = 0; ; offset += 500) {
+      const { data, error } = await client.from("product_collections")
+        .select("product_id").eq("collection_id", collection.id)
+        .order("product_id").range(offset, offset + 499);
+      if (error) throw error;
+      ids.push(...data.map(row => row.product_id));
+      if (data.length < 500) break;
+    }
+    if (!ids.length) return { status: "ready", products: [] };
+    const products: Product[] = [];
+    for (let offset = 0; offset < ids.length; offset += 100) {
+      const { data, error } = await client.from("products").select(productSelect)
+        .eq("status", "active").in("id", ids.slice(offset, offset + 100))
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      products.push(...data.map(row => mapProduct(row, process.env.SUPABASE_URL)));
+    }
+    return { status: "ready", products: products.sort((a,b) => Date.parse(b.createdAt)-Date.parse(a.createdAt)) };
+  } catch {
+    reportFailure("Shop division listing");
+    return { status: "unavailable", products: [] };
+  }
+};
+
 const loadDropProducts = async (): Promise<{
   status: CatalogStatus;
   products: Product[];
@@ -354,3 +390,7 @@ export async function getProductsByIds(
     return { status: "unavailable", products: [] };
   }
 }
+
+export const getShopDivision = cache(
+  unstable_cache(loadShopDivision, ["catalog-shop-divisions-v1"], cacheOptions),
+);
