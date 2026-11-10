@@ -1,55 +1,33 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { pageMetadata } from "@/lib/site";
 import { Container } from "@/components/ui";
-import { getShopCategories } from "@/lib/catalog/repository";
-import { CatalogNotice } from "@/components/catalog-notice";
-import { LocalizedCategoryName } from "@/components/localized-category-name";
-import { MotionRevealLink } from "@/components/motion-editorial";
-import { getServerLocale } from "@/lib/i18n-server";
-import { translate } from "@/lib/i18n";
+import styles from "./shop-gateway.module.css";
 
 export const metadata: Metadata = pageMetadata("Shop", "/shop");
 
-export default async function Shop() {
-  const locale = await getServerLocale();
-  const t = (source: string) => translate(locale, source);
-  const { categories, status } = await getShopCategories();
-
+export default function Shop() {
   return (
     <Container className="page-section">
-      <p className="eyebrow">{t("THE KULTURA UNIFORM")}</p>
-      <h1 className="page-title">
-        {t("SHOP")}
-        <span className="chrome">
-          {" "}
-          / {String(categories.length).padStart(2, "0")}
-        </span>
-      </h1>
-      <p className="muted">{t("Choose a category to explore the collection.")}</p>
-
-      {status !== "ready" ? (
-        <CatalogNotice status={status} />
-      ) : categories.length === 0 ? (
-        <div className="empty-state">
-          <h2>{t("Categories are coming soon.")}</h2>
-          <p>{t("The shop will appear here once categories are activated.")}</p>
-        </div>
-      ) : (
-        <div className="category-grid">
-          {categories.map((category, index) => (
-            <MotionRevealLink href={"/shop/" + category.slug} index={index} key={category.slug}>
-              <span className="eyebrow">
-                {t("CATEGORY")} {String(index + 1).padStart(2, "0")}
-              </span>
-              <h3><LocalizedCategoryName name={category.name} slug={category.slug} /></h3>
-              <span className="muted">
-                {category.count} {t(category.count === 1 ? "PIECE" : "PIECES")}
-              </span>
-              <span aria-hidden="true">↗</span>
-            </MotionRevealLink>
-          ))}
-        </div>
-      )}
+      <p className="eyebrow">THE KULTURA UNIFORM</p>
+      <h1 className="page-title">SHOP <span className="chrome">/ 03</span></h1>
+      <div className={styles.gateway}>
+        <Link href="/shop/x" className={styles.tile + " " + styles.x}>
+          <span className={styles.micro}>KULTURA / 01</span>
+          <span className={styles.title}>X</span>
+          <span className={styles.arrow} aria-hidden="true">↗</span>
+        </Link>
+        <Link href="/shop/y" className={styles.tile + " " + styles.y}>
+          <span className={styles.micro}>KULTURA / 02</span>
+          <span className={styles.title}>Y</span>
+          <span className={styles.arrow} aria-hidden="true">↗</span>
+        </Link>
+        <Link href="/shop/unisex" className={styles.tile + " " + styles.unisex}>
+          <span className={styles.micro}>KULTURA / 03</span>
+          <span className={styles.title}>UNISEX</span>
+          <span className={styles.arrow} aria-hidden="true">↗</span>
+        </Link>
+      </div>
     </Container>
   );
 }
