@@ -1113,7 +1113,10 @@ footer {
 .gallery-main img {
   object-fit: contain;
 }
-.product-image,
+.product-image {
+  /* Uniform product display background: avoids letterbox bars behind images. */
+  background: #ffffff;
+}
 .gallery-main {
   background: #8b8b8b;
 }
