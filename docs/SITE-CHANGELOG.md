@@ -2,6 +2,14 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Remove letterbox bars and auto-pad new product photos
+
+- Changed the product card fallback background from grey to white so existing white-background products no longer show grey horizontal bands.
+- New product uploads are automatically laid out onto a matching 4:5 canvas, padded using the input photo's top-left background color, or white for transparent photos.
+- Full product imagery remains visible without stretching, cropping, artificial upscale or modifying garment details. The padding respects original image proportions.
+- Canvas output is capped at 1600 × 2000 and encoded as high-quality WebP using the existing file size limit.
+- Older uploaded images are not rewritten or deleted; mixed-background legacy photos may still benefit from a fresh upload.
+
 ## 2026-11-10 — Consistent, high-quality product image presentation
 
 - Product cards now show images inside a uniform 4:5 frame with `object-fit: contain`, preserving every edge instead of cropping or stretching differing aspect ratios.

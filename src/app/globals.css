@@ -348,7 +348,8 @@ p {
 .product-image {
   position: relative;
   aspect-ratio: 4/5;
-  background: #b4b4b4;
+  /* Existing white-background product photos blend into the full frame. */
+  background: #fff;
   overflow: hidden;
 }
 .product-image img {
