@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { isShopDivision } from "@/lib/catalog/divisions";
 import { pageMetadata } from "@/lib/site";
 import { isSearchIndexableCategorySlug } from "@/lib/seo-indexing";
 import { Container } from "@/components/ui";
@@ -8,6 +9,7 @@ import { LocalizedCategoryName } from "@/components/localized-category-name";
 import { CatalogNotice } from "@/components/catalog-notice";
 import {
   getCategoryCatalog,
+  getShopDivision,
 } from "@/lib/catalog/repository";
 
 export const dynamic = "force-dynamic";
@@ -20,9 +22,9 @@ export async function generateMetadata({
   params: Promise<{ category: string }>;
 }) {
   const { category } = await params;
-  const result = await getCategoryCatalog(category);
+  const result = isShopDivision(category) ? null : await getCategoryCatalog(category);
   const metadata = pageMetadata(
-    result.category?.name ?? "Category unavailable",
+    isShopDivision(category) ? category.toUpperCase() : (result?.category?.name ?? "Category unavailable"),
     "/shop/" + category,
   );
 
@@ -39,6 +41,18 @@ export default async function Category({
   params: Promise<{ category: string }>;
 }) {
   const { category } = await params;
+  if (isShopDivision(category)) {
+    const { products, status } = await getShopDivision(category);
+    return (
+      <Container className="page-section">
+        <p className="eyebrow"><LocalizedLabel source="THE COLLECTION" /></p>
+        <h1 className="page-title">{category.toUpperCase()}</h1>
+        {status !== "ready" ? <CatalogNotice status={status} /> : (
+          <CatalogGrid products={products} categories={[]} />
+        )}
+      </Container>
+    );
+  }
   const { products, category: selected, status } =
     await getCategoryCatalog(category);
   if (status !== "ready")
