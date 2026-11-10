@@ -2,6 +2,15 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — Full-screen theme ripple on every visible UI section
+
+- Expanded the established SHOP / DROPS / ABOUT view-transition ripple to visible titles, descriptions, buttons, form fields, controls, cards, icons, product imagery and footer elements.
+- The existing left-to-right / right-to-left theme wipe remains intact. Individual named View Transition snapshots reveal at their matching horizontal positions, then ripple like the top menu words.
+- Named snapshots are assigned only to visible items during the transition, capped at 72 on desktop / 44 on mobile for performance and automatically restored afterward.
+- The existing named navigation transitions are excluded from the general wave to prevent double animation.
+- Browsers without View Transitions get a lightweight direct-animation fallback. Reduced-motion preference bypasses all added motion.
+- No product, account, payment, inventory, layout, image asset or database changes.
+
 ## 2026-11-10 — Match division navigation order and repair light-theme contrast
 
 - Product division switcher now lists X → UNISEX → Y, matching the SHOP landing page.

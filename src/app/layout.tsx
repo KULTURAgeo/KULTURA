@@ -21,6 +21,7 @@ import "./globals.css";
 import "./phase3.css";
 import "./commerce-polish.css";
 import "./theme.css";
+import "./theme-wave.css";
 import "./premium-motion.css";
 import "./mobile-polish.css";
 import "./motion-react.css";

@@ -1,0 +1,451 @@
+/* Named, on-screen theme-wave snapshots follow the same directional wipe
+   and physical ripple as SHOP / DROPS / ABOUT. Offscreen DOM is untouched. */
+:root[data-theme-direction]::view-transition-group(kultura-wave-0) { --kw-start: var(--k-wave-start-0, 0ms); --kw-width: var(--k-wave-width-0, 30ms); --kw-ripple: var(--k-wave-ripple-0, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-1) { --kw-start: var(--k-wave-start-1, 0ms); --kw-width: var(--k-wave-width-1, 30ms); --kw-ripple: var(--k-wave-ripple-1, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-2) { --kw-start: var(--k-wave-start-2, 0ms); --kw-width: var(--k-wave-width-2, 30ms); --kw-ripple: var(--k-wave-ripple-2, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-3) { --kw-start: var(--k-wave-start-3, 0ms); --kw-width: var(--k-wave-width-3, 30ms); --kw-ripple: var(--k-wave-ripple-3, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-4) { --kw-start: var(--k-wave-start-4, 0ms); --kw-width: var(--k-wave-width-4, 30ms); --kw-ripple: var(--k-wave-ripple-4, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-5) { --kw-start: var(--k-wave-start-5, 0ms); --kw-width: var(--k-wave-width-5, 30ms); --kw-ripple: var(--k-wave-ripple-5, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-6) { --kw-start: var(--k-wave-start-6, 0ms); --kw-width: var(--k-wave-width-6, 30ms); --kw-ripple: var(--k-wave-ripple-6, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-7) { --kw-start: var(--k-wave-start-7, 0ms); --kw-width: var(--k-wave-width-7, 30ms); --kw-ripple: var(--k-wave-ripple-7, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-8) { --kw-start: var(--k-wave-start-8, 0ms); --kw-width: var(--k-wave-width-8, 30ms); --kw-ripple: var(--k-wave-ripple-8, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-9) { --kw-start: var(--k-wave-start-9, 0ms); --kw-width: var(--k-wave-width-9, 30ms); --kw-ripple: var(--k-wave-ripple-9, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-10) { --kw-start: var(--k-wave-start-10, 0ms); --kw-width: var(--k-wave-width-10, 30ms); --kw-ripple: var(--k-wave-ripple-10, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-11) { --kw-start: var(--k-wave-start-11, 0ms); --kw-width: var(--k-wave-width-11, 30ms); --kw-ripple: var(--k-wave-ripple-11, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-12) { --kw-start: var(--k-wave-start-12, 0ms); --kw-width: var(--k-wave-width-12, 30ms); --kw-ripple: var(--k-wave-ripple-12, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-13) { --kw-start: var(--k-wave-start-13, 0ms); --kw-width: var(--k-wave-width-13, 30ms); --kw-ripple: var(--k-wave-ripple-13, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-14) { --kw-start: var(--k-wave-start-14, 0ms); --kw-width: var(--k-wave-width-14, 30ms); --kw-ripple: var(--k-wave-ripple-14, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-15) { --kw-start: var(--k-wave-start-15, 0ms); --kw-width: var(--k-wave-width-15, 30ms); --kw-ripple: var(--k-wave-ripple-15, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-16) { --kw-start: var(--k-wave-start-16, 0ms); --kw-width: var(--k-wave-width-16, 30ms); --kw-ripple: var(--k-wave-ripple-16, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-17) { --kw-start: var(--k-wave-start-17, 0ms); --kw-width: var(--k-wave-width-17, 30ms); --kw-ripple: var(--k-wave-ripple-17, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-18) { --kw-start: var(--k-wave-start-18, 0ms); --kw-width: var(--k-wave-width-18, 30ms); --kw-ripple: var(--k-wave-ripple-18, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-19) { --kw-start: var(--k-wave-start-19, 0ms); --kw-width: var(--k-wave-width-19, 30ms); --kw-ripple: var(--k-wave-ripple-19, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-20) { --kw-start: var(--k-wave-start-20, 0ms); --kw-width: var(--k-wave-width-20, 30ms); --kw-ripple: var(--k-wave-ripple-20, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-21) { --kw-start: var(--k-wave-start-21, 0ms); --kw-width: var(--k-wave-width-21, 30ms); --kw-ripple: var(--k-wave-ripple-21, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-22) { --kw-start: var(--k-wave-start-22, 0ms); --kw-width: var(--k-wave-width-22, 30ms); --kw-ripple: var(--k-wave-ripple-22, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-23) { --kw-start: var(--k-wave-start-23, 0ms); --kw-width: var(--k-wave-width-23, 30ms); --kw-ripple: var(--k-wave-ripple-23, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-24) { --kw-start: var(--k-wave-start-24, 0ms); --kw-width: var(--k-wave-width-24, 30ms); --kw-ripple: var(--k-wave-ripple-24, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-25) { --kw-start: var(--k-wave-start-25, 0ms); --kw-width: var(--k-wave-width-25, 30ms); --kw-ripple: var(--k-wave-ripple-25, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-26) { --kw-start: var(--k-wave-start-26, 0ms); --kw-width: var(--k-wave-width-26, 30ms); --kw-ripple: var(--k-wave-ripple-26, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-27) { --kw-start: var(--k-wave-start-27, 0ms); --kw-width: var(--k-wave-width-27, 30ms); --kw-ripple: var(--k-wave-ripple-27, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-28) { --kw-start: var(--k-wave-start-28, 0ms); --kw-width: var(--k-wave-width-28, 30ms); --kw-ripple: var(--k-wave-ripple-28, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-29) { --kw-start: var(--k-wave-start-29, 0ms); --kw-width: var(--k-wave-width-29, 30ms); --kw-ripple: var(--k-wave-ripple-29, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-30) { --kw-start: var(--k-wave-start-30, 0ms); --kw-width: var(--k-wave-width-30, 30ms); --kw-ripple: var(--k-wave-ripple-30, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-31) { --kw-start: var(--k-wave-start-31, 0ms); --kw-width: var(--k-wave-width-31, 30ms); --kw-ripple: var(--k-wave-ripple-31, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-32) { --kw-start: var(--k-wave-start-32, 0ms); --kw-width: var(--k-wave-width-32, 30ms); --kw-ripple: var(--k-wave-ripple-32, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-33) { --kw-start: var(--k-wave-start-33, 0ms); --kw-width: var(--k-wave-width-33, 30ms); --kw-ripple: var(--k-wave-ripple-33, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-34) { --kw-start: var(--k-wave-start-34, 0ms); --kw-width: var(--k-wave-width-34, 30ms); --kw-ripple: var(--k-wave-ripple-34, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-35) { --kw-start: var(--k-wave-start-35, 0ms); --kw-width: var(--k-wave-width-35, 30ms); --kw-ripple: var(--k-wave-ripple-35, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-36) { --kw-start: var(--k-wave-start-36, 0ms); --kw-width: var(--k-wave-width-36, 30ms); --kw-ripple: var(--k-wave-ripple-36, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-37) { --kw-start: var(--k-wave-start-37, 0ms); --kw-width: var(--k-wave-width-37, 30ms); --kw-ripple: var(--k-wave-ripple-37, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-38) { --kw-start: var(--k-wave-start-38, 0ms); --kw-width: var(--k-wave-width-38, 30ms); --kw-ripple: var(--k-wave-ripple-38, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-39) { --kw-start: var(--k-wave-start-39, 0ms); --kw-width: var(--k-wave-width-39, 30ms); --kw-ripple: var(--k-wave-ripple-39, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-40) { --kw-start: var(--k-wave-start-40, 0ms); --kw-width: var(--k-wave-width-40, 30ms); --kw-ripple: var(--k-wave-ripple-40, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-41) { --kw-start: var(--k-wave-start-41, 0ms); --kw-width: var(--k-wave-width-41, 30ms); --kw-ripple: var(--k-wave-ripple-41, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-42) { --kw-start: var(--k-wave-start-42, 0ms); --kw-width: var(--k-wave-width-42, 30ms); --kw-ripple: var(--k-wave-ripple-42, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-43) { --kw-start: var(--k-wave-start-43, 0ms); --kw-width: var(--k-wave-width-43, 30ms); --kw-ripple: var(--k-wave-ripple-43, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-44) { --kw-start: var(--k-wave-start-44, 0ms); --kw-width: var(--k-wave-width-44, 30ms); --kw-ripple: var(--k-wave-ripple-44, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-45) { --kw-start: var(--k-wave-start-45, 0ms); --kw-width: var(--k-wave-width-45, 30ms); --kw-ripple: var(--k-wave-ripple-45, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-46) { --kw-start: var(--k-wave-start-46, 0ms); --kw-width: var(--k-wave-width-46, 30ms); --kw-ripple: var(--k-wave-ripple-46, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-47) { --kw-start: var(--k-wave-start-47, 0ms); --kw-width: var(--k-wave-width-47, 30ms); --kw-ripple: var(--k-wave-ripple-47, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-48) { --kw-start: var(--k-wave-start-48, 0ms); --kw-width: var(--k-wave-width-48, 30ms); --kw-ripple: var(--k-wave-ripple-48, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-49) { --kw-start: var(--k-wave-start-49, 0ms); --kw-width: var(--k-wave-width-49, 30ms); --kw-ripple: var(--k-wave-ripple-49, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-50) { --kw-start: var(--k-wave-start-50, 0ms); --kw-width: var(--k-wave-width-50, 30ms); --kw-ripple: var(--k-wave-ripple-50, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-51) { --kw-start: var(--k-wave-start-51, 0ms); --kw-width: var(--k-wave-width-51, 30ms); --kw-ripple: var(--k-wave-ripple-51, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-52) { --kw-start: var(--k-wave-start-52, 0ms); --kw-width: var(--k-wave-width-52, 30ms); --kw-ripple: var(--k-wave-ripple-52, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-53) { --kw-start: var(--k-wave-start-53, 0ms); --kw-width: var(--k-wave-width-53, 30ms); --kw-ripple: var(--k-wave-ripple-53, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-54) { --kw-start: var(--k-wave-start-54, 0ms); --kw-width: var(--k-wave-width-54, 30ms); --kw-ripple: var(--k-wave-ripple-54, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-55) { --kw-start: var(--k-wave-start-55, 0ms); --kw-width: var(--k-wave-width-55, 30ms); --kw-ripple: var(--k-wave-ripple-55, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-56) { --kw-start: var(--k-wave-start-56, 0ms); --kw-width: var(--k-wave-width-56, 30ms); --kw-ripple: var(--k-wave-ripple-56, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-57) { --kw-start: var(--k-wave-start-57, 0ms); --kw-width: var(--k-wave-width-57, 30ms); --kw-ripple: var(--k-wave-ripple-57, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-58) { --kw-start: var(--k-wave-start-58, 0ms); --kw-width: var(--k-wave-width-58, 30ms); --kw-ripple: var(--k-wave-ripple-58, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-59) { --kw-start: var(--k-wave-start-59, 0ms); --kw-width: var(--k-wave-width-59, 30ms); --kw-ripple: var(--k-wave-ripple-59, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-60) { --kw-start: var(--k-wave-start-60, 0ms); --kw-width: var(--k-wave-width-60, 30ms); --kw-ripple: var(--k-wave-ripple-60, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-61) { --kw-start: var(--k-wave-start-61, 0ms); --kw-width: var(--k-wave-width-61, 30ms); --kw-ripple: var(--k-wave-ripple-61, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-62) { --kw-start: var(--k-wave-start-62, 0ms); --kw-width: var(--k-wave-width-62, 30ms); --kw-ripple: var(--k-wave-ripple-62, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-63) { --kw-start: var(--k-wave-start-63, 0ms); --kw-width: var(--k-wave-width-63, 30ms); --kw-ripple: var(--k-wave-ripple-63, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-64) { --kw-start: var(--k-wave-start-64, 0ms); --kw-width: var(--k-wave-width-64, 30ms); --kw-ripple: var(--k-wave-ripple-64, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-65) { --kw-start: var(--k-wave-start-65, 0ms); --kw-width: var(--k-wave-width-65, 30ms); --kw-ripple: var(--k-wave-ripple-65, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-66) { --kw-start: var(--k-wave-start-66, 0ms); --kw-width: var(--k-wave-width-66, 30ms); --kw-ripple: var(--k-wave-ripple-66, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-67) { --kw-start: var(--k-wave-start-67, 0ms); --kw-width: var(--k-wave-width-67, 30ms); --kw-ripple: var(--k-wave-ripple-67, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-68) { --kw-start: var(--k-wave-start-68, 0ms); --kw-width: var(--k-wave-width-68, 30ms); --kw-ripple: var(--k-wave-ripple-68, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-69) { --kw-start: var(--k-wave-start-69, 0ms); --kw-width: var(--k-wave-width-69, 30ms); --kw-ripple: var(--k-wave-ripple-69, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-70) { --kw-start: var(--k-wave-start-70, 0ms); --kw-width: var(--k-wave-width-70, 30ms); --kw-ripple: var(--k-wave-ripple-70, 0ms); }
+:root[data-theme-direction]::view-transition-group(kultura-wave-71) { --kw-start: var(--k-wave-start-71, 0ms); --kw-width: var(--k-wave-width-71, 30ms); --kw-ripple: var(--k-wave-ripple-71, 0ms); }
+:root[data-theme-direction]::view-transition-old(kultura-wave-0),
+:root[data-theme-direction]::view-transition-old(kultura-wave-1),
+:root[data-theme-direction]::view-transition-old(kultura-wave-2),
+:root[data-theme-direction]::view-transition-old(kultura-wave-3),
+:root[data-theme-direction]::view-transition-old(kultura-wave-4),
+:root[data-theme-direction]::view-transition-old(kultura-wave-5),
+:root[data-theme-direction]::view-transition-old(kultura-wave-6),
+:root[data-theme-direction]::view-transition-old(kultura-wave-7),
+:root[data-theme-direction]::view-transition-old(kultura-wave-8),
+:root[data-theme-direction]::view-transition-old(kultura-wave-9),
+:root[data-theme-direction]::view-transition-old(kultura-wave-10),
+:root[data-theme-direction]::view-transition-old(kultura-wave-11),
+:root[data-theme-direction]::view-transition-old(kultura-wave-12),
+:root[data-theme-direction]::view-transition-old(kultura-wave-13),
+:root[data-theme-direction]::view-transition-old(kultura-wave-14),
+:root[data-theme-direction]::view-transition-old(kultura-wave-15),
+:root[data-theme-direction]::view-transition-old(kultura-wave-16),
+:root[data-theme-direction]::view-transition-old(kultura-wave-17),
+:root[data-theme-direction]::view-transition-old(kultura-wave-18),
+:root[data-theme-direction]::view-transition-old(kultura-wave-19),
+:root[data-theme-direction]::view-transition-old(kultura-wave-20),
+:root[data-theme-direction]::view-transition-old(kultura-wave-21),
+:root[data-theme-direction]::view-transition-old(kultura-wave-22),
+:root[data-theme-direction]::view-transition-old(kultura-wave-23),
+:root[data-theme-direction]::view-transition-old(kultura-wave-24),
+:root[data-theme-direction]::view-transition-old(kultura-wave-25),
+:root[data-theme-direction]::view-transition-old(kultura-wave-26),
+:root[data-theme-direction]::view-transition-old(kultura-wave-27),
+:root[data-theme-direction]::view-transition-old(kultura-wave-28),
+:root[data-theme-direction]::view-transition-old(kultura-wave-29),
+:root[data-theme-direction]::view-transition-old(kultura-wave-30),
+:root[data-theme-direction]::view-transition-old(kultura-wave-31),
+:root[data-theme-direction]::view-transition-old(kultura-wave-32),
+:root[data-theme-direction]::view-transition-old(kultura-wave-33),
+:root[data-theme-direction]::view-transition-old(kultura-wave-34),
+:root[data-theme-direction]::view-transition-old(kultura-wave-35),
+:root[data-theme-direction]::view-transition-old(kultura-wave-36),
+:root[data-theme-direction]::view-transition-old(kultura-wave-37),
+:root[data-theme-direction]::view-transition-old(kultura-wave-38),
+:root[data-theme-direction]::view-transition-old(kultura-wave-39),
+:root[data-theme-direction]::view-transition-old(kultura-wave-40),
+:root[data-theme-direction]::view-transition-old(kultura-wave-41),
+:root[data-theme-direction]::view-transition-old(kultura-wave-42),
+:root[data-theme-direction]::view-transition-old(kultura-wave-43),
+:root[data-theme-direction]::view-transition-old(kultura-wave-44),
+:root[data-theme-direction]::view-transition-old(kultura-wave-45),
+:root[data-theme-direction]::view-transition-old(kultura-wave-46),
+:root[data-theme-direction]::view-transition-old(kultura-wave-47),
+:root[data-theme-direction]::view-transition-old(kultura-wave-48),
+:root[data-theme-direction]::view-transition-old(kultura-wave-49),
+:root[data-theme-direction]::view-transition-old(kultura-wave-50),
+:root[data-theme-direction]::view-transition-old(kultura-wave-51),
+:root[data-theme-direction]::view-transition-old(kultura-wave-52),
+:root[data-theme-direction]::view-transition-old(kultura-wave-53),
+:root[data-theme-direction]::view-transition-old(kultura-wave-54),
+:root[data-theme-direction]::view-transition-old(kultura-wave-55),
+:root[data-theme-direction]::view-transition-old(kultura-wave-56),
+:root[data-theme-direction]::view-transition-old(kultura-wave-57),
+:root[data-theme-direction]::view-transition-old(kultura-wave-58),
+:root[data-theme-direction]::view-transition-old(kultura-wave-59),
+:root[data-theme-direction]::view-transition-old(kultura-wave-60),
+:root[data-theme-direction]::view-transition-old(kultura-wave-61),
+:root[data-theme-direction]::view-transition-old(kultura-wave-62),
+:root[data-theme-direction]::view-transition-old(kultura-wave-63),
+:root[data-theme-direction]::view-transition-old(kultura-wave-64),
+:root[data-theme-direction]::view-transition-old(kultura-wave-65),
+:root[data-theme-direction]::view-transition-old(kultura-wave-66),
+:root[data-theme-direction]::view-transition-old(kultura-wave-67),
+:root[data-theme-direction]::view-transition-old(kultura-wave-68),
+:root[data-theme-direction]::view-transition-old(kultura-wave-69),
+:root[data-theme-direction]::view-transition-old(kultura-wave-70),
+:root[data-theme-direction]::view-transition-old(kultura-wave-71) {
+  animation: none;
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+:root[data-theme-direction]::view-transition-new(kultura-wave-0),
+:root[data-theme-direction]::view-transition-new(kultura-wave-1),
+:root[data-theme-direction]::view-transition-new(kultura-wave-2),
+:root[data-theme-direction]::view-transition-new(kultura-wave-3),
+:root[data-theme-direction]::view-transition-new(kultura-wave-4),
+:root[data-theme-direction]::view-transition-new(kultura-wave-5),
+:root[data-theme-direction]::view-transition-new(kultura-wave-6),
+:root[data-theme-direction]::view-transition-new(kultura-wave-7),
+:root[data-theme-direction]::view-transition-new(kultura-wave-8),
+:root[data-theme-direction]::view-transition-new(kultura-wave-9),
+:root[data-theme-direction]::view-transition-new(kultura-wave-10),
+:root[data-theme-direction]::view-transition-new(kultura-wave-11),
+:root[data-theme-direction]::view-transition-new(kultura-wave-12),
+:root[data-theme-direction]::view-transition-new(kultura-wave-13),
+:root[data-theme-direction]::view-transition-new(kultura-wave-14),
+:root[data-theme-direction]::view-transition-new(kultura-wave-15),
+:root[data-theme-direction]::view-transition-new(kultura-wave-16),
+:root[data-theme-direction]::view-transition-new(kultura-wave-17),
+:root[data-theme-direction]::view-transition-new(kultura-wave-18),
+:root[data-theme-direction]::view-transition-new(kultura-wave-19),
+:root[data-theme-direction]::view-transition-new(kultura-wave-20),
+:root[data-theme-direction]::view-transition-new(kultura-wave-21),
+:root[data-theme-direction]::view-transition-new(kultura-wave-22),
+:root[data-theme-direction]::view-transition-new(kultura-wave-23),
+:root[data-theme-direction]::view-transition-new(kultura-wave-24),
+:root[data-theme-direction]::view-transition-new(kultura-wave-25),
+:root[data-theme-direction]::view-transition-new(kultura-wave-26),
+:root[data-theme-direction]::view-transition-new(kultura-wave-27),
+:root[data-theme-direction]::view-transition-new(kultura-wave-28),
+:root[data-theme-direction]::view-transition-new(kultura-wave-29),
+:root[data-theme-direction]::view-transition-new(kultura-wave-30),
+:root[data-theme-direction]::view-transition-new(kultura-wave-31),
+:root[data-theme-direction]::view-transition-new(kultura-wave-32),
+:root[data-theme-direction]::view-transition-new(kultura-wave-33),
+:root[data-theme-direction]::view-transition-new(kultura-wave-34),
+:root[data-theme-direction]::view-transition-new(kultura-wave-35),
+:root[data-theme-direction]::view-transition-new(kultura-wave-36),
+:root[data-theme-direction]::view-transition-new(kultura-wave-37),
+:root[data-theme-direction]::view-transition-new(kultura-wave-38),
+:root[data-theme-direction]::view-transition-new(kultura-wave-39),
+:root[data-theme-direction]::view-transition-new(kultura-wave-40),
+:root[data-theme-direction]::view-transition-new(kultura-wave-41),
+:root[data-theme-direction]::view-transition-new(kultura-wave-42),
+:root[data-theme-direction]::view-transition-new(kultura-wave-43),
+:root[data-theme-direction]::view-transition-new(kultura-wave-44),
+:root[data-theme-direction]::view-transition-new(kultura-wave-45),
+:root[data-theme-direction]::view-transition-new(kultura-wave-46),
+:root[data-theme-direction]::view-transition-new(kultura-wave-47),
+:root[data-theme-direction]::view-transition-new(kultura-wave-48),
+:root[data-theme-direction]::view-transition-new(kultura-wave-49),
+:root[data-theme-direction]::view-transition-new(kultura-wave-50),
+:root[data-theme-direction]::view-transition-new(kultura-wave-51),
+:root[data-theme-direction]::view-transition-new(kultura-wave-52),
+:root[data-theme-direction]::view-transition-new(kultura-wave-53),
+:root[data-theme-direction]::view-transition-new(kultura-wave-54),
+:root[data-theme-direction]::view-transition-new(kultura-wave-55),
+:root[data-theme-direction]::view-transition-new(kultura-wave-56),
+:root[data-theme-direction]::view-transition-new(kultura-wave-57),
+:root[data-theme-direction]::view-transition-new(kultura-wave-58),
+:root[data-theme-direction]::view-transition-new(kultura-wave-59),
+:root[data-theme-direction]::view-transition-new(kultura-wave-60),
+:root[data-theme-direction]::view-transition-new(kultura-wave-61),
+:root[data-theme-direction]::view-transition-new(kultura-wave-62),
+:root[data-theme-direction]::view-transition-new(kultura-wave-63),
+:root[data-theme-direction]::view-transition-new(kultura-wave-64),
+:root[data-theme-direction]::view-transition-new(kultura-wave-65),
+:root[data-theme-direction]::view-transition-new(kultura-wave-66),
+:root[data-theme-direction]::view-transition-new(kultura-wave-67),
+:root[data-theme-direction]::view-transition-new(kultura-wave-68),
+:root[data-theme-direction]::view-transition-new(kultura-wave-69),
+:root[data-theme-direction]::view-transition-new(kultura-wave-70),
+:root[data-theme-direction]::view-transition-new(kultura-wave-71) {
+  opacity: 1;
+  mix-blend-mode: normal;
+  animation-duration: var(--kw-width, 30ms);
+  animation-delay: var(--kw-start, 0ms);
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-0),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-1),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-2),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-3),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-4),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-5),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-6),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-7),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-8),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-9),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-10),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-11),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-12),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-13),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-14),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-15),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-16),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-17),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-18),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-19),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-20),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-21),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-22),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-23),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-24),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-25),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-26),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-27),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-28),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-29),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-30),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-31),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-32),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-33),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-34),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-35),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-36),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-37),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-38),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-39),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-40),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-41),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-42),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-43),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-44),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-45),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-46),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-47),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-48),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-49),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-50),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-51),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-52),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-53),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-54),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-55),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-56),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-57),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-58),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-59),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-60),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-61),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-62),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-63),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-64),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-65),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-66),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-67),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-68),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-69),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-70),
+:root[data-theme-direction]::view-transition-image-pair(kultura-wave-71) {
+  animation: kultura-menu-ripple .4s ease-out var(--kw-ripple, 0ms) both;
+}
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-0),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-1),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-2),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-3),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-4),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-5),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-6),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-7),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-8),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-9),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-10),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-11),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-12),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-13),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-14),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-15),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-16),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-17),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-18),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-19),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-20),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-21),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-22),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-23),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-24),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-25),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-26),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-27),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-28),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-29),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-30),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-31),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-32),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-33),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-34),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-35),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-36),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-37),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-38),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-39),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-40),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-41),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-42),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-43),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-44),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-45),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-46),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-47),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-48),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-49),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-50),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-51),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-52),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-53),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-54),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-55),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-56),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-57),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-58),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-59),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-60),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-61),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-62),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-63),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-64),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-65),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-66),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-67),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-68),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-69),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-70),
+:root[data-theme-direction="to-dark"]::view-transition-new(kultura-wave-71) {
+  animation-name: kultura-word-reveal-left;
+}
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-0),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-1),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-2),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-3),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-4),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-5),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-6),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-7),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-8),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-9),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-10),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-11),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-12),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-13),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-14),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-15),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-16),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-17),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-18),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-19),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-20),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-21),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-22),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-23),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-24),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-25),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-26),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-27),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-28),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-29),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-30),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-31),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-32),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-33),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-34),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-35),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-36),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-37),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-38),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-39),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-40),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-41),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-42),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-43),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-44),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-45),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-46),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-47),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-48),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-49),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-50),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-51),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-52),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-53),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-54),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-55),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-56),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-57),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-58),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-59),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-60),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-61),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-62),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-63),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-64),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-65),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-66),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-67),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-68),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-69),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-70),
+:root[data-theme-direction="to-light"]::view-transition-new(kultura-wave-71) {
+  animation-name: kultura-word-reveal-right;
+}

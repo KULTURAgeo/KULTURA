@@ -6,6 +6,7 @@ import { HeaderInteractions } from "./header-interactions";
 import { LanguageSwitcher } from "./language-switcher";
 import { useLanguage } from "./language-provider";
 import { flushSync } from "react-dom";
+import { prepareThemeWave, animateThemeWaveFallback } from "@/lib/theme-wave";
 
 type Theme = "light" | "dark";
 type TextRipple = {
@@ -49,6 +50,7 @@ export function Header() {
   const rippleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const themeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const transitionId = useRef(0);
+  const themeWaveCleanup = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const sync = () => {
@@ -69,6 +71,8 @@ export function Header() {
       window.removeEventListener("kultura-theme-change", sync);
       if (rippleTimer.current) clearTimeout(rippleTimer.current);
       if (themeTimer.current) clearTimeout(themeTimer.current);
+      themeWaveCleanup.current?.();
+      themeWaveCleanup.current = null;
     };
   }, []);
 
@@ -76,6 +80,8 @@ export function Header() {
     if (next === theme) return;
     transitionId.current += 1;
     const runId = transitionId.current;
+    themeWaveCleanup.current?.();
+    themeWaveCleanup.current = null;
     if (rippleTimer.current) clearTimeout(rippleTimer.current);
     if (themeTimer.current) clearTimeout(themeTimer.current);
 
@@ -131,25 +137,30 @@ export function Header() {
     }
 
     if (!reduced && typeof document.startViewTransition === "function") {
+      // Give currently visible UI pieces individual snapshots, synchronized
+      // with the existing directional root wipe and the nav-letter ripple.
+      // Layout and real DOM text remain untouched.
+      const cleanupWave = prepareThemeWave(direction, WIPE_MS);
+      themeWaveCleanup.current = cleanupWave;
       root.dataset.themeDirection = direction;
-      // The old page stays in place while the new themed page is revealed
-      // with a directional clip-path. No SVG or waveform is rendered.
       const transition = document.startViewTransition(applyTheme);
-      void transition.finished.then(
-        () => {
-          if (transitionId.current === runId) delete root.dataset.themeDirection;
-        },
-        () => {
-          if (transitionId.current === runId) delete root.dataset.themeDirection;
-        },
-      );
+      const finish = () => {
+        // A newer theme change owns the active wave and direction marker.
+        if (transitionId.current !== runId) return;
+        cleanupWave();
+        themeWaveCleanup.current = null;
+        delete root.dataset.themeDirection;
+      };
+      void transition.finished.then(finish, finish);
     } else {
-      // Browsers without same-document View Transitions still switch correctly.
+      // Browsers without same-document View Transitions still switch correctly
+      // and receive a lightweight direct ripple on visible elements.
       if (!reduced) {
         root.classList.add("theme-animating");
         themeTimer.current = setTimeout(() => root.classList.remove("theme-animating"), 650);
       }
       applyTheme();
+      if (!reduced) animateThemeWaveFallback(direction, WIPE_MS);
     }
   };
 
