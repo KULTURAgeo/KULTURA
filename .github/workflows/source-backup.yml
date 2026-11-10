@@ -1,0 +1,43 @@
+name: KULTURA complete source backup
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  archive:
+    name: Archive source and recent history
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout all Git history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Create complete source ZIP and checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHA="${GITHUB_SHA}"
+          FILE="KULTURA-source-${SHA}.zip"
+          git archive --format=zip --output="${FILE}" "${SHA}"
+          git log --date=iso-strict --pretty=format:'%h | %ad | %s' -n 500 > SITE_CHANGE_HISTORY.txt
+          zip -q "${FILE}" SITE_CHANGE_HISTORY.txt
+          sha256sum "${FILE}" > SHA256SUMS.txt
+          test -s "${FILE}"
+          unzip -t "${FILE}" >/dev/null
+
+      - name: Upload downloadable source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: KULTURA-source-${{ github.sha }}
+          path: |
+            KULTURA-source-*.zip
+            SHA256SUMS.txt
+          retention-days: 90
+          if-no-files-found: error
