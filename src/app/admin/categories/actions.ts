@@ -32,15 +32,15 @@ export async function saveCategory(
     }
 
     const audience = text(data, "audience", 10);
-    if (!["x", "y", "unisex"].includes(audience)) {
-      throw new InputError("Choose X, Y, or UNISEX.");
+    if (!["x", "y", "unisex", "xys"].includes(audience)) {
+      throw new InputError("Choose X, Y, UNISEX, or XYS.");
     }
     if (categoryId) {
       // Prevent recategorizing populated categories without reviewing all products.
       const { data: existing, error: existingError } = await client.from("categories")
         .select("audience").eq("id", categoryId).single();
       if (existingError) throw existingError;
-      if (existing.audience !== audience) {
+      if (existing.audience !== audience && audience !== "xys") {
         const { count, error: countError } = await client.from("products")
           .select("id", { count: "exact", head: true }).eq("category_id", categoryId);
         if (countError) throw countError;
@@ -52,7 +52,7 @@ export async function saveCategory(
 
     const values = {
       name: text(data, "name", 120),
-      audience: audience as "x" | "y" | "unisex",
+      audience: audience as "x" | "y" | "unisex" | "xys",
       slug,
       description: text(data, "description", 10000, false),
       sort_position: integer(

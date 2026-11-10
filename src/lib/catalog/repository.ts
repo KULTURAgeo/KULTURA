@@ -206,14 +206,23 @@ const loadShopCategories = async (): Promise<{
 const loadShopDivision = async (division: "x" | "y" | "unisex"): Promise<{
   status: CatalogStatus;
   products: Product[];
+  categories: Category[];
 }> => {
   try {
     const client = createCatalogClient();
-    if (!client) return { status: "unconfigured", products: [] };
+    if (!client) return { status: "unconfigured", products: [], categories: [] };
+    const { data: visibleCategories, error: categoriesError } = await client.from("categories")
+      .select("name,slug")
+      .eq("is_active", true)
+      .in("audience", [division, "xys"])
+      .order("sort_position")
+      .order("name");
+    if (categoriesError) throw categoriesError;
+    const categories = (visibleCategories ?? []).map(({ name, slug }) => ({ name, slug }));
     const { data: collection, error: collectionError } = await client.from("collections")
       .select("id").eq("slug", "shop-" + division).eq("is_active", true).maybeSingle();
     if (collectionError) throw collectionError;
-    if (!collection) return { status: "ready", products: [] };
+    if (!collection) return { status: "ready", products: [], categories };
     const ids: string[] = [];
     for (let offset = 0; ; offset += 500) {
       const { data, error } = await client.from("product_collections")
@@ -223,7 +232,7 @@ const loadShopDivision = async (division: "x" | "y" | "unisex"): Promise<{
       ids.push(...data.map(row => row.product_id));
       if (data.length < 500) break;
     }
-    if (!ids.length) return { status: "ready", products: [] };
+    if (!ids.length) return { status: "ready", products: [], categories };
     const products: Product[] = [];
     for (let offset = 0; offset < ids.length; offset += 100) {
       const { data, error } = await client.from("products").select(productSelect)
@@ -232,10 +241,10 @@ const loadShopDivision = async (division: "x" | "y" | "unisex"): Promise<{
       if (error) throw error;
       products.push(...data.map(row => mapProduct(row, process.env.SUPABASE_URL)));
     }
-    return { status: "ready", products: products.sort((a,b) => Date.parse(b.createdAt)-Date.parse(a.createdAt)) };
+    return { status: "ready", products: products.sort((a,b) => Date.parse(b.createdAt)-Date.parse(a.createdAt)), categories };
   } catch {
     reportFailure("Shop division listing");
-    return { status: "unavailable", products: [] };
+    return { status: "unavailable", products: [], categories: [] };
   }
 };
 

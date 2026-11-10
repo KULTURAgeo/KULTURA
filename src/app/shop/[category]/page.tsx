@@ -42,13 +42,13 @@ export default async function Category({
 }) {
   const { category } = await params;
   if (isShopDivision(category)) {
-    const { products, status } = await getShopDivision(category);
+    const { products, status, categories } = await getShopDivision(category);
     return (
       <Container className="page-section">
         <p className="eyebrow"><LocalizedLabel source="THE COLLECTION" /></p>
         <h1 className="page-title">{category.toUpperCase()}</h1>
         {status !== "ready" ? <CatalogNotice status={status} /> : (
-          <CatalogGrid products={products} categories={[]} />
+          <CatalogGrid products={products} categories={categories} />
         )}
       </Container>
     );

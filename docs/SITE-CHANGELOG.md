@@ -2,6 +2,14 @@
 
 Keep this document up to date whenever storefront code, database schema, assets or admin behavior changes. Git commit history is the authoritative fine-grained audit trail; this file is the human-readable summary.
 
+## 2026-11-10 — XYS shared category availability
+
+- Added XYS to the Admin Categories shop division dropdown.
+- XYS categories can be used by products assigned individually to X, Y, or UNISEX, without copying products between divisions.
+- Existing category X/Y/UNISEX behavior is unchanged. UNISEX products stay in UNISEX only.
+- Reassigning an existing populated category to XYS is permitted; changing from XYS to an exclusive division still requires moving products first.
+- Updated the Supabase production and staging `categories_audience_check` constraints; changes are backed up with Git history and a new migration record.
+
 ## 2026-11-10 — Category division assignments
 
 - Added SHOP DIVISION (X / Y / UNISEX) to Admin → Categories create/edit forms and category summary table.

@@ -27,7 +27,7 @@ export async function resolveAudienceCollections(
   const { data: category, error: categoryError } = await client
     .from("categories").select("audience").eq("id", categoryId).maybeSingle();
   if (categoryError || !category) throw new InputError("Category unavailable.");
-  if (category.audience && category.audience !== audience) {
+  if (category.audience && category.audience !== "xys" && category.audience !== audience) {
     throw new InputError("This category belongs to " + category.audience.toUpperCase() + ". Choose a matching shop division or category.");
   }
   const chosen = rows.find((row) => row.slug === "shop-" + audience);

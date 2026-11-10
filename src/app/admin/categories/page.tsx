@@ -37,10 +37,11 @@ function CategoryFields({ category }: { category?: Category }) {
       <label className="k-field">
         <span>SHOP DIVISION</span>
         <select name="audience" required defaultValue={category?.audience ?? ""}>
-          <option value="" disabled>Choose X, Y or UNISEX</option>
+          <option value="" disabled>Choose X, Y, UNISEX or XYS</option>
           <option value="x">X — Women</option>
           <option value="y">Y — Men</option>
-          <option value="unisex">UNISEX — Both</option>
+          <option value="unisex">UNISEX — Only</option>
+          <option value="xys">XYS — All 3 divisions</option>
         </select>
       </label>
       <label className="k-field">
@@ -82,7 +83,7 @@ export default async function CategoriesAdmin() {
       <section className="panel">
         <h2>NEW CATEGORY</h2>
         <p className="muted">
-          Choose whether this category belongs to X (Women), Y (Men), or UNISEX (Both). Existing products keep their current assignment.
+          Choose X, Y or UNISEX for one shop division. XYS makes the category available in all three divisions, but products remain assigned to just one division.
         </p>
         <ActionForm action={saveCategory} label="CREATE CATEGORY">
           <CategoryFields />
