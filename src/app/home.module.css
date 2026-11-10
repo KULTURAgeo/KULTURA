@@ -128,7 +128,8 @@
 }
 
 .demoTrack {
-  height: 245svh;
+  /* Reserve the complete scroll-animation runway before JavaScript loads. */
+  height: 460svh;
   position: relative;
   background: #f7f6f2;
 }
@@ -641,7 +642,7 @@
   .heroPeekGrid { background-size: 36px 36px; }
   .heroPeekWord { left: 14px; font-size: 54px; }
 
-  .demoTrack { height: 220svh; }
+  .demoTrack { height: 390svh; }
   .demoBackdrop { inset: var(--demo-inset-mobile, 12px); }
   .demoGrid { background-size: 38px 38px; }
   .phone { width: 178px; }
@@ -671,6 +672,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .demoTrack { height: 100svh; }
   .home [data-reveal] { opacity: 1; transform: none; }
   .phone,
   .orbitCenter,
