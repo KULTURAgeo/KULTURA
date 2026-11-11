@@ -19,7 +19,7 @@ export function LanguageSwitcher({ mobile = false }: { mobile?: boolean }) {
   return (
     <label className={mobile ? "kultura-language-switcher mobile" : "kultura-language-switcher"}>
       <span className="sr-only">{t("Language")}</span>
-      <select aria-label={t("Language")} value={locale} disabled={pending} onChange={(e) => onChange(e.target.value)}>
+      <select name="locale" aria-label={t("Language")} value={locale} disabled={pending} onChange={(e) => onChange(e.target.value)}>
         <option value="en">EN</option>
         <option value="ka">ქართული</option>
       </select>

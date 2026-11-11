@@ -235,10 +235,11 @@ export function CatalogGrid({
               </select>
             </div>
 
-            <div className={styles.field}>
-              <label>{t("Price range · GEL")}</label>
+            <div className={styles.field} role="group" aria-label={t("Price range · GEL")}>
+              <span className={styles.fieldCaption} aria-hidden="true">{t("Price range · GEL")}</span>
               <div className={styles.priceFields}>
                 <input
+                  name="min_price"
                   aria-label={t("Minimum price in GEL")}
                   inputMode="decimal"
                   placeholder={t("Min")}
@@ -246,6 +247,7 @@ export function CatalogGrid({
                   onChange={(e) => setMinPrice(e.target.value)}
                 />
                 <input
+                  name="max_price"
                   aria-label={t("Maximum price in GEL")}
                   inputMode="decimal"
                   placeholder={t("Max")}
@@ -258,6 +260,7 @@ export function CatalogGrid({
             <label className={styles.stockToggle}>
               <input
                 type="checkbox"
+                name="in_stock_only"
                 checked={inStock}
                 onChange={(e) => setInStock(e.target.checked)}
               />

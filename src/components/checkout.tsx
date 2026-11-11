@@ -380,6 +380,7 @@ export function Checkout({
               <label className="k-field">
                 <span>{t("RECIPIENT NAME")}</span>
                 <input
+                  name="recipient_name"
                   value={draft.recipient_name}
                   onChange={(event) =>
                     updateDraft("recipient_name", event.target.value)
@@ -391,6 +392,7 @@ export function Checkout({
               <label className="k-field">
                 <span>{t("PHONE")}</span>
                 <input
+                  name="phone"
                   value={draft.phone}
                   onChange={(event) => updateDraft("phone", event.target.value)}
                   autoComplete="tel"
@@ -399,11 +401,12 @@ export function Checkout({
               </label>
               <label className="k-field checkout-country">
                 <span>{t("COUNTRY")}</span>
-                <input value={t("Georgia (GE)")} disabled />
+                <input name="country" value={t("Georgia (GE)")} disabled />
               </label>
               <label className="k-field">
                 <span>{t("CITY")}</span>
                 <input
+                  name="city"
                   value={draft.city}
                   onChange={(event) => updateDraft("city", event.target.value)}
                   autoComplete="address-level2"
@@ -414,6 +417,7 @@ export function Checkout({
               <label className="k-field checkout-address-wide">
                 <span>{t("ADDRESS LINE 1")}</span>
                 <input
+                  name="address_line_1"
                   value={draft.address_line_1}
                   onChange={(event) =>
                     updateDraft("address_line_1", event.target.value)
@@ -426,6 +430,7 @@ export function Checkout({
               <label className="k-field">
                 <span>{t("ADDRESS LINE 2 · OPTIONAL")}</span>
                 <input
+                  name="address_line_2"
                   value={draft.address_line_2}
                   onChange={(event) =>
                     updateDraft("address_line_2", event.target.value)
@@ -437,6 +442,7 @@ export function Checkout({
               <label className="k-field">
                 <span>{t("POSTAL CODE · OPTIONAL")}</span>
                 <input
+                  name="postal_code"
                   value={draft.postal_code}
                   onChange={(event) =>
                     updateDraft("postal_code", event.target.value)
@@ -491,7 +497,7 @@ export function Checkout({
           <p className="eyebrow">{t("PAYMENT")}</p>
           <h2>{t("PAYMENT PENDING")}</h2>
           <label className="checkout-payment-option">
-            <input type="radio" checked readOnly />
+            <input type="radio" name="payment_method" value="card" checked readOnly />
             <span>
               <strong>{t("ONLINE CARD PAYMENT")}</strong>
               <small>
@@ -508,6 +514,7 @@ export function Checkout({
             </div>
             <div className="checkout-promo-row">
               <input
+                name="promo_code"
                 value={promoInput}
                 onChange={(event) => setPromoInput(event.target.value.toUpperCase())}
                 maxLength={50}

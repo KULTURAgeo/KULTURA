@@ -59,16 +59,17 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
   );
 
   useEffect(() => {
+    const sent = new Set<"google" | "meta">();
     const track = () =>
       trackViewItem({
         id: product.id,
         name: product.name,
         category: product.category,
         price: product.price,
-      });
+      }, sent);
 
     track();
-    window.addEventListener("kultura:analytics-ready", track, { once: true });
+    window.addEventListener("kultura:analytics-ready", track);
     return () => window.removeEventListener("kultura:analytics-ready", track);
   }, [product.id, product.name, product.category, product.price]);
 

@@ -63,6 +63,7 @@
 }
 
 .field label,
+.fieldCaption,
 .stockToggle {
   font-size: 11px;
   letter-spacing: 0.1em;
