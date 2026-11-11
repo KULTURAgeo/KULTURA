@@ -28,6 +28,10 @@ html {
   scroll-behavior: smooth;
   scroll-padding-top: 90px;
 }
+html:has([data-kultura-home]) {
+  background-color: #050608;
+  scrollbar-color: #777b84 #050608;
+}
 body {
   margin: 0;
   background: var(--background);

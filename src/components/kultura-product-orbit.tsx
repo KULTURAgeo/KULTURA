@@ -354,7 +354,6 @@ export function KulturaProductOrbit({ products, categories }: {
                       if (movedRef.current) { event.preventDefault(); movedRef.current = false; return; }
                       choose(index);
                     }}>
-                    <span className={styles.cardDepth} aria-hidden="true" />
                     <span className={styles.cardGlint} aria-hidden="true" />
                     <span className={styles.cardArt}>
                       {product ? (

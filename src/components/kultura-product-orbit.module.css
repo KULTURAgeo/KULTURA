@@ -2,13 +2,10 @@
   --orbit-radius: clamp(190px, 27vw, 340px);
   position: relative;
   isolation: isolate;
-  overflow: hidden;
   padding: clamp(84px, 9vw, 140px) clamp(18px, 5vw, 84px) 42px;
   min-height: 870px;
-  background: #050607;
+  background: transparent;
   color: #f6f7f5;
-  border-top: 1px solid rgba(255,255,255,.12);
-  border-bottom: 1px solid rgba(255,255,255,.12);
 }
 
 .backgroundGrid {
@@ -124,6 +121,8 @@
   aspect-ratio: 1091 / 630;
   transform: translate(-50%, -50%);
   opacity: .16;
+  mix-blend-mode: screen;
+  mask-image: radial-gradient(ellipse closest-side, #000 76%, transparent);
   filter: grayscale(1) brightness(1.35) drop-shadow(0 0 36px rgba(184,208,236,.32));
   pointer-events: none;
   animation: core-float 14s ease-in-out infinite alternate;
@@ -166,9 +165,8 @@
   inset: 0;
   width: 100%;
   padding: 10px;
-  background: linear-gradient(150deg, #313943, #0b0e13 36%, #11151b 80%, #232934);
-  border: 1px solid rgba(205,223,241,.27);
-  box-shadow: 0 26px 58px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.07);
+  background: linear-gradient(155deg, rgba(31, 42, 53, .58), rgba(11, 15, 20, .18) 75%, transparent);
+  border: 1px solid transparent;
   border-radius: 16px;
   color: #f9fafc;
   backface-visibility: hidden;
@@ -181,8 +179,8 @@
 .orbitCard:hover,
 .orbitCard:focus-visible,
 .currentCard {
-  border-color: rgba(241,248,255,.85);
-  box-shadow: 0 28px 70px rgba(0,0,0,.8), 0 0 32px rgba(202,225,248,.14);
+  border-color: rgba(241,248,255,.25);
+  box-shadow: 0 0 32px rgba(202,225,248,.11);
 }
 
 .orbitCard:focus-visible { outline: 2px solid #e8f4ff; outline-offset: 5px; }
@@ -195,20 +193,7 @@
   height: 260px;
   border-radius: 9px;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse at 30% 21%, rgba(222,235,247,.26), transparent 48%),
-    radial-gradient(ellipse at 70% 85%, rgba(122,153,182,.25), transparent 57%),
-    linear-gradient(125deg, #11171d, #2c333b 52%, #101217);
-}
-
-.cardArt::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  box-shadow: inset 0 0 35px rgba(0,0,0,.4);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% 48%, rgba(139,158,180,.23), transparent 72%);
 }
 
 .cardArt img {
@@ -466,11 +451,13 @@
 }
 .spotlight {
   position: absolute;
-  inset: -7%;
+  inset: -15% -13%;
   pointer-events: none;
   z-index: 4;
-  background: radial-gradient(ellipse at var(--light-x) var(--light-y),
-    rgba(216,232,249,.11), transparent 36%);
+  background: radial-gradient(ellipse 47% 43% at var(--light-x) var(--light-y),
+    rgba(216,232,249,.14), transparent);
+  /* Fade the light to zero before the edges of its layer, even while dragging. */
+  mask-image: radial-gradient(ellipse closest-side, #000 30%, transparent);
   mix-blend-mode: screen;
 }
 .floorGlow {
@@ -498,46 +485,27 @@
 }
 .orbitCard {
   overflow: visible;
-  border: 1px solid rgba(226,239,252,.42);
   transform-style: preserve-3d;
   transform: translateZ(0) rotateX(var(--lean-x, 0deg)) rotateY(var(--lean-y, 0deg));
   transition: transform .32s cubic-bezier(.2,.8,.2,1),
     border-color .25s ease, box-shadow .4s ease;
-  box-shadow: 2px 34px 52px rgba(0,0,0,.78), 0 2px 12px rgba(179,207,233,.08),
-    inset 0 0 0 1px rgba(255,255,255,.06);
 }
 .orbitCard:active { transition-duration: .12s; }
-.cardDepth {
-  position: absolute;
-  inset: 9px -9px -9px 9px;
-  border-radius: inherit;
-  transform: translateZ(-21px);
-  background: linear-gradient(125deg,#6d7885 0%,#141a21 38%,#040608 88%);
-  border: 1px solid rgba(184,205,226,.3);
-  box-shadow: 12px 18px 30px rgba(0,0,0,.52);
-  pointer-events: none;
-}
 .cardGlint {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
   transform: translateZ(7px);
-  background:
-    radial-gradient(ellipse at var(--glint-x, 48%) var(--glint-y, 24%),
-      rgba(255,255,255,.28), transparent 36%),
-    linear-gradient(130deg,rgba(255,255,255,.16),transparent 32%,rgba(145,172,203,.07) 75%,transparent);
+  background: radial-gradient(ellipse at var(--glint-x, 48%) var(--glint-y, 24%),
+    rgba(255,255,255,.19), transparent 38%);
   mix-blend-mode: screen;
-  opacity: .55;
+  opacity: .35;
   pointer-events: none;
   z-index: 3;
   transition: opacity .22s ease;
 }
-.orbitCard:hover .cardGlint { opacity: .95; }
-.cardArt {
-  transform: translateZ(16px);
-  box-shadow: 0 8px 30px rgba(0,0,0,.46),inset 0 0 20px rgba(255,255,255,.12);
-  border: 1px solid rgba(220,234,247,.16);
-}
+.orbitCard:hover .cardGlint { opacity: .7; }
+.cardArt { transform: translateZ(16px); }
 .cardArt img {
   transform: scale(1.04);
   transition: transform .8s cubic-bezier(.2,.8,.2,1), filter .4s ease;

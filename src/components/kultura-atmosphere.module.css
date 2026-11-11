@@ -12,12 +12,11 @@
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  --mark-opacity: .35;
-  --word-opacity: .5;
+  --mark-opacity: .52;
+  --word-opacity: 0;
+  --globe-angle: 0rad;
   --ring-angle: 0deg;
   --story-glow: 1;
-  --parallax-x: 0px;
-  --parallax-y: 0px;
 }
 .field::before {
   content: "";
@@ -78,7 +77,7 @@
   aspect-ratio: 1091 / 630;
   margin: 0;
   opacity: var(--mark-opacity);
-  transform: translate3d(calc(-50% + var(--parallax-x)), var(--parallax-y), 0);
+  transform: translateX(-50%);
   /* Screen compositing makes the original logo's black rectangular background
      disappear while preserving its exact chrome globe highlights. */
   mix-blend-mode: screen;
@@ -88,7 +87,7 @@
   position: absolute;
   inset: 0;
   transform-origin: 50% 50%;
-  animation: kulturaGlobeSpin 26s linear infinite;
+  transform: rotate(var(--globe-angle));
   will-change: transform;
   -webkit-mask-image: radial-gradient(
     ellipse 50% 49% at 50% 50%, #000 82%, rgba(0,0,0,.96) 90%, transparent 100%
@@ -101,35 +100,16 @@
   object-fit: contain;
   filter: grayscale(1) brightness(1.2) contrast(1.06);
 }
-@keyframes kulturaGlobeSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-.brandWord {
+.wordFallback {
   position: absolute;
-  bottom: 8%;
-  display: grid;
-  justify-items: center;
-  width: 100%;
-  gap: 11px;
-  margin: 0;
-  transform: translate3d(calc(var(--parallax-x) * -.3), calc(var(--parallax-y) * -.3), 0);
-  opacity: var(--word-opacity);
-  text-align: center;
-}
-.brandWord span {
-  color: #fff;
-  font-size: clamp(58px, 11.5vw, 170px);
-  line-height: .8;
+  inset: auto 0 9%;
+  color: rgba(237, 246, 255, .64);
+  font-size: clamp(40px, 10vw, 140px);
+  line-height: .85;
   font-weight: 950;
-  letter-spacing: -.095em;
-  text-shadow: 0 0 35px rgba(236,246,255,.24);
-}
-.brandWord small {
-  color: #cdd5dd;
-  font-size: 9px;
-  letter-spacing: .34em;
-  font-weight: 800;
+  letter-spacing: -.075em;
+  text-align: center;
+  opacity: var(--word-opacity);
 }
 .groundGlow {
   position: absolute;
@@ -166,7 +146,7 @@
 }
  .story :global([data-kultura-both]) a { position: relative; z-index: 2; }
 .story :global([data-kultura-showroom]) {
-  background: linear-gradient(to bottom, rgba(4,6,9,.9),rgba(4,6,9,.69) 35%, rgba(4,6,9,.75) 77%,rgba(4,6,9,.65)) !important;
+  background: transparent;
 }
 .story :global([data-kultura-ending]) {
   background: transparent !important;
@@ -175,7 +155,12 @@
 .story :global([data-kultura-ending]) > img {
   z-index: -3;
   opacity: .24;
-  mask-image: linear-gradient(to bottom,transparent,rgba(0,0,0,.22) 30%,#000);
+  mask-image: radial-gradient(
+    ellipse 46% 68% at 50% 64%,
+    #000 30%,
+    rgba(0, 0, 0, .65) 62%,
+    transparent 100%
+  );
 }
 .story :global([data-kultura-ending]) :global([class*="endShade"]) {
   background: linear-gradient(180deg, rgba(4,6,9,.25), rgba(4,6,9,.45));
@@ -190,17 +175,13 @@
     padding-bottom: 220px;
   }
   .story :global([data-kultura-ending]) { min-height: 95svh; }
-  .brandWord { bottom: 7%; }
-  .brandWord span { font-size: clamp(52px, 14vw, 82px); }
-  .brandWord small { font-size: 7px; letter-spacing: .24em; }
+  .wordFallback { font-size: clamp(36px, 12vw, 82px); }
   .chromeMark { top: 34%; }
   .orbitOne { width: 92vw; }
   .orbitTwo { width: 78vw; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .particles { opacity: .3; }
-  .chromeMark { transform: translateX(-50%); }
-  .globeSpin { animation: none; will-change: auto; }
-  .brandWord { transform: none; }
+  .particles { visibility: hidden; }
+  .globeSpin { will-change: auto; }
   .orbitOne, .orbitTwo { transform: translateX(-50%) rotateX(72deg); }
 }
