@@ -3,11 +3,8 @@ import Link from "next/link";
 import { pageMetadata } from "@/lib/site";
 import { campaignImage, money } from "@/lib/catalog";
 import { getHomepageCatalog } from "@/lib/catalog/repository";
-import { CatalogNotice } from "@/components/catalog-notice";
 import { Newsletter } from "@/components/newsletter";
-import { LocalizedCategoryName } from "@/components/localized-category-name";
 import { HomeMotion } from "@/components/home-motion";
-import { Category3DCard } from "@/components/category-3d-card";
 import { KulturaProductOrbit } from "@/components/kultura-product-orbit";
 import { Suspense } from "react";
 import styles from "./home.module.css";
@@ -92,7 +89,7 @@ function HomeCatalogFallback() {
 
 async function HomeCatalog({ locale }: { locale: Locale }) {
   const t = (source: string) => translate(locale, source);
-  const { products: showcase, categories, status } = await getHomepageCatalog();
+  const { products: showcase, categories } = await getHomepageCatalog();
 
   const heroProduct = showcase[0] ?? null;
   const secondProduct = showcase[1] ?? heroProduct;
@@ -103,17 +100,6 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
     showcase[index % Math.max(showcase.length, 1)] ?? null,
   );
 
-  const categoryTiles = categories.map((category, index) => {
-    const product =
-      showcase.find((item) => item.categorySlug === category.slug) ??
-      showcase[index % Math.max(showcase.length, 1)] ??
-      null;
-    return {
-      ...category,
-      image: product?.image ?? campaignImage,
-      alt: product?.images[0]?.alt ?? `${category.name} by KULTURA`,
-    };
-  });
 
   return (
     <>
@@ -357,24 +343,6 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
       </section>
 
       <KulturaProductOrbit products={showcase} categories={categories} />
-
-      <section className={styles.gallerySection}>
-        <CatalogNotice status={status} empty={!showcase.length && !categories.length} />
-        <div className={styles.galleryGrid}>
-          {categoryTiles.map((category, index) => (
-            <Category3DCard
-              key={category.slug}
-              slug={category.slug}
-              name={category.name}
-              image={category.image}
-              alt={category.alt}
-              index={index}
-              className={styles.galleryCard}
-              shopLabel={t("SHOP CATEGORY ↗")}
-            />
-          ))}
-        </div>
-      </section>
 
       <section className={styles.endScene}>
         <Image src={thirdProduct?.image ?? campaignImage} alt="" fill sizes="100vw" />
