@@ -401,7 +401,7 @@ export function Checkout({
               </label>
               <label className="k-field checkout-country">
                 <span>{t("COUNTRY")}</span>
-                <input name="country" value={t("Georgia (GE)")} disabled />
+                <input name="country" autoComplete="country-name" value={t("Georgia (GE)")} disabled />
               </label>
               <label className="k-field">
                 <span>{t("CITY")}</span>
