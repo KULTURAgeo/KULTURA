@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { requirePage } from "@/lib/auth/guards";
 import {
   ADMIN_RETURN_STATUSES,
   ADMIN_RETURN_TYPES,
@@ -47,12 +48,15 @@ export default async function Returns({
 }: {
   searchParams: Promise<{ page?: string; status?: string; type?: string }>;
 }) {
+  await requirePage(true);
   const query = await searchParams;
   const requestedPage = Math.floor(Math.max(1, Math.min(10000, Number(query.page) || 1)));
   const status = query.status ?? "";
   const type = query.type ?? "";
 
   const statsPromise = adminReturnStats();
+  // The list can redirect or throw before the stats component starts awaiting.
+  void statsPromise.catch(() => undefined);
   const result = await adminReturnRequests({ page: requestedPage, status, type });
   const { requests, count, page } = result;
   const first = count ? (page - 1) * 25 + 1 : 0;

@@ -12,6 +12,7 @@ function CategoryFields({ category }: { category?: Category }) {
         <Field
           label="NAME"
           name="name"
+          autoComplete="off"
           defaultValue={category?.name}
           required
           maxLength={120}

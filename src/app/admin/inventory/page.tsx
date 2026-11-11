@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { requirePage } from "@/lib/auth/guards";
 import { ActionForm, Field } from "@/components/action-form";
 import {
   adminInventory,
@@ -61,10 +62,13 @@ export default async function InventoryPage({
 }: {
   searchParams: Promise<{ filter?: string; page?: string }>;
 }) {
+  await requirePage(true);
   const query = await searchParams;
   const filter = inventoryFilter(query.filter);
   const page = Math.floor(Math.max(1, Math.min(10000, Number(query.page) || 1)));
   const statsPromise = adminInventoryStats();
+  // The list can redirect or throw before the stats component starts awaiting.
+  void statsPromise.catch(() => undefined);
   const inventory = await adminInventory(filter, page);
 
   const pageHref = (nextPage: number) => {

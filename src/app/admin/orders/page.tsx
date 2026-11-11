@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { requirePage } from "@/lib/auth/guards";
 import {
   ADMIN_FULFILLMENT_STATUSES,
   ADMIN_PAYMENT_STATUSES,
@@ -57,6 +58,7 @@ export default async function Orders({ searchParams }: {
     fulfillment?: string;
   }>;
 }) {
+  await requirePage(true);
   const query = await searchParams;
   const requestedPage = Math.floor(Math.max(1, Math.min(10000, Number(query.page) || 1)));
   const search = (typeof query.search === "string" ? query.search : "").slice(0, 80);
@@ -64,6 +66,8 @@ export default async function Orders({ searchParams }: {
   const fulfillment = typeof query.fulfillment === "string" ? query.fulfillment : "";
 
   const statsPromise = adminOrderStats();
+  // The list can redirect or throw before the stats component starts awaiting.
+  void statsPromise.catch(() => undefined);
   const result = await adminOrders({ page: requestedPage, search, payment, fulfillment });
   const { orders, count, page } = result;
   const first = count ? (page - 1) * 25 + 1 : 0;
