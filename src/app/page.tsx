@@ -6,6 +6,7 @@ import { getHomepageCatalog } from "@/lib/catalog/repository";
 import { Newsletter } from "@/components/newsletter";
 import { HomeMotion } from "@/components/home-motion";
 import { KulturaProductOrbit } from "@/components/kultura-product-orbit";
+import { KulturaAtmosphere } from "@/components/kultura-atmosphere";
 import { InteractiveEditorialPhoto } from "@/components/interactive-editorial-photo";
 import { Suspense } from "react";
 import styles from "./home.module.css";
@@ -338,7 +339,8 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
         </div>
       </section>
 
-      <section className={styles.bothSection} data-reveal>
+      <KulturaAtmosphere>
+        <section className={styles.bothSection} data-kultura-both data-reveal>
         <p className={styles.bothEyebrow}>{t("KULTURA / CATEGORIES")}</p>
         <h2>{t("FASHION OR KULTURA?")}<br /><em>{t("BOTH.")}</em></h2>
         <p className={styles.bothLead}>{t("Choose the piece. Keep the attitude.")}</p>
@@ -347,7 +349,7 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
 
       <KulturaProductOrbit products={showcase} categories={categories} />
 
-      <section className={styles.endScene}>
+        <section className={styles.endScene} data-kultura-ending>
         <Image src={thirdProduct?.image ?? campaignImage} alt="" fill sizes="100vw" />
         <div className={styles.endShade} />
         <div className={styles.endCopy} data-reveal>
@@ -356,6 +358,8 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
           <Link href="/shop" className={styles.endCta}>{t("ENTER SHOP ↗")}</Link>
         </div>
       </section>
+
+      </KulturaAtmosphere>
 
       <Newsletter />
     </>
