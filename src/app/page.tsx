@@ -7,7 +7,7 @@ import { CatalogNotice } from "@/components/catalog-notice";
 import { Newsletter } from "@/components/newsletter";
 import { LocalizedCategoryName } from "@/components/localized-category-name";
 import { HomeMotion } from "@/components/home-motion";
-import { MotionRevealLink } from "@/components/motion-editorial";
+import { Category3DCard } from "@/components/category-3d-card";
 import { Suspense } from "react";
 import styles from "./home.module.css";
 import { getServerLocale } from "@/lib/i18n-server";
@@ -359,21 +359,16 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
         <CatalogNotice status={status} empty={!showcase.length && !categories.length} />
         <div className={styles.galleryGrid}>
           {categoryTiles.map((category, index) => (
-            <MotionRevealLink
-              href={`/shop/${category.slug}`}
-              className={styles.galleryCard}
-              index={index}
-              gallery
+            <Category3DCard
               key={category.slug}
-            >
-              <Image src={category.image} alt={category.alt} fill sizes="(max-width: 720px) 92vw, 25vw" />
-              <span className={styles.galleryShade} />
-              <span className={styles.galleryIndex}>0{index + 1}</span>
-              <div className={styles.galleryCopy}>
-                <strong><LocalizedCategoryName name={category.name} slug={category.slug} /></strong>
-                <span>{t("SHOP CATEGORY ↗")}</span>
-              </div>
-            </MotionRevealLink>
+              slug={category.slug}
+              name={category.name}
+              image={category.image}
+              alt={category.alt}
+              index={index}
+              className={styles.galleryCard}
+              shopLabel={t("SHOP CATEGORY ↗")}
+            />
           ))}
         </div>
       </section>
