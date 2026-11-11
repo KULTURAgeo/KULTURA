@@ -349,8 +349,10 @@ export function KulturaAtmosphere({ children }: { children: ReactNode }) {
         <div className={styles.orbitOne} />
         <div className={styles.orbitTwo} />
         <div className={styles.chromeMark}>
-          <Image src="/images/kultura-globe-scene.webp" alt="" fill loading="lazy"
-            sizes="(max-width: 720px) 78vw, 520px" />
+          <div className={styles.globeSpin}>
+            <Image src="/images/kultura-globe-scene.webp" alt="" fill loading="lazy"
+              sizes="(max-width: 720px) 78vw, 520px" />
+          </div>
         </div>
         <div className={styles.brandWord}>
           <span>KULTURA</span>
