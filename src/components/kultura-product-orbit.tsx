@@ -91,10 +91,20 @@ export function KulturaProductOrbit({ products, categories }: {
   const [selected, setSelected] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
   const [inView, setInView] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const rootRef = useRef<HTMLElement>(null);
   const wheelRef = useRef<HTMLDivElement>(null);
-  const pointerRef = useRef<{ startX: number; startY: number; selected: number } | null>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const pointerRef = useRef<{
+    startX: number; angle: number; lastX: number; lastTime: number;
+    velocity: number; capturedBy: HTMLElement | null;
+  } | null>(null);
+  const angleRef = useRef(0);
+  const targetRef = useRef(0);
+  const velocityRef = useRef(0);
+  const tiltRef = useRef(0);
+  const tiltTargetRef = useRef(0);
   const movedRef = useRef(false);
 
   useEffect(() => {
@@ -115,48 +125,187 @@ export function KulturaProductOrbit({ products, categories }: {
     };
   }, []);
 
+  // RAF springs provide inertial movement without loading a heavy 3D runtime.
+  // Runs only while the scene is visible; never affects the LCP hero.
   useEffect(() => {
-    if (!inView || !autoPlay || reducedMotion) return;
-    const timer = window.setInterval(() => setSelected((current) => (current + 1) % ITEMS.length), 7000);
+    const wheel = wheelRef.current;
+    if (!wheel) return;
+    if (reducedMotion) {
+      angleRef.current = targetRef.current;
+      velocityRef.current = 0;
+      wheel.style.transform = "rotateX(-9deg) rotateY(" + angleRef.current + "deg)";
+      return;
+    }
+    if (!inView) return;
+    let raf = 0;
+    let previous = 0;
+    const tick = (time: number) => {
+      const dt = Math.min(2, Math.max(0.2, (time - (previous || time - 16.67)) / 16.67));
+      previous = time;
+      const distance = targetRef.current - angleRef.current;
+      velocityRef.current += distance * 0.052 * dt;
+      velocityRef.current *= Math.pow(0.76, dt);
+      angleRef.current += velocityRef.current * dt;
+      if (Math.abs(distance) < 0.01 && Math.abs(velocityRef.current) < 0.01) {
+        angleRef.current = targetRef.current;
+        velocityRef.current = 0;
+      }
+      tiltRef.current += (tiltTargetRef.current - tiltRef.current) * Math.min(1, 0.095 * dt);
+      wheel.style.transform = "rotateX(" + (-9 + tiltRef.current).toFixed(3) + "deg) rotateY(" + angleRef.current.toFixed(3) + "deg)";
+      raf = window.requestAnimationFrame(tick);
+    };
+    raf = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(raf);
+  }, [inView, reducedMotion]);
+
+  function snapTo(index: number, isAutomatic = false) {
+    const normalized = (index + ITEMS.length) % ITEMS.length;
+    const base = -normalized * 60;
+    // Auto advance always travels forward, including the last-to-first edge.
+    const target = isAutomatic
+      ? targetRef.current - 60
+      : base + 360 * Math.round((targetRef.current - base) / 360);
+    targetRef.current = target;
+    setSelected(normalized);
+    if (!isAutomatic) setAutoPlay(false);
+    if (reducedMotion && wheelRef.current) {
+      angleRef.current = target;
+      wheelRef.current.style.transform = "rotateX(-9deg) rotateY(" + target + "deg)";
+    }
+  }
+
+  useEffect(() => {
+    if (!inView || isHovering || !autoPlay || reducedMotion) return;
+    const timer = window.setInterval(() => {
+      targetRef.current -= 60;
+      setSelected((index) => (index + 1) % ITEMS.length);
+    }, 6200);
     return () => window.clearInterval(timer);
-  }, [inView, autoPlay, reducedMotion]);
+  }, [inView, isHovering, autoPlay, reducedMotion]);
 
   function choose(index: number) {
-    setAutoPlay(false);
-    setSelected((index + ITEMS.length) % ITEMS.length);
+    snapTo(index);
+  }
+
+  function updateSceneLighting(event: PointerEvent<HTMLDivElement>) {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const box = stage.getBoundingClientRect();
+    const x = (event.clientX - box.left) / Math.max(box.width, 1);
+    const y = (event.clientY - box.top) / Math.max(box.height, 1);
+    stage.style.setProperty("--light-x", (x * 100).toFixed(1) + "%");
+    stage.style.setProperty("--light-y", (y * 100).toFixed(1) + "%");
+    tiltTargetRef.current = (0.5 - y) * 13;
   }
 
   function startDrag(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType === "mouse" && event.button !== 0) return;
-    pointerRef.current = { startX: event.clientX, startY: event.clientY, selected };
+    const clicked = event.target as Element;
+    const button = clicked.closest("button");
+    const capturer = button instanceof HTMLElement ? button : event.currentTarget;
+    pointerRef.current = {
+      startX: event.clientX,
+      angle: targetRef.current,
+      lastX: event.clientX,
+      lastTime: event.timeStamp,
+      velocity: 0,
+      capturedBy: capturer,
+    };
     movedRef.current = false;
-    event.currentTarget.setPointerCapture(event.pointerId);
+    capturer.setPointerCapture(event.pointerId);
+    updateSceneLighting(event);
   }
 
   function drag(event: PointerEvent<HTMLDivElement>) {
-    if (!pointerRef.current || !wheelRef.current) return;
-    const diffX = event.clientX - pointerRef.current.startX;
-    if (Math.abs(diffX) > 8) movedRef.current = true;
-    wheelRef.current.style.setProperty("--drag-y", `${(diffX * 0.24).toFixed(2)}deg`);
-    wheelRef.current.style.transitionDuration = "0ms";
+    updateSceneLighting(event);
+    const pointer = pointerRef.current;
+    if (!pointer) return;
+    const distance = event.clientX - pointer.startX;
+    if (Math.abs(distance) > 6) movedRef.current = true;
+    const elapsed = Math.max(8, event.timeStamp - pointer.lastTime);
+    const instantVelocity = (event.clientX - pointer.lastX) / elapsed;
+    pointer.velocity = pointer.velocity * 0.64 + instantVelocity * 0.36;
+    pointer.lastX = event.clientX;
+    pointer.lastTime = event.timeStamp;
+    targetRef.current = pointer.angle + distance * 0.33;
+    if (movedRef.current) setAutoPlay(false);
   }
 
   function endDrag(event: PointerEvent<HTMLDivElement>) {
-    const origin = pointerRef.current;
-    if (!origin) return;
-    const diffX = event.clientX - origin.startX;
+    const pointer = pointerRef.current;
+    if (!pointer) return;
     pointerRef.current = null;
-    if (wheelRef.current) {
-      wheelRef.current.style.removeProperty("--drag-y");
-      wheelRef.current.style.removeProperty("transition-duration");
-    }
-    if (Math.abs(diffX) > 22) {
+    const distance = event.clientX - pointer.startX;
+    if (Math.abs(distance) > 6) {
+      // Gentle inertial projection, then a magnetic snap to the nearest face.
+      const projected = targetRef.current + Math.max(-26, Math.min(26, pointer.velocity * 42));
+      const snapped = Math.round(projected / 60) * 60;
+      targetRef.current = snapped;
+      velocityRef.current += Math.max(-5.5, Math.min(5.5, pointer.velocity * 4.5));
+      setSelected(((-Math.round(snapped / 60)) % ITEMS.length + ITEMS.length) % ITEMS.length);
       setAutoPlay(false);
-      setSelected((origin.selected - Math.round(diffX / 95) % ITEMS.length + ITEMS.length) % ITEMS.length);
+    } else {
+      targetRef.current = pointer.angle;
     }
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
+    if (pointer.capturedBy?.hasPointerCapture(event.pointerId)) {
+      pointer.capturedBy.releasePointerCapture(event.pointerId);
     }
+  }
+
+  function resetStage() {
+    tiltTargetRef.current = 0;
+    setIsHovering(false);
+    stageRef.current?.style.removeProperty("--light-x");
+    stageRef.current?.style.removeProperty("--light-y");
+  }
+
+  function moveCard(event: PointerEvent<HTMLButtonElement>) {
+    if (event.pointerType === "touch") return;
+    const card = event.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = (event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5;
+    const y = (event.clientY - rect.top) / Math.max(rect.height, 1) - 0.5;
+    card.style.setProperty("--lean-x", (-y * 12).toFixed(2) + "deg");
+    card.style.setProperty("--lean-y", (x * 12).toFixed(2) + "deg");
+    card.style.setProperty("--glint-x", ((x + 0.5) * 100).toFixed(1) + "%");
+    card.style.setProperty("--glint-y", ((y + 0.5) * 100).toFixed(1) + "%");
+  }
+
+  function resetCard(event: PointerEvent<HTMLButtonElement>) {
+    const card = event.currentTarget;
+    card.style.removeProperty("--lean-x");
+    card.style.removeProperty("--lean-y");
+    card.style.removeProperty("--glint-x");
+    card.style.removeProperty("--glint-y");
+  }
+
+  function moveText(event: PointerEvent<HTMLElement>) {
+    if (event.pointerType === "touch") return;
+    const target = event.currentTarget;
+    const box = target.getBoundingClientRect();
+    const x = (event.clientX - box.left) / Math.max(box.width, 1) - 0.5;
+    const y = (event.clientY - box.top) / Math.max(box.height, 1) - 0.5;
+    target.style.setProperty("--text-tilt-x", (-y * 7).toFixed(2) + "deg");
+    target.style.setProperty("--text-tilt-y", (x * 8).toFixed(2) + "deg");
+    target.style.setProperty("--text-glow-x", ((x + 0.5) * 100).toFixed(1) + "%");
+  }
+
+  function resetText(event: PointerEvent<HTMLElement>) {
+    const target = event.currentTarget;
+    target.style.removeProperty("--text-tilt-x");
+    target.style.removeProperty("--text-tilt-y");
+    target.style.removeProperty("--text-glow-x");
+  }
+
+  function moveButton(event: PointerEvent<HTMLButtonElement>) {
+    if (event.pointerType === "touch") return;
+    const target = event.currentTarget;
+    const rect = target.getBoundingClientRect();
+    target.style.setProperty("--glint-x", ((event.clientX - rect.left) / Math.max(rect.width, 1) * 100).toFixed(1) + "%");
+  }
+
+  function resetButton(event: PointerEvent<HTMLButtonElement>) {
+    event.currentTarget.style.removeProperty("--glint-x");
   }
 
   const current = ITEMS[selected];
@@ -167,27 +316,29 @@ export function KulturaProductOrbit({ products, categories }: {
     ? products.find((product) => product.categorySlug === category.slug)
     : undefined;
   const categoryHref = category ? "/shop/" + encodeURIComponent(category.slug) : "/shop";
-  const wheelStyle = { "--wheel-rotation": `${-selected * 60}deg` } as CSSProperties;
 
   return (
     <section ref={rootRef} className={styles.section} aria-label={isKa ? "KULTURA 3D კოლექციები" : "KULTURA interactive 3D collections"}>
       <div className={styles.backgroundGrid} aria-hidden="true" />
       <div className={styles.haze} aria-hidden="true" />
-      <div className={styles.heading}>
+      <div className={styles.heading} onPointerMove={moveText} onPointerLeave={resetText}>
         <span className={styles.overline}>KULTURA / INTERACTIVE SHOWROOM / 2026</span>
         <h2>{isKa ? "აღმოაჩინე შენი ფორმა." : "EXPLORE THE FORM."}</h2>
         <p>{isKa ? "გადაატრიალე 3D ორბიტა და აირჩიე კატეგორია." : "Drag the 3D orbit. Select a collection. Discover the details."}</p>
       </div>
 
       <div className={styles.layout}>
-        <div className={styles.stage} onPointerDown={startDrag} onPointerMove={drag}
+        <div ref={stageRef} className={styles.stage} onPointerDown={startDrag} onPointerMove={drag}
           onPointerUp={endDrag} onPointerCancel={endDrag}
+          onPointerEnter={() => setIsHovering(true)} onPointerLeave={resetStage}
           aria-label={isKa ? "კატეგორიების 3D ორბიტა" : "Interactive 3D category orbit"}>
           <div className={styles.halo} aria-hidden="true" />
+          <div className={styles.spotlight} aria-hidden="true" />
+          <div className={styles.floorGlow} aria-hidden="true" />
           <div className={styles.core} aria-hidden="true">
             <Image src="/images/kultura-globe-scene.webp" alt="" fill sizes="(max-width: 750px) 230px, 380px" loading="lazy" />
           </div>
-          <div ref={wheelRef} className={styles.wheel} style={wheelStyle}>
+          <div ref={wheelRef} className={styles.wheel}>
             {ITEMS.map((item, index) => {
               const match = categories.find((candidate) => item.aliases.includes(candidate.slug.toLowerCase()));
               const product = match ? products.find((entry) => entry.categorySlug === match.slug) : undefined;
@@ -197,10 +348,14 @@ export function KulturaProductOrbit({ products, categories }: {
                   <button className={styles.orbitCard + (selected === index ? " " + styles.currentCard : "")}
                     type="button" aria-label={(isKa ? item.ka : item.en) + " / " + (isKa ? "არჩევა" : "select")}
                     aria-pressed={selected === index}
+                    onPointerMove={moveCard}
+                    onPointerLeave={resetCard}
                     onClick={(event) => {
                       if (movedRef.current) { event.preventDefault(); movedRef.current = false; return; }
                       choose(index);
                     }}>
+                    <span className={styles.cardDepth} aria-hidden="true" />
+                    <span className={styles.cardGlint} aria-hidden="true" />
                     <span className={styles.cardArt}>
                       {product ? (
                         <Image src={product.image} alt={product.name} fill
@@ -209,6 +364,7 @@ export function KulturaProductOrbit({ products, categories }: {
                         <CategorySculpture item={item} index={index} />
                       )}
                     </span>
+                    <span className={styles.cardLogo} aria-hidden="true">KULTURA / 2026</span>
                     <span className={styles.cardFooter}>
                       <span>0{index + 1}</span>
                       <strong>{isKa ? item.ka : item.en}</strong>
@@ -222,7 +378,7 @@ export function KulturaProductOrbit({ products, categories }: {
           <div className={styles.sceneHint} aria-hidden="true">{isKa ? "გადაატრიალე ↔" : "DRAG TO ROTATE ↔"}</div>
         </div>
 
-        <div className={styles.info} aria-live="polite" aria-atomic="true">
+        <div className={styles.info} onPointerMove={moveText} onPointerLeave={resetText} aria-live="polite" aria-atomic="true">
           <span className={styles.infoIndex}>{String(selected + 1).padStart(2, "0")} <span>/ 06</span></span>
           <span className={styles.infoEyebrow}>{current.eyebrow}</span>
           <h3>{isKa ? current.ka : current.en}</h3>
@@ -244,6 +400,7 @@ export function KulturaProductOrbit({ products, categories }: {
           {ITEMS.map((item, index) => (
             <button key={item.id} type="button" className={styles.tab}
               aria-pressed={selected === index}
+              onPointerMove={moveButton} onPointerLeave={resetButton}
               onClick={() => choose(index)}>
               <span>{String(index + 1).padStart(2, "0")}</span>
               {isKa ? item.ka : item.en}
@@ -252,6 +409,7 @@ export function KulturaProductOrbit({ products, categories }: {
         </div>
         <button type="button" className={styles.autoplay}
           aria-pressed={autoPlay}
+          onPointerMove={moveButton} onPointerLeave={resetButton}
           onClick={() => setAutoPlay((value) => !value)}>
           {autoPlay ? "Ⅱ" : "▶"} <span>{autoPlay ? (isKa ? "პაუზა" : "PAUSE") : (isKa ? "ავტომატური ბრუნვა" : "AUTO ROTATE")}</span>
         </button>
