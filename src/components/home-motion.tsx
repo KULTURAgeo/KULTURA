@@ -262,6 +262,14 @@ export function HomeMotion({
             Math.min(globePhysicalHeight / 2, 24), 17, buttonGrow,
           );
 
+          // The scroll-runway itself controls when photo links become live.
+          // Keep them unfocusable and non-interactive during the globe zoom,
+          // then allow mouse, touch and keyboard access only at the settled scene.
+          const sceneInteractive = p >= 0.997;
+          phoneTransition.style.pointerEvents = sceneInteractive ? "auto" : "none";
+          phoneTransition.inert = !sceneInteractive;
+          phoneTransition.setAttribute("aria-hidden", sceneInteractive ? "false" : "true");
+
           phoneTransition.style.opacity = String(portalEntry);
           phoneTransition.style.clipPath =
             `inset(${mix(insetTop, 0, portalGrow)}px ${mix(insetRight, 0, portalGrow)}px ${mix(insetBottom, 0, portalGrow)}px ${mix(insetLeft, 0, portalGrow)}px round ${mix(portalRadius, 0, portalGrow)}px)`;
