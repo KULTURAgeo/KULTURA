@@ -22,6 +22,7 @@ type ProductFilters = {
   categoryId?: string;
   excludeCategoryId?: string;
   excludeSlug?: string;
+  slugs?: readonly string[];
   featured?: boolean;
   drop?: boolean;
   limit?: number;
@@ -61,6 +62,7 @@ async function loadProducts(
     if (filters.excludeCategoryId)
       query = query.neq("category_id", filters.excludeCategoryId);
     if (filters.excludeSlug) query = query.neq("slug", filters.excludeSlug);
+    if (filters.slugs) query = query.in("slug", filters.slugs);
     if (filters.featured !== undefined)
       query = query.eq("featured", filters.featured);
     if (filters.drop !== undefined) query = query.eq("is_drop", filters.drop);
@@ -375,6 +377,17 @@ export const getCatalog = cache(async (): Promise<CatalogResult> => {
 });
 
 export const getProductBySlug = cache(loadProductBySlug);
+
+export async function getRecentProducts(slugs: readonly string[]) {
+  try {
+    const client = createCatalogClient();
+    if (!client) return null;
+    return await loadProducts(client, { slugs, limit: slugs.length });
+  } catch {
+    reportFailure("Recently viewed products");
+    return null;
+  }
+}
 
 // Cart validation intentionally bypasses the storefront cache: price and stock
 // must always be checked against current trusted values before checkout.

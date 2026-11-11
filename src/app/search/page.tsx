@@ -6,7 +6,7 @@ import { LocalizedLabel } from "@/components/localized-label";
 import { getCatalog } from "@/lib/catalog/repository";
 
 export const metadata: Metadata = {
-  title: "Search | KULTURA",
+  title: "Search",
   robots: { index: false, follow: true },
 };
 
