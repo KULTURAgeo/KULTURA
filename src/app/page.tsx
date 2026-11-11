@@ -8,6 +8,7 @@ import { Newsletter } from "@/components/newsletter";
 import { LocalizedCategoryName } from "@/components/localized-category-name";
 import { HomeMotion } from "@/components/home-motion";
 import { Category3DCard } from "@/components/category-3d-card";
+import { KulturaProductOrbit } from "@/components/kultura-product-orbit";
 import { Suspense } from "react";
 import styles from "./home.module.css";
 import { getServerLocale } from "@/lib/i18n-server";
@@ -354,6 +355,8 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
         <p className={styles.bothLead}>{t("Choose the piece. Keep the attitude.")}</p>
         <Link href="/shop" className={styles.cta}>{t("CATEGORIES")}</Link>
       </section>
+
+      <KulturaProductOrbit products={showcase} categories={categories} />
 
       <section className={styles.gallerySection}>
         <CatalogNotice status={status} empty={!showcase.length && !categories.length} />
