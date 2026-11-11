@@ -78,10 +78,33 @@
   aspect-ratio: 1091 / 630;
   margin: 0;
   opacity: var(--mark-opacity);
-  filter: grayscale(1) brightness(1.22) drop-shadow(0 0 25px rgba(226,238,248,.3));
   transform: translate3d(calc(-50% + var(--parallax-x)), var(--parallax-y), 0);
+  /* Screen compositing makes the original logo's black rectangular background
+     disappear while preserving its exact chrome globe highlights. */
+  mix-blend-mode: screen;
+  pointer-events: none;
 }
-.chromeMark img { object-fit: contain; }
+.globeSpin {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  animation: kulturaGlobeSpin 26s linear infinite;
+  will-change: transform;
+  -webkit-mask-image: radial-gradient(
+    ellipse 50% 49% at 50% 50%, #000 82%, rgba(0,0,0,.96) 90%, transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 50% 49% at 50% 50%, #000 82%, rgba(0,0,0,.96) 90%, transparent 100%
+  );
+}
+.globeSpin img {
+  object-fit: contain;
+  filter: grayscale(1) brightness(1.2) contrast(1.06);
+}
+@keyframes kulturaGlobeSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 .brandWord {
   position: absolute;
   bottom: 8%;
@@ -177,6 +200,7 @@
 @media (prefers-reduced-motion: reduce) {
   .particles { opacity: .3; }
   .chromeMark { transform: translateX(-50%); }
+  .globeSpin { animation: none; will-change: auto; }
   .brandWord { transform: none; }
   .orbitOne, .orbitTwo { transform: translateX(-50%) rotateX(72deg); }
 }
