@@ -22,6 +22,7 @@ export function WishlistAddToBag({ product }: { product: Product }) {
     <div>
       <div className="wishlist-quick-add">
         <select
+          name="variant_id"
           aria-label={`Choose size and color for ${product.name}`}
           value={variantId}
           onChange={(event) => {

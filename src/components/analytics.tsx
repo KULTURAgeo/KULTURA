@@ -5,11 +5,25 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { readCookieConsent } from "@/lib/cookie-consent";
 
+type AnalyticsProvider = "google" | "meta";
+
+type MetaPixel = ((...args: unknown[]) => void) & {
+  callMethod?: (...args: unknown[]) => void;
+};
+
+const ANALYTICS_READY_EVENT = "kultura:analytics-ready";
+let googleSdkReady = false;
+
+function readyMetaPixel() {
+  const pixel = window.fbq;
+  return typeof pixel?.callMethod === "function" ? pixel : undefined;
+}
+
 declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
-    fbq?: (...args: unknown[]) => void;
+    fbq?: MetaPixel;
     _fbq?: unknown;
   }
 }
@@ -41,31 +55,23 @@ export function Analytics({
 }: AnalyticsProps) {
   const pathname = usePathname();
   const privatePage = /^\/(?:auth|login|register|forgot-password|reset-password|account|admin|checkout|order-confirmation)(?:\/|$)/.test(pathname);
-  const [googleReady, setGoogleReady] = useState(false);
+  const [googleReady, setGoogleReady] = useState(() => googleSdkReady);
   const [metaReady, setMetaReady] = useState(false);
 
-  const analyticsReady =
-    (!googleAnalyticsId || googleReady) && (!metaPixelId || metaReady);
+  useEffect(() => {
+    if (privatePage || !googleReady || !googleAnalyticsId || !window.gtag) return;
+    window.gtag("event", "page_view", {
+      page_location: pageLocation(),
+      page_title: document.title,
+    });
+    window.dispatchEvent(new Event(ANALYTICS_READY_EVENT));
+  }, [privatePage, pathname, googleReady, googleAnalyticsId]);
 
   useEffect(() => {
-    if (analyticsReady) {
-      window.dispatchEvent(new Event("kultura:analytics-ready"));
-    }
-  }, [analyticsReady]);
-
-  useEffect(() => {
-    if (privatePage) return;
-    if (googleReady && googleAnalyticsId && window.gtag) {
-      window.gtag("event", "page_view", {
-        page_location: pageLocation(),
-        page_title: document.title,
-      });
-    }
-
-    if (metaReady && metaPixelId && window.fbq) {
-      window.fbq("track", "PageView");
-    }
-  }, [privatePage, pathname, googleReady, metaReady, googleAnalyticsId, metaPixelId]);
+    if (privatePage || !metaReady || !metaPixelId) return;
+    readyMetaPixel()?.("track", "PageView");
+    window.dispatchEvent(new Event(ANALYTICS_READY_EVENT));
+  }, [privatePage, pathname, metaReady, metaPixelId]);
 
   if (privatePage) return null;
 
@@ -73,42 +79,66 @@ export function Analytics({
     <>
       {googleAnalyticsId ? (
         <>
-          <Script nonce={nonce}
-            src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
-            strategy="afterInteractive"
-            onLoad={() => setGoogleReady(true)}
-          />
           <Script nonce={nonce} id="google-analytics" strategy="afterInteractive">
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               window.gtag = gtag;
               gtag('js', new Date());
-              gtag('config', '${googleAnalyticsId}', { send_page_view: false, page_location: window.location.origin + window.location.pathname, page_referrer: '' });
+              gtag('config', '${googleAnalyticsId}', {
+                cookie_domain: 'none',
+                allow_google_signals: false,
+                allow_ad_personalization_signals: false,
+                send_page_view: false,
+                page_location: window.location.origin + window.location.pathname,
+                page_referrer: ''
+              });
             `}
           </Script>
+          <Script
+            nonce={nonce}
+            src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+            strategy="afterInteractive"
+            onLoad={() => {
+              googleSdkReady = true;
+              setGoogleReady(true);
+            }}
+            onError={() => {
+              googleSdkReady = false;
+              setGoogleReady(false);
+            }}
+          />
         </>
       ) : null}
 
       {metaPixelId ? (
-        <Script nonce={nonce}
-          id="meta-pixel"
-          strategy="afterInteractive"
-          onLoad={() => setMetaReady(true)}
-        >
-          {`
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('set', 'autoConfig', false, '${metaPixelId}');
-            fbq('init', '${metaPixelId}');
-          `}
-        </Script>
+        <>
+          <Script nonce={nonce} id="meta-pixel-init" strategy="afterInteractive">
+            {`
+              (function(w) {
+                if (w.fbq) return;
+                var pixel = w.fbq = function() {
+                  if (pixel.callMethod) pixel.callMethod.apply(pixel, arguments);
+                  else pixel.queue.push(arguments);
+                };
+                if (!w._fbq) w._fbq = pixel;
+                pixel.push = pixel;
+                pixel.loaded = true;
+                pixel.version = '2.0';
+                pixel.queue = [];
+                pixel('set', 'autoConfig', false, '${metaPixelId}');
+                pixel('init', '${metaPixelId}');
+              })(window);
+            `}
+          </Script>
+          <Script
+            nonce={nonce}
+            src="https://connect.facebook.net/en_US/fbevents.js"
+            strategy="afterInteractive"
+            onReady={() => setMetaReady(Boolean(readyMetaPixel()))}
+            onError={() => setMetaReady(false)}
+          />
+        </>
       ) : null}
     </>
   );
@@ -124,32 +154,39 @@ export function trackViewItem({
   name: string;
   category: string;
   price: number;
-}) {
+}, sent: Set<AnalyticsProvider>) {
   const value = price / 100;
   const consent = readCookieConsent();
 
-  if (consent?.analytics) window.gtag?.("event", "view_item", {
-    currency: "GEL",
-    value,
-    items: [
-      {
-        item_id: id,
-        item_name: name,
-        item_brand: "KULTURA",
-        item_category: category,
-        price: value,
-        quantity: 1,
-      } satisfies EcommerceItem,
-    ],
-  });
+  if (consent?.analytics && googleSdkReady && window.gtag && !sent.has("google")) {
+    sent.add("google");
+    window.gtag("event", "view_item", {
+      currency: "GEL",
+      value,
+      items: [
+        {
+          item_id: id,
+          item_name: name,
+          item_brand: "KULTURA",
+          item_category: category,
+          price: value,
+          quantity: 1,
+        } satisfies EcommerceItem,
+      ],
+    });
+  }
 
-  if (consent?.marketing) window.fbq?.("track", "ViewContent", {
-    content_ids: [id],
-    content_name: name,
-    content_type: "product",
-    value,
-    currency: "GEL",
-  });
+  const meta = readyMetaPixel();
+  if (consent?.marketing && meta && !sent.has("meta")) {
+    sent.add("meta");
+    meta("track", "ViewContent", {
+      content_ids: [id],
+      content_name: name,
+      content_type: "product",
+      value,
+      currency: "GEL",
+    });
+  }
 }
 
 export function trackAddToCart({
@@ -170,7 +207,7 @@ export function trackAddToCart({
   const value = (price * quantity) / 100;
   const consent = readCookieConsent();
 
-  if (consent?.analytics) window.gtag?.("event", "add_to_cart", {
+  if (consent?.analytics && googleSdkReady) window.gtag?.("event", "add_to_cart", {
     currency: "GEL",
     value,
     items: [
@@ -186,7 +223,7 @@ export function trackAddToCart({
     ],
   });
 
-  if (consent?.marketing) window.fbq?.("track", "AddToCart", {
+  if (consent?.marketing) readyMetaPixel()?.("track", "AddToCart", {
     content_ids: [id],
     content_name: name,
     content_type: "product",

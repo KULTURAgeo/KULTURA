@@ -158,6 +158,7 @@ export function CookieConsent({
                 </div>
                 <input
                   type="checkbox"
+                  name="consent_analytics"
                   checked={draft.analytics}
                   onChange={(event) =>
                     setDraft((current) => ({
@@ -175,6 +176,7 @@ export function CookieConsent({
                 </div>
                 <input
                   type="checkbox"
+                  name="consent_marketing"
                   checked={draft.marketing}
                   onChange={(event) =>
                     setDraft((current) => ({
