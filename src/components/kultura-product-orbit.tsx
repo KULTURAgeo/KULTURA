@@ -318,7 +318,7 @@ export function KulturaProductOrbit({ products, categories }: {
   const categoryHref = category ? "/shop/" + encodeURIComponent(category.slug) : "/shop";
 
   return (
-    <section ref={rootRef} className={styles.section} aria-label={isKa ? "KULTURA 3D კოლექციები" : "KULTURA interactive 3D collections"}>
+    <section ref={rootRef} data-kultura-showroom className={styles.section} aria-label={isKa ? "KULTURA 3D კოლექციები" : "KULTURA interactive 3D collections"}>
       <div className={styles.backgroundGrid} aria-hidden="true" />
       <div className={styles.haze} aria-hidden="true" />
       <div className={styles.heading} onPointerMove={moveText} onPointerLeave={resetText}>

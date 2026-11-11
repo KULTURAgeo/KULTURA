@@ -1,0 +1,182 @@
+.story {
+  position: relative;
+  isolation: isolate;
+  background: #050608;
+  color: #f4f5f5;
+}
+.field {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  margin-bottom: -100svh;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  --mark-opacity: .35;
+  --word-opacity: .5;
+  --ring-angle: 0deg;
+  --story-glow: 1;
+  --parallax-x: 0px;
+  --parallax-y: 0px;
+}
+.field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 65% 25% at 50% 18%, rgba(148,166,185,.12), transparent 75%),
+    radial-gradient(ellipse 80% 22% at 50% 92%, rgba(143,174,196,.12), transparent 78%),
+    linear-gradient(#090b0e, #040506 33%, #050709 75%, #090c0e);
+}
+.ambientLight {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(ellipse at 54% 55%, rgba(203,219,238,.14), transparent 40%),
+    radial-gradient(ellipse at 30% 72%, rgba(50,80,110,.18), transparent 47%);
+  opacity: var(--story-glow);
+}
+.particles {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: .92;
+  transform: translateZ(0);
+}
+.orbitOne, .orbitTwo {
+  position: absolute;
+  top: 26%;
+  left: 50%;
+  height: min(54vw, 70svh);
+  width: min(76vw, 960px);
+  margin: 0;
+  transform-origin: center center;
+  border: 1px solid rgba(217,231,245,.12);
+  box-shadow: 0 0 80px rgba(183,206,228,.035);
+  border-radius: 50%;
+  transform: translateX(-50%) rotateX(73deg) rotateZ(var(--ring-angle));
+  opacity: .65;
+}
+.orbitTwo {
+  top: 32%;
+  width: min(61vw, 730px);
+  height: min(41vw, 53svh);
+  border-style: dashed;
+  border-color: rgba(224,235,245,.15);
+  transform: translateX(-50%) rotateX(69deg) rotateZ(calc(-1 * var(--ring-angle)));
+  opacity: .42;
+}
+.chromeMark {
+  position: absolute;
+  top: 29%;
+  left: 50%;
+  width: min(520px, 78vw);
+  aspect-ratio: 1091 / 630;
+  margin: 0;
+  opacity: var(--mark-opacity);
+  filter: grayscale(1) brightness(1.22) drop-shadow(0 0 25px rgba(226,238,248,.3));
+  transform: translate3d(calc(-50% + var(--parallax-x)), var(--parallax-y), 0);
+}
+.chromeMark img { object-fit: contain; }
+.brandWord {
+  position: absolute;
+  bottom: 8%;
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  gap: 11px;
+  margin: 0;
+  transform: translate3d(calc(var(--parallax-x) * -.3), calc(var(--parallax-y) * -.3), 0);
+  opacity: var(--word-opacity);
+  text-align: center;
+}
+.brandWord span {
+  color: #fff;
+  font-size: clamp(58px, 11.5vw, 170px);
+  line-height: .8;
+  font-weight: 950;
+  letter-spacing: -.095em;
+  text-shadow: 0 0 35px rgba(236,246,255,.24);
+}
+.brandWord small {
+  color: #cdd5dd;
+  font-size: 9px;
+  letter-spacing: .34em;
+  font-weight: 800;
+}
+.groundGlow {
+  position: absolute;
+  left: 15%;
+  bottom: 0;
+  width: 70%;
+  height: 18%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 90%, rgba(148,179,206,.2), transparent 65%);
+  filter: blur(65px);
+}
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: .14;
+  background-image: repeating-linear-gradient(0deg,rgba(255,255,255,.027) 0,transparent 1px,transparent 4px);
+  pointer-events: none;
+}
+.story > :not(.field) {
+  position: relative;
+  z-index: 1;
+}
+/* The title section must reveal the shared particle atmosphere beneath it. */
+.story :global([data-kultura-both]) {
+  background: transparent !important;
+  color: #f5f5f4;
+  min-height: 110svh;
+  padding-bottom: clamp(250px, 36svh, 420px);
+  overflow: visible;
+}
+.story :global([data-kultura-both]) h2 { text-shadow: 0 5px 30px rgba(0,0,0,.6); }
+.story :global([data-kultura-both]) h2 em {
+  -webkit-text-stroke-color: #e9eef4;
+}
+ .story :global([data-kultura-both]) a { position: relative; z-index: 2; }
+.story :global([data-kultura-showroom]) {
+  background: linear-gradient(to bottom, rgba(4,6,9,.9),rgba(4,6,9,.69) 35%, rgba(4,6,9,.75) 77%,rgba(4,6,9,.65)) !important;
+}
+.story :global([data-kultura-ending]) {
+  background: transparent !important;
+  min-height: 115svh;
+}
+.story :global([data-kultura-ending]) > img {
+  z-index: -3;
+  opacity: .24;
+  mask-image: linear-gradient(to bottom,transparent,rgba(0,0,0,.22) 30%,#000);
+}
+.story :global([data-kultura-ending]) :global([class*="endShade"]) {
+  background: linear-gradient(180deg, rgba(4,6,9,.25), rgba(4,6,9,.45));
+}
+.story :global([data-kultura-ending]) :global([class*="endCopy"]) {
+  position: relative;
+  z-index: 2;
+}
+@media (max-width: 720px) {
+  .story :global([data-kultura-both]) {
+    min-height: 92svh;
+    padding-bottom: 220px;
+  }
+  .story :global([data-kultura-ending]) { min-height: 95svh; }
+  .brandWord { bottom: 7%; }
+  .brandWord span { font-size: clamp(52px, 14vw, 82px); }
+  .brandWord small { font-size: 7px; letter-spacing: .24em; }
+  .chromeMark { top: 34%; }
+  .orbitOne { width: 92vw; }
+  .orbitTwo { width: 78vw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .particles { opacity: .3; }
+  .chromeMark { transform: translateX(-50%); }
+  .brandWord { transform: none; }
+  .orbitOne, .orbitTwo { transform: translateX(-50%) rotateX(72deg); }
+}
