@@ -6,6 +6,7 @@ import { getHomepageCatalog } from "@/lib/catalog/repository";
 import { Newsletter } from "@/components/newsletter";
 import { HomeMotion } from "@/components/home-motion";
 import { KulturaProductOrbit } from "@/components/kultura-product-orbit";
+import { InteractiveEditorialPhoto } from "@/components/interactive-editorial-photo";
 import { Suspense } from "react";
 import styles from "./home.module.css";
 import { getServerLocale } from "@/lib/i18n-server";
@@ -284,12 +285,13 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
                   zIndex: 5,
                 }}
               >
-                <Image
-                  src={heroProduct?.image ?? campaignImage}
-                  alt=""
-                  fill
+                <InteractiveEditorialPhoto
+                  image={heroProduct?.image ?? campaignImage}
+                  alt={heroProduct?.name ?? "KULTURA featured product"}
+                  href={heroProduct ? "/product/" + heroProduct.slug : "/shop"}
                   sizes="(max-width: 720px) 55vw, 28vw"
-                  style={{ objectFit: "cover" }}
+                  label="EXPLORE PRODUCT"
+                  featured
                 />
               </div>
 
@@ -316,12 +318,12 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
                     zIndex: 4,
                   }}
                 >
-                  <Image
-                    src={product?.image ?? campaignImage}
-                    alt=""
-                    fill
+                  <InteractiveEditorialPhoto
+                    image={product?.image ?? campaignImage}
+                    alt={product?.name ?? "KULTURA product"}
+                    href={product ? "/product/" + product.slug : "/shop"}
                     sizes="15vw"
-                    style={{ objectFit: "cover" }}
+                    label="VIEW PIECE"
                   />
                 </div>
               ))}
