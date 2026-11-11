@@ -85,7 +85,14 @@ export function Analytics({
               function gtag(){dataLayer.push(arguments);}
               window.gtag = gtag;
               gtag('js', new Date());
-              gtag('config', '${googleAnalyticsId}', { send_page_view: false, page_location: window.location.origin + window.location.pathname, page_referrer: '' });
+              gtag('config', '${googleAnalyticsId}', {
+                cookie_domain: 'none',
+                allow_google_signals: false,
+                allow_ad_personalization_signals: false,
+                send_page_view: false,
+                page_location: window.location.origin + window.location.pathname,
+                page_referrer: ''
+              });
             `}
           </Script>
           <Script
