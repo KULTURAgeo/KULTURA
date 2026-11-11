@@ -9,47 +9,58 @@ import styles from "./recently-viewed.module.css";
 type RecentProduct = Pick<Product, "slug" | "name" | "price" | "image" | "category">;
 const STORAGE_KEY = "kultura:recent-products";
 
-function parseRecent(value: string | null): RecentProduct[] {
-  if (!value) return [];
+function readRecentSlugs() {
   try {
-    const parsed = JSON.parse(value);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.flatMap((item) => {
-      if (!item || typeof item !== "object") return [];
-      const candidate = item as Partial<RecentProduct>;
-      if (
-        typeof candidate.slug !== "string" ||
-        typeof candidate.name !== "string" ||
-        typeof candidate.price !== "number" ||
-        typeof candidate.image !== "string" ||
-        typeof candidate.category !== "string"
-      ) return [];
-      return [candidate as RecentProduct];
-    }).slice(0, 8);
+    const stored: unknown = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]");
+    if (!Array.isArray(stored)) return [];
+    const slugs = stored.flatMap((item: unknown) => {
+      // Previous versions stored a full product snapshot.
+      const slug = typeof item === "string"
+        ? item
+        : item && typeof item === "object" && "slug" in item
+          ? item.slug
+          : undefined;
+      return typeof slug === "string" && slug.length <= 120 && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)
+        ? [slug]
+        : [];
+    });
+    return [...new Set(slugs)].slice(0, 8);
   } catch {
     return [];
   }
 }
 
 export function RecentlyViewed({ product }: { product: Product }) {
-  const [items, setItems] = useState<RecentProduct[]>([]);
+  const slug = product.slug;
+  const [recent, setRecent] = useState<{ forSlug: string; items: RecentProduct[] }>();
+  const items = recent?.forSlug === slug ? recent.items : [];
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const stored = parseRecent(window.localStorage.getItem(STORAGE_KEY));
-      const previous = stored.filter((item) => item.slug !== product.slug);
-      setItems(previous.slice(0, 4));
-      const current: RecentProduct = {
-        slug: product.slug,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        category: product.category,
-      };
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify([current, ...previous].slice(0, 8)));
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [product.slug, product.name, product.price, product.image, product.category]);
+    const previous = readRecentSlugs().filter((item) => item !== slug);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify([slug, ...previous].slice(0, 8)));
+    } catch {
+      // Browsing history is optional when local storage is disabled.
+    }
+    if (!previous.length) return;
+
+    const controller = new AbortController();
+    const query = new URLSearchParams({ slugs: previous.join(",") });
+    const load = async () => {
+      try {
+        const response = await fetch(`/api/catalog/recent?${query}`, { signal: controller.signal });
+        if (!response.ok || controller.signal.aborted) return;
+        const data = await response.json() as { products: RecentProduct[] };
+        if (!controller.signal.aborted) {
+          setRecent({ forSlug: slug, items: data.products.slice(0, 4) });
+        }
+      } catch {
+        // Hide unverified history if the catalog is unavailable.
+      }
+    };
+    void load();
+    return () => controller.abort();
+  }, [slug]);
 
   if (!items.length) return null;
   return (

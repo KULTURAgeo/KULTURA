@@ -76,7 +76,7 @@ export function FloatingHomeNav() {
           width={240}
           height={86}
           className={styles.brandLogo}
-          priority
+          loading="eager"
           unoptimized
         />
       </Link>
