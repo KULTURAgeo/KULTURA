@@ -194,6 +194,7 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
           <div
             data-phone-transition
             aria-hidden="true"
+            inert
             style={{
               position: "absolute",
               left: "50%",
