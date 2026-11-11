@@ -441,3 +441,187 @@
   .core { animation: none; }
   .wheel, .explore { transition: none; }
 }
+
+
+/* Kinetic 3D depth pass: retain CSS-only rendering so the page stays lean. */
+.stage {
+  transform-style: preserve-3d;
+  isolation: isolate;
+  --light-x: 52%;
+  --light-y: 36%;
+}
+.stage::after {
+  position: absolute;
+  content: "";
+  width: 66%;
+  height: 16%;
+  left: 17%;
+  bottom: 16%;
+  pointer-events: none;
+  border-radius: 50%;
+  background: rgba(0,0,0,.82);
+  filter: blur(34px);
+  transform: rotateX(69deg);
+  z-index: -1;
+}
+.spotlight {
+  position: absolute;
+  inset: -7%;
+  pointer-events: none;
+  z-index: 4;
+  background: radial-gradient(ellipse at var(--light-x) var(--light-y),
+    rgba(216,232,249,.11), transparent 36%);
+  mix-blend-mode: screen;
+}
+.floorGlow {
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  bottom: 15%;
+  height: 20%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(162,183,208,.21), transparent 72%);
+  filter: blur(22px);
+  transform: rotateX(65deg);
+  pointer-events: none;
+}
+.wheel {
+  transition: none;
+  transform: rotateX(-9deg) rotateY(0deg);
+  backface-visibility: visible;
+  contain: layout style;
+}
+.orbitItem {
+  transform: rotateY(var(--slot-angle)) translateZ(var(--orbit-radius));
+  backface-visibility: visible;
+  perspective: 880px;
+}
+.orbitCard {
+  overflow: visible;
+  border: 1px solid rgba(226,239,252,.42);
+  transform-style: preserve-3d;
+  transform: translateZ(0) rotateX(var(--lean-x, 0deg)) rotateY(var(--lean-y, 0deg));
+  transition: transform .32s cubic-bezier(.2,.8,.2,1),
+    border-color .25s ease, box-shadow .4s ease;
+  box-shadow: 2px 34px 52px rgba(0,0,0,.78), 0 2px 12px rgba(179,207,233,.08),
+    inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.orbitCard:active { transition-duration: .12s; }
+.cardDepth {
+  position: absolute;
+  inset: 9px -9px -9px 9px;
+  border-radius: inherit;
+  transform: translateZ(-21px);
+  background: linear-gradient(125deg,#6d7885 0%,#141a21 38%,#040608 88%);
+  border: 1px solid rgba(184,205,226,.3);
+  box-shadow: 12px 18px 30px rgba(0,0,0,.52);
+  pointer-events: none;
+}
+.cardGlint {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  transform: translateZ(7px);
+  background:
+    radial-gradient(ellipse at var(--glint-x, 48%) var(--glint-y, 24%),
+      rgba(255,255,255,.28), transparent 36%),
+    linear-gradient(130deg,rgba(255,255,255,.16),transparent 32%,rgba(145,172,203,.07) 75%,transparent);
+  mix-blend-mode: screen;
+  opacity: .55;
+  pointer-events: none;
+  z-index: 3;
+  transition: opacity .22s ease;
+}
+.orbitCard:hover .cardGlint { opacity: .95; }
+.cardArt {
+  transform: translateZ(16px);
+  box-shadow: 0 8px 30px rgba(0,0,0,.46),inset 0 0 20px rgba(255,255,255,.12);
+  border: 1px solid rgba(220,234,247,.16);
+}
+.cardArt img {
+  transform: scale(1.04);
+  transition: transform .8s cubic-bezier(.2,.8,.2,1), filter .4s ease;
+}
+.orbitCard:hover .cardArt img { transform: scale(1.11); filter: saturate(.92) contrast(1.07); }
+.sculpture {
+  transform: translateZ(22px);
+  filter: drop-shadow(12px 20px 10px rgba(0,0,0,.57)) drop-shadow(-3px -4px 12px rgba(207,224,242,.12));
+  transition: transform .55s cubic-bezier(.2,.8,.2,1);
+}
+.orbitCard:hover .sculpture { transform: translateZ(34px) scale(1.055); }
+.cardLogo {
+  position: absolute;
+  z-index: 2;
+  top: 17px;
+  left: 17px;
+  font-size: 7px;
+  font-weight: 850;
+  letter-spacing: .17em;
+  color: rgba(251,253,255,.87);
+  text-shadow: 0 2px 7px #000;
+  transform: translateZ(37px);
+  pointer-events: none;
+}
+.cardFooter {
+  position: relative;
+  transform: translateZ(26px);
+}
+.cardFooter strong {
+  transition: color .2s ease, text-shadow .3s ease;
+}
+.orbitCard:hover .cardFooter strong {
+  color: #fff;
+  text-shadow: 0 0 18px rgba(255,255,255,.36);
+}
+.heading {
+  transform: perspective(1200px) rotateX(var(--text-tilt-x, 0deg)) rotateY(var(--text-tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform .35s cubic-bezier(.2,.8,.2,1);
+}
+.heading h2 {
+  transition: text-shadow .32s ease;
+}
+.heading:hover h2 { text-shadow: 0 0 55px rgba(199,219,240,.22); }
+.info {
+  transform: perspective(1100px) rotateX(var(--text-tilt-x, 0deg)) rotateY(var(--text-tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.infoIndex {
+  transform: translateZ(30px);
+  transition: text-shadow .3s ease;
+}
+.info:hover .infoIndex { text-shadow: 0 0 35px rgba(237,246,255,.28); }
+.info h3 { transform: translateZ(23px); transition: text-shadow .3s; }
+.info:hover h3 { text-shadow: 0 0 30px rgba(207,224,243,.2); }
+.info p, .infoEyebrow { transform: translateZ(12px); }
+.explore { transform: translateZ(24px); }
+.explore:hover { transform: translateZ(24px) translateY(-2px); }
+.tab,.autoplay {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform .22s ease, color .22s ease,background .22s ease,border-color .22s ease;
+}
+.tab::before,.autoplay::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  background: radial-gradient(circle at var(--glint-x,50%) 50%,rgba(244,248,255,.27),transparent 65%);
+  transition: opacity .18s ease;
+}
+.tab:hover,.autoplay:hover { transform: translateY(-2px); }
+.tab:hover::before,.autoplay:hover::before { opacity: 1; }
+@media (hover: none) {
+  .orbitCard { transform: translateZ(0); }
+  .heading,.info { transform: none; }
+  .tab:hover,.autoplay:hover { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wheel { transition: none; }
+  .core,.cardArt img,.sculpture,.heading,.info,.tab,.autoplay,.orbitCard { animation: none; transition: none; }
+  .heading,.info { transform: none; }
+}
