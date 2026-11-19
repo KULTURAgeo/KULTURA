@@ -54,9 +54,9 @@ slug: string;
 description: string;
 is_active: boolean;
 sort_position: number;
-audience: "x" | "y" | "unisex" | "xys" | null;
 created_at: string;
 updated_at: string;
+audience: string | null;
 };
 Insert: {
 id?: string;
@@ -65,9 +65,9 @@ slug: string;
 description?: string;
 is_active?: boolean;
 sort_position?: number;
-audience?: "x" | "y" | "unisex" | "xys" | null;
 created_at?: string;
 updated_at?: string;
+audience?: string | null;
 };
 Update: {
 id?: string;
@@ -76,9 +76,9 @@ slug?: string;
 description?: string;
 is_active?: boolean;
 sort_position?: number;
-audience?: "x" | "y" | "unisex" | "xys" | null;
 created_at?: string;
 updated_at?: string;
+audience?: string | null;
 };
 Relationships: [];
 };
@@ -107,6 +107,75 @@ name?: string;
 slug?: string;
 description?: string;
 is_active?: boolean;
+created_at?: string;
+updated_at?: string;
+};
+Relationships: [];
+};
+homepage_showroom_items: {
+Row: {
+id: string;
+source_kind: Database["public"]["Enums"]["showroom_source_kind"];
+product_id: string | null;
+category_id: string | null;
+image_product_id: string | null;
+title: string;
+title_ka: string;
+description: string;
+description_ka: string;
+sort_position: number;
+is_active: boolean;
+created_at: string;
+updated_at: string;
+};
+Insert: {
+id?: string;
+source_kind: Database["public"]["Enums"]["showroom_source_kind"];
+product_id?: string | null;
+category_id?: string | null;
+image_product_id?: string | null;
+title?: string;
+title_ka?: string;
+description?: string;
+description_ka?: string;
+sort_position?: number;
+is_active?: boolean;
+created_at?: string;
+updated_at?: string;
+};
+Update: {
+id?: string;
+source_kind?: Database["public"]["Enums"]["showroom_source_kind"];
+product_id?: string | null;
+category_id?: string | null;
+image_product_id?: string | null;
+title?: string;
+title_ka?: string;
+description?: string;
+description_ka?: string;
+sort_position?: number;
+is_active?: boolean;
+created_at?: string;
+updated_at?: string;
+};
+Relationships: [{"foreignKeyName":"homepage_showroom_items_category_id_fkey","columns":["category_id"],"isOneToOne":false,"referencedRelation":"categories","referencedColumns":["id"]},{"foreignKeyName":"homepage_showroom_items_image_product_id_fkey","columns":["image_product_id"],"isOneToOne":false,"referencedRelation":"products","referencedColumns":["id"]},{"foreignKeyName":"homepage_showroom_items_product_id_fkey","columns":["product_id"],"isOneToOne":false,"referencedRelation":"products","referencedColumns":["id"]}];
+};
+homepage_showroom_settings: {
+Row: {
+singleton: boolean;
+use_custom_items: boolean;
+created_at: string;
+updated_at: string;
+};
+Insert: {
+singleton?: boolean;
+use_custom_items?: boolean;
+created_at?: string;
+updated_at?: string;
+};
+Update: {
+singleton?: boolean;
+use_custom_items?: boolean;
 created_at?: string;
 updated_at?: string;
 };
@@ -606,11 +675,11 @@ Relationships: [{"foreignKeyName":"wishlist_items_product_id_fkey","columns":["p
 };
 }; Views: { [_ in never]: never }; Functions: {
 admin_advance_fulfillment: { Args: { p_order_id: string | null; p_expected_updated_at: string | null; p_next_status: string | null }; Returns: string };
-admin_delete_order: { Args: { p_order_id: string | null; p_expected_updated_at: string | null; p_confirm_order_number: string | null }; Returns: undefined };
 admin_attach_image: { Args: { p_product_id: string | null; p_storage_path: string | null; p_alt_text: string | null }; Returns: string };
 admin_create_test_order: { Args: { p_cart: Json | null; p_address: Json | null }; Returns: string };
-admin_delete_product: { Args: { p_id: string | null; p_expected_updated_at: string | null; p_confirm_name: string | null }; Returns: string[] };
 admin_create_test_order_v2: { Args: { p_cart: Json | null; p_address: Json | null; p_promo_code: string | null }; Returns: string };
+admin_delete_order: { Args: { p_order_id: string | null; p_expected_updated_at: string | null; p_confirm_order_number: string | null }; Returns: undefined };
+admin_delete_product: { Args: { p_id: string | null; p_expected_updated_at: string | null; p_confirm_name: string | null }; Returns: string[] };
 admin_reorder_images: { Args: { p_product_id: string | null; p_ids: string[] | null; p_expected_ids: string[] | null }; Returns: undefined };
 admin_save_checkout_settings: { Args: { p_shipping_total: string | null; p_free_shipping_threshold: string | null }; Returns: Json };
 admin_save_product: { Args: { p_id: string | null; p_expected_updated_at: string | null; p_product: Json | null; p_collection_ids: string[] | null }; Returns: string };
@@ -631,4 +700,5 @@ fulfillment_status: "unfulfilled" | "processing" | "shipped" | "delivered" | "ca
 payment_status: "pending" | "paid" | "failed" | "cancelled" | "partially_refunded" | "refunded";
 product_status: "draft" | "active" | "archived";
 profile_role: "customer" | "admin";
+showroom_source_kind: "product" | "category";
 }; CompositeTypes: { [_ in never]: never }; }; };

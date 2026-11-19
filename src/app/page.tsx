@@ -3,6 +3,7 @@ import Link from "next/link";
 import { pageMetadata } from "@/lib/site";
 import { campaignImage, money } from "@/lib/catalog";
 import { getHomepageCatalog } from "@/lib/catalog/repository";
+import { getHomepageShowroom } from "@/lib/showroom/repository";
 import { Newsletter } from "@/components/newsletter";
 import { HomeMotion } from "@/components/home-motion";
 import { KulturaProductOrbit } from "@/components/kultura-product-orbit";
@@ -91,7 +92,10 @@ function HomeCatalogFallback() {
 
 async function HomeCatalog({ locale }: { locale: Locale }) {
   const t = (source: string) => translate(locale, source);
-  const { products: showcase, categories } = await getHomepageCatalog();
+  const [{ products: showcase, categories }, showroomItems] = await Promise.all([
+    getHomepageCatalog(),
+    getHomepageShowroom(),
+  ]);
 
   const heroProduct = showcase[0] ?? null;
   const secondProduct = showcase[1] ?? heroProduct;
@@ -347,7 +351,7 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
         <Link href="/shop" className={styles.cta}>{t("CATEGORIES")}</Link>
       </section>
 
-      <KulturaProductOrbit products={showcase} categories={categories} />
+      <KulturaProductOrbit products={showcase} categories={categories} items={showroomItems} />
 
         <section className={styles.endScene} data-kultura-ending>
         <Image src={thirdProduct?.image ?? campaignImage} alt="" fill sizes="100vw" />

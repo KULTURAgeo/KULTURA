@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { useLanguage } from "./language-provider";
 import type { Category, Product } from "@/lib/catalog";
+import type { ShowroomCard } from "@/lib/showroom/model";
 import styles from "./kultura-product-orbit.module.css";
 
 type SceneItem = {
@@ -16,6 +17,14 @@ type SceneItem = {
   kaDescription: string;
   aliases: string[];
   shape: string;
+};
+
+type OrbitItem = SceneItem & {
+  href: string;
+  image: string | null;
+  imageAlt: string;
+  kind: "product" | "category";
+  productName?: string;
 };
 
 const ITEMS: SceneItem[] = [
@@ -82,17 +91,56 @@ function CategorySculpture({ item, index }: { item: SceneItem; index: number }) 
   );
 }
 
-export function KulturaProductOrbit({ products, categories }: {
+type OrbitProps = {
   products: Product[];
   categories: Category[];
-}) {
+  items?: ShowroomCard[];
+};
+
+export function KulturaProductOrbit(props: OrbitProps) {
+  const selectionKey = props.items?.map((item) => item.id).join("|") ?? "catalog-defaults";
+  return <ProductOrbit key={selectionKey} {...props} />;
+}
+
+function ProductOrbit({ products, categories, items }: OrbitProps) {
   const { locale } = useLanguage();
   const isKa = locale === "ka";
   const [selected, setSelected] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
   const [inView, setInView] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
+  const [hasFocus, setHasFocus] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const cards: OrbitItem[] = items === undefined
+    ? ITEMS.map((item) => {
+      const category = categories.find((candidate) => item.aliases.includes(candidate.slug.toLowerCase()));
+      const product = category ? products.find((entry) => entry.categorySlug === category.slug) : undefined;
+      return {
+        ...item,
+        href: category ? "/shop/" + encodeURIComponent(category.slug) : "/shop",
+        image: product?.image ?? null,
+        imageAlt: product?.name ?? item.en,
+        kind: "category" as const,
+        productName: product?.name,
+      };
+    })
+    : items.map((item) => ({
+      id: item.id,
+      en: item.title,
+      ka: item.titleKa || item.title,
+      eyebrow: item.kind === "product" ? "FEATURED PIECE" : "FEATURED COLLECTION",
+      enDescription: item.description,
+      kaDescription: item.descriptionKa || item.description,
+      aliases: [],
+      shape: ITEMS.find((entry) => entry.aliases.some((alias) => item.href.endsWith("/" + alias)))?.shape ?? ITEMS[0].shape,
+      href: item.href,
+      image: item.image,
+      imageAlt: item.imageAlt,
+      kind: item.kind,
+    }));
+  const cardCount = cards.length;
+  const activeIndex = Math.min(selected, Math.max(0, cardCount - 1));
+  const step = cardCount > 0 ? 360 / cardCount : 360;
   const rootRef = useRef<HTMLElement>(null);
   const wheelRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -158,16 +206,14 @@ export function KulturaProductOrbit({ products, categories }: {
     return () => window.cancelAnimationFrame(raf);
   }, [inView, reducedMotion]);
 
-  function snapTo(index: number, isAutomatic = false) {
-    const normalized = (index + ITEMS.length) % ITEMS.length;
-    const base = -normalized * 60;
-    // Auto advance always travels forward, including the last-to-first edge.
-    const target = isAutomatic
-      ? targetRef.current - 60
-      : base + 360 * Math.round((targetRef.current - base) / 360);
+  function snapTo(index: number) {
+    if (cardCount < 2) return;
+    const normalized = ((index % cardCount) + cardCount) % cardCount;
+    const base = -normalized * step;
+    const target = base + 360 * Math.round((targetRef.current - base) / 360);
     targetRef.current = target;
     setSelected(normalized);
-    if (!isAutomatic) setAutoPlay(false);
+    setAutoPlay(false);
     if (reducedMotion && wheelRef.current) {
       angleRef.current = target;
       wheelRef.current.style.transform = "rotateX(-9deg) rotateY(" + target + "deg)";
@@ -175,13 +221,13 @@ export function KulturaProductOrbit({ products, categories }: {
   }
 
   useEffect(() => {
-    if (!inView || isHovering || !autoPlay || reducedMotion) return;
+    if (cardCount < 2 || !inView || isHovering || hasFocus || !autoPlay || reducedMotion) return;
     const timer = window.setInterval(() => {
-      targetRef.current -= 60;
-      setSelected((index) => (index + 1) % ITEMS.length);
+      targetRef.current -= step;
+      setSelected((index) => (index + 1) % cardCount);
     }, 6200);
     return () => window.clearInterval(timer);
-  }, [inView, isHovering, autoPlay, reducedMotion]);
+  }, [inView, isHovering, hasFocus, autoPlay, reducedMotion, cardCount, step]);
 
   function choose(index: number) {
     snapTo(index);
@@ -199,6 +245,7 @@ export function KulturaProductOrbit({ products, categories }: {
   }
 
   function startDrag(event: PointerEvent<HTMLDivElement>) {
+    if (cardCount < 2) return;
     if (event.pointerType === "mouse" && event.button !== 0) return;
     const clicked = event.target as Element;
     const button = clicked.closest("button");
@@ -239,10 +286,10 @@ export function KulturaProductOrbit({ products, categories }: {
     if (Math.abs(distance) > 6) {
       // Gentle inertial projection, then a magnetic snap to the nearest face.
       const projected = targetRef.current + Math.max(-26, Math.min(26, pointer.velocity * 42));
-      const snapped = Math.round(projected / 60) * 60;
+      const snapped = Math.round(projected / step) * step;
       targetRef.current = snapped;
       velocityRef.current += Math.max(-5.5, Math.min(5.5, pointer.velocity * 4.5));
-      setSelected(((-Math.round(snapped / 60)) % ITEMS.length + ITEMS.length) % ITEMS.length);
+      setSelected(((-Math.round(snapped / step)) % cardCount + cardCount) % cardCount);
       setAutoPlay(false);
     } else {
       targetRef.current = pointer.angle;
@@ -308,46 +355,48 @@ export function KulturaProductOrbit({ products, categories }: {
     event.currentTarget.style.removeProperty("--glint-x");
   }
 
-  const current = ITEMS[selected];
-  const category = categories.find((candidate) =>
-    current.aliases.includes(candidate.slug.toLowerCase()),
-  );
-  const currentProduct = category
-    ? products.find((product) => product.categorySlug === category.slug)
-    : undefined;
-  const categoryHref = category ? "/shop/" + encodeURIComponent(category.slug) : "/shop";
+  const current = cards[activeIndex];
+  if (!current) return null;
+  const currentTitle = isKa ? current.ka : current.en;
+  const titleLength = Array.from(currentTitle).length;
 
   return (
-    <section ref={rootRef} data-kultura-showroom className={styles.section} aria-label={isKa ? "KULTURA 3D კოლექციები" : "KULTURA interactive 3D collections"}>
-      <div className={styles.backgroundGrid} aria-hidden="true" />
-      <div className={styles.haze} aria-hidden="true" />
+    <section ref={rootRef} data-kultura-showroom data-single={cardCount === 1 ? "true" : undefined}
+      className={styles.section}
+      style={{ "--card-scale": Math.max(.72, Math.min(1, 6 / cardCount)) } as CSSProperties}
+      onFocus={() => setHasFocus(true)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setHasFocus(false);
+      }}
+      aria-label={isKa ? "KULTURA 3D კოლექციები" : "KULTURA interactive 3D collections"}>
       <div className={styles.heading} onPointerMove={moveText} onPointerLeave={resetText}>
-        <span className={styles.overline}>KULTURA / INTERACTIVE SHOWROOM / 2026</span>
         <h2>{isKa ? "აღმოაჩინე შენი ფორმა." : "EXPLORE THE FORM."}</h2>
-        <p>{isKa ? "გადაატრიალე 3D ორბიტა და აირჩიე კატეგორია." : "Drag the 3D orbit. Select a collection. Discover the details."}</p>
+        {cardCount > 1 && <p>{isKa ? "გადაატრიალე და აღმოაჩინე რჩეული ნივთები." : "Drag to explore the selection."}</p>}
       </div>
 
       <div className={styles.layout}>
         <div ref={stageRef} className={styles.stage} onPointerDown={startDrag} onPointerMove={drag}
           onPointerUp={endDrag} onPointerCancel={endDrag}
           onPointerEnter={() => setIsHovering(true)} onPointerLeave={resetStage}
-          aria-label={isKa ? "კატეგორიების 3D ორბიტა" : "Interactive 3D category orbit"}>
+          role="group" tabIndex={cardCount > 1 ? 0 : undefined}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+              event.preventDefault();
+              choose(activeIndex + (event.key === "ArrowRight" ? 1 : -1));
+            }
+          }}
+          aria-label={isKa ? "რჩეული ნივთების 3D ორბიტა" : "Featured selection, use left and right arrow keys to explore"}>
           <div className={styles.halo} aria-hidden="true" />
           <div className={styles.spotlight} aria-hidden="true" />
           <div className={styles.floorGlow} aria-hidden="true" />
-          <div className={styles.core} aria-hidden="true">
-            <Image src="/images/kultura-globe-scene.webp" alt="" fill sizes="(max-width: 750px) 230px, 380px" loading="lazy" />
-          </div>
           <div ref={wheelRef} className={styles.wheel}>
-            {ITEMS.map((item, index) => {
-              const match = categories.find((candidate) => item.aliases.includes(candidate.slug.toLowerCase()));
-              const product = match ? products.find((entry) => entry.categorySlug === match.slug) : undefined;
+            {cards.map((item, index) => {
               return (
                 <div key={item.id} className={styles.orbitItem}
-                  style={{ "--slot-angle": `${index * 60}deg` } as CSSProperties}>
-                  <button className={styles.orbitCard + (selected === index ? " " + styles.currentCard : "")}
+                  style={{ "--slot-angle": `${index * step}deg` } as CSSProperties}>
+                  <button className={styles.orbitCard + (activeIndex === index ? " " + styles.currentCard : "")}
                     type="button" aria-label={(isKa ? item.ka : item.en) + " / " + (isKa ? "არჩევა" : "select")}
-                    aria-pressed={selected === index}
+                    aria-pressed={activeIndex === index}
                     onPointerMove={moveCard}
                     onPointerLeave={resetCard}
                     onClick={(event) => {
@@ -356,16 +405,14 @@ export function KulturaProductOrbit({ products, categories }: {
                     }}>
                     <span className={styles.cardGlint} aria-hidden="true" />
                     <span className={styles.cardArt}>
-                      {product ? (
-                        <Image src={product.image} alt={product.name} fill
+                      {item.image ? (
+                        <Image src={item.image} alt={item.imageAlt} fill
                           sizes="(max-width: 750px) 190px, 270px" loading="lazy" />
                       ) : (
                         <CategorySculpture item={item} index={index} />
                       )}
                     </span>
-                    <span className={styles.cardLogo} aria-hidden="true">KULTURA / 2026</span>
                     <span className={styles.cardFooter}>
-                      <span>0{index + 1}</span>
                       <strong>{isKa ? item.ka : item.en}</strong>
                       <span className={styles.cardArrow}>↗</span>
                     </span>
@@ -374,31 +421,31 @@ export function KulturaProductOrbit({ products, categories }: {
               );
             })}
           </div>
-          <div className={styles.sceneHint} aria-hidden="true">{isKa ? "გადაატრიალე ↔" : "DRAG TO ROTATE ↔"}</div>
+          {cardCount > 1 && <div className={styles.sceneHint} aria-hidden="true">{isKa ? "გადაატრიალე ↔" : "DRAG TO ROTATE ↔"}</div>}
         </div>
 
         <div className={styles.info} onPointerMove={moveText} onPointerLeave={resetText} aria-live="polite" aria-atomic="true">
-          <span className={styles.infoIndex}>{String(selected + 1).padStart(2, "0")} <span>/ 06</span></span>
-          <span className={styles.infoEyebrow}>{current.eyebrow}</span>
-          <h3>{isKa ? current.ka : current.en}</h3>
+          {cardCount > 1 && <span className={styles.infoIndex}>{String(activeIndex + 1).padStart(2, "0")} <span>/ {String(cardCount).padStart(2, "0")}</span></span>}
+          <span className={styles.infoEyebrow}>{isKa ? (current.kind === "product" ? "რჩეული ნივთი" : "რჩეული კოლექცია") : current.eyebrow}</span>
+          <h3 className={titleLength > 26 ? styles.longTitle : titleLength > 10 ? styles.mediumTitle : undefined}>{currentTitle}</h3>
           <p>{isKa ? current.kaDescription : current.enDescription}</p>
-          {currentProduct && (
+          {current.productName && (
             <span className={styles.productLabel}>
-              {isKa ? "კოლექციიდან" : "FROM THE COLLECTION"} / {currentProduct.name}
+              {isKa ? "კოლექციიდან" : "FROM THE COLLECTION"} / {current.productName}
             </span>
           )}
-          <Link className={styles.explore} href={categoryHref}>
-            {category ? (isKa ? "კოლექციის ნახვა" : "EXPLORE COLLECTION") : (isKa ? "მაღაზიის ნახვა" : "BROWSE SHOP")}
+          <Link className={styles.explore} href={current.href}>
+            {current.kind === "product" ? (isKa ? "ნივთის ნახვა" : "EXPLORE PIECE") : (isKa ? "კოლექციის ნახვა" : "EXPLORE COLLECTION")}
             <span aria-hidden="true">↗</span>
           </Link>
         </div>
       </div>
 
-      <div className={styles.controls} aria-label={isKa ? "აირჩიე კატეგორია" : "Select collection"}>
+      {cardCount > 1 && <div className={styles.controls} aria-label={isKa ? "აირჩიე ნივთი ან კოლექცია" : "Select a piece or collection"}>
         <div className={styles.tabs}>
-          {ITEMS.map((item, index) => (
+          {cards.map((item, index) => (
             <button key={item.id} type="button" className={styles.tab}
-              aria-pressed={selected === index}
+              aria-pressed={activeIndex === index}
               onPointerMove={moveButton} onPointerLeave={resetButton}
               onClick={() => choose(index)}>
               <span>{String(index + 1).padStart(2, "0")}</span>
@@ -412,10 +459,7 @@ export function KulturaProductOrbit({ products, categories }: {
           onClick={() => setAutoPlay((value) => !value)}>
           {autoPlay ? "Ⅱ" : "▶"} <span>{autoPlay ? (isKa ? "პაუზა" : "PAUSE") : (isKa ? "ავტომატური ბრუნვა" : "AUTO ROTATE")}</span>
         </button>
-      </div>
-      <p className={styles.disclaimer}>{isKa
-        ? "3D სექციის პირველი ვერსია: პროდუქტის ფოტოები კატალოგიდან; დანარჩენი ფორმები ილუსტრაციებია."
-        : "Interactive preview. Product photography is from the catalog; other forms are conceptual illustrations."}</p>
+      </div>}
     </section>
   );
 }
