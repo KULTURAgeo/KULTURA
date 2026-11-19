@@ -19,7 +19,6 @@ registerHooks({ resolve(specifier, context, next) {
   if (specifier.endsWith("language-provider")) return mock("export const useLanguage=()=>({t:v=>v,locale:'en'});");
   if (specifier === "@/lib/category-i18n") return mock("export const colorDisplayName=(_,v)=>v;");
   if (specifier === "@/lib/catalog") return mock("export const money=v=>String(v);");
-  if (specifier === "@/app/cart/actions") return mock("export const refreshCart=v=>globalThis.__audit.quote(v);");
   if (specifier === "@/app/checkout/actions") return mock("export const createTestOrder=()=>{throw new Error('unexpected')};export const quotePromo=()=>{throw new Error('unexpected')};");
   if (specifier === "@/app/checkout/unpaid-actions") return mock("export const createUnpaidOrder=v=>globalThis.__audit.submit(v);");
   if (specifier === "@/lib/auth/guards") return mock("export const requireActor=()=>globalThis.__audit.actor();export const requirePage=()=>globalThis.__audit.actor();");
@@ -45,6 +44,13 @@ globalThis.localStorage = {get length(){return storage.size},key:i=>[...storage.
 globalThis.window = {addEventListener(){},removeEventListener(){}};
 let quoted;
 __audit.quote = async lines => { quoted = lines; return {ok:true,quote:{lines:lines.map(l=>({...l,price:4900,lineTotal:14700,available:true})),subtotal:14700}}; };
+globalThis.fetch = async (url, options) => {
+  assert.equal(url, "/api/cart/refresh");
+  assert.equal(options.method, "POST");
+  assert.equal(options.headers["Content-Type"], "application/json");
+  assert.equal(options.cache, "no-store");
+  return Response.json(await __audit.quote(JSON.parse(options.body)));
+};
 await check("Child refresh before provider mount restores stored quantity without erasing it", async () => {
   reset(); const first = render(CartProvider, {}); const mount = effects[0];
   await first.props.value.refresh(); mount();
@@ -116,3 +122,4 @@ await check('Unavailable durable browser storage prevents order submission',asyn
   } finally {globalThis.localStorage=saved;}
 });
 console.log(JSON.stringify({scope:'Local component logic with hook adapters; not browser or hosted proof',passed:checks.length,checks},null,2));
+
