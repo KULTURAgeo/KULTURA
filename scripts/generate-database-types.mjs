@@ -65,7 +65,7 @@ try {
   out +=
     "}; Views: { [_ in never]: never }; Functions: {\n";
   const {rows:functions}=await db.query("select p.proname,p.proargnames,array(select t.typname from unnest(p.proargtypes) with ordinality a(oid,n) join pg_type t on t.oid=a.oid order by a.n) argtypes,r.typname result from pg_proc p join pg_namespace n on n.oid=p.pronamespace join pg_type r on r.oid=p.prorettype where n.nspname='public' order by p.proname");
-  const argType=t=>t==="jsonb"?"Json":t==="_uuid"?"string[]":t==="void"?"undefined":t==="bool"?"boolean":"string";
+  const argType=t=>t==="jsonb"?"Json":["_uuid","_text"].includes(t)?"string[]":t==="void"?"undefined":t==="bool"?"boolean":"string";
   for(const f of functions)out+=f.proname+": { Args: { "+f.proargnames.map((name,i)=>name+": "+argType(f.argtypes[i])+" | null").join("; ")+" }; Returns: "+argType(f.result)+" };\n";
   out+="}; Enums: {\n";
   for (const name of enumNames)

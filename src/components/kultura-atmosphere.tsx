@@ -4,285 +4,121 @@ import Image from "next/image";
 import { useEffect, useRef, type ReactNode } from "react";
 import styles from "./kultura-atmosphere.module.css";
 
-const COUNT = 920;
-const clamp = (x: number) => Math.max(0, Math.min(1, x));
-const smooth = (n: number) => { const x = clamp(n); return x * x * (3 - 2 * x); };
-const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+const GLOBE_IMAGE = "/images/kultura-globe-scene.webp";
+const PARTICLE_COUNT = 3200;
+const SHOWROOM_START = 1.32;
+const ENDING_WORD_REVEAL = .57;
+const ENDING_FADE_OUT = -.04;
+const MAX_PROGRESS_PER_SECOND = .58;
+const clamp = (value: number) => Math.max(0, Math.min(1, value));
+const mix = (from: number, to: number, amount: number) => from + (to - from) * amount;
 
-type Geometry = {
-  globe: Float32Array;
-  burst: Float32Array;
-  word: Float32Array;
-  sizes: Float32Array;
-  colors: Float32Array;
-  seeds: Float32Array;
-};
-
-function seededRandom() {
-  let seed = 0x57eab193;
-  return () => {
-    seed += 0x6d2b79f5;
-    let t = seed;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+function ease(value: number, start: number, end: number) {
+  const t = clamp((value - start) / (end - start));
+  return t * t * (3 - 2 * t);
 }
 
-function sampleGlobe(image: HTMLImageElement): Array<[number, number]> {
-  const scratch = document.createElement("canvas");
-  scratch.width = 320;
-  scratch.height = 185;
-  const context = scratch.getContext("2d", { willReadFrequently: true });
+type Point = { x: number; y: number };
+type Fragment = { side: number; center: Point; drift: Point; tilt: number; delay: number };
+
+// Six pieces per half, starting in their original positions in the globe.
+const FRAGMENTS: Fragment[] = [-1, 1].flatMap(side =>
+  [-1, 0, 1].flatMap(row => [0, 1].map(column => ({
+    side,
+    center: { x: side * (.125 + column * .25), y: row / 3 },
+    drift: { x: side * (.018 + column * .088), y: row * (.14 + column * .035) },
+    tilt: side * (row * .22 + (column ? .14 : -.14)),
+    delay: (column + Math.abs(row)) * .019,
+  }))),
+);
+
+function fragmentIndex({ x, y }: Point) {
+  const row = Math.min(2, Math.floor((y + .5) * 3));
+  const column = Number(Math.abs(x) >= .25);
+  return (x < 0 ? 0 : 6) + row * 2 + column;
+}
+
+type Particle = {
+  origin: Point;
+  target: Point;
+  fragment: number;
+  scatter: Point;
+  turn: number;
+  delay: number;
+  radius: number;
+  color: string;
+};
+
+function makeParticles(image: HTMLImageElement): Particle[] {
+  const sample = document.createElement("canvas");
+  const context = sample.getContext("2d", { willReadFrequently: true });
   if (!context) return [];
-  context.drawImage(image, 0, 0, scratch.width, scratch.height);
-  const { data } = context.getImageData(0, 0, scratch.width, scratch.height);
-  const points: Array<[number, number]> = [];
-  for (let y = 0; y < scratch.height; y++) {
-    for (let x = 0; x < scratch.width; x++) {
-      const index = (y * scratch.width + x) * 4;
-      if (data[index + 3] > 128 && data[index + 1] > 110) {
-        points.push([(x + .5) / scratch.width - .5, (y + .5) / scratch.height - .5]);
-      }
-    }
-  }
-  return points;
-}
 
-function makeGeometry(image: HTMLImageElement): Geometry | null {
-  const logoPoints = sampleGlobe(image);
-  if (!logoPoints.length) return null;
-
-  const random = seededRandom();
-  const globe = new Float32Array(COUNT * 2);
-  const burst = new Float32Array(COUNT * 3);
-  const word = new Float32Array(COUNT * 3);
-  const sizes = new Float32Array(COUNT);
-  const colors = new Float32Array(COUNT);
-  const seeds = new Float32Array(COUNT);
-
-  // Sample an original KULTURA wordmark, then give each sampled pixel depth.
-  const scratch = document.createElement("canvas");
-  scratch.width = 840;
-  scratch.height = 185;
-  const context = scratch.getContext("2d", { willReadFrequently: true });
-  const glyphs: Array<[number, number]> = [];
-  if (context) {
-    context.fillStyle = "#fff";
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.font = "900 123px Arial, Helvetica, sans-serif";
-    context.fillText("KULTURA", 420, 93);
-    const image = context.getImageData(0, 0, 840, 185).data;
-    for (let y = 12; y < 173; y += 4) {
-      for (let x = 10; x < 830; x += 4) {
-        if (image[(y * 840 + x) * 4 + 3] > 140) glyphs.push([x, y]);
+  sample.width = 320;
+  sample.height = 185;
+  context.drawImage(image, 0, 0, sample.width, sample.height);
+  const logoPixels = context.getImageData(0, 0, sample.width, sample.height).data;
+  const logoPoints: Point[] = [];
+  for (let y = 0; y < sample.height; y++) {
+    for (let x = 0; x < sample.width; x++) {
+      const offset = (y * sample.width + x) * 4;
+      if (logoPixels[offset + 3] > 128 && logoPixels[offset + 1] > 110) {
+        logoPoints.push({ x: (x + .5) / sample.width - .5, y: (y + .5) / sample.height - .5 });
       }
     }
   }
 
-  if (!glyphs.length) return null;
-
-  for (let i = 0; i < COUNT; i++) {
-    const j = i * 3;
-    const [x, y] = logoPoints[Math.floor(i * logoPoints.length / COUNT)];
-    globe[i * 2] = x;
-    globe[i * 2 + 1] = y;
-    burst[j] = x * 6.1 + (random() - .5) * 3.4;
-    burst[j + 1] = -y * 3.7 + (random() - .5) * 2.2;
-    burst[j + 2] = (random() - .5) * 3;
-
-    const glyph = glyphs[Math.floor(i * glyphs.length / COUNT)];
-    word[j] = (glyph[0] - 420) / 150;
-    word[j + 1] = (92 - glyph[1]) / 143 - 1.09;
-    word[j + 2] = (random() - .5) * .06;
-    sizes[i] = 3.8 + Math.pow(random(), 2) * 6;
-    colors[i] = random() > .99 ? 1 : random() * .78;
-    seeds[i] = random() * Math.PI * 2;
+  sample.width = 800;
+  sample.height = 170;
+  context.font = "900 142px Arial, sans-serif";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillStyle = "white";
+  context.fillText("KULTURA", 400, 85);
+  const wordPixels = context.getImageData(0, 0, sample.width, sample.height).data;
+  const wordPoints: Point[] = [];
+  const wordWidth = context.measureText("KULTURA").width;
+  for (let y = 0; y < sample.height; y += 2) {
+    for (let x = 0; x < sample.width; x += 2) {
+      if (wordPixels[(y * sample.width + x) * 4 + 3] > 160) {
+        wordPoints.push({ x: (x - 400) / wordWidth, y: (y - 85) / wordWidth });
+      }
+    }
   }
+  if (!logoPoints.length || !wordPoints.length) return [];
 
-  return { globe, burst, word, sizes, colors, seeds };
-}
-
-const VERTEX = [
-  "attribute vec3 a_position;",
-  "attribute vec2 a_style;",
-  "uniform float u_aspect;",
-  "uniform float u_dpr;",
-  "uniform float u_spin;",
-  "uniform float u_pointer_x;",
-  "uniform float u_pointer_y;",
-  "varying float v_depth;",
-  "varying float v_color;",
-  "void main() {",
-  "  float c = cos(u_spin); float s = sin(u_spin);",
-  "  vec3 p = a_position;",
-  "  p.xz = vec2(c * p.x - s * p.z, s * p.x + c * p.z);",
-  "  p.x += u_pointer_x * (.09 + .045 * p.z);",
-  "  p.y += u_pointer_y * (.08 + .045 * p.z);",
-  "  float perspective = 2.65 / max(2.05, 4.1 - p.z);",
-  "  float mobile = min(1.0, u_aspect / 1.55);",
-  "  gl_Position = vec4(p.x * perspective * mobile / u_aspect, p.y * perspective, 0.0, 1.0);",
-  "  gl_PointSize = clamp(a_style.x * perspective * u_dpr, 1.0, 15.0 * u_dpr);",
-  "  v_depth = clamp((p.z + 2.3) / 4.6, .16, 1.0);",
-  "  v_color = a_style.y;",
-  "}",
-].join("\n");
-
-const FRAGMENT = [
-  "precision mediump float;",
-  "uniform float u_opacity;",
-  "varying float v_depth;",
-  "varying float v_color;",
-  "void main() {",
-  "  vec2 p = gl_PointCoord * 2.0 - 1.0;",
-  "  float diamond = abs(p.x) * .89 + abs(p.y) * 1.12;",
-  "  float shard = 1.0 - smoothstep(.44, 1.02, diamond);",
-  "  float core = 1.0 - smoothstep(0.0, .32, length(p));",
-  "  float halo = 1.0 - smoothstep(.18, 1.12, length(p));",
-  "  float brightness = .35 + v_depth * .65;",
-  "  vec3 steel = mix(vec3(.32, .43, .58), vec3(.93, .97, 1.0), brightness);",
-  "  vec3 color = mix(steel, vec3(.74, 1.0, .30), step(.986, v_color));",
-  "  float alpha = (shard * .72 + core * .26 + halo * .095) * u_opacity * (.42 + v_depth * .7);",
-  "  gl_FragColor = vec4(color, min(1.0, alpha));",
-  "}",
-].join("\n");
-
-function compile(gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null {
-  const shader = gl.createShader(type);
-  if (!shader) return null;
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return shader;
-  gl.deleteShader(shader);
-  return null;
-}
-
-type Renderer = {
-  gl: WebGLRenderingContext;
-  program: WebGLProgram;
-  buffer: WebGLBuffer;
-  vertex: WebGLShader;
-  fragment: WebGLShader;
-  geometry: Geometry;
-  values: Float32Array;
-  aspect: WebGLUniformLocation | null;
-  dprUniform: WebGLUniformLocation | null;
-  spin: WebGLUniformLocation | null;
-  mx: WebGLUniformLocation | null;
-  my: WebGLUniformLocation | null;
-  opacity: WebGLUniformLocation | null;
-  dpr: number;
-};
-
-function setup(canvas: HTMLCanvasElement, logo: HTMLImageElement): Renderer | null {
-  const geometry = makeGeometry(logo);
-  if (!geometry) return null;
-  const gl = canvas.getContext("webgl", {
-    alpha: true, antialias: false, premultipliedAlpha: false, powerPreference: "low-power",
-  });
-  if (!gl) return null;
-  const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX);
-  const fragment = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT);
-  if (!vertex || !fragment) return null;
-  const program = gl.createProgram();
-  if (!program) return null;
-  gl.attachShader(program, vertex);
-  gl.attachShader(program, fragment);
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return null;
-  const buffer = gl.createBuffer();
-  if (!buffer) return null;
-  const values = new Float32Array(COUNT * 5);
-  gl.useProgram(program);
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-  gl.bufferData(gl.ARRAY_BUFFER, values.byteLength, gl.DYNAMIC_DRAW);
-  const positionLocation = gl.getAttribLocation(program, "a_position");
-  const styleLocation = gl.getAttribLocation(program, "a_style");
-  if (positionLocation < 0 || styleLocation < 0) return null;
-  gl.enableVertexAttribArray(positionLocation);
-  gl.enableVertexAttribArray(styleLocation);
-  gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 20, 0);
-  gl.vertexAttribPointer(styleLocation, 2, gl.FLOAT, false, 20, 12);
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  gl.disable(gl.DEPTH_TEST);
-  return {
-    gl, program, buffer, vertex, fragment, values, geometry,
-    aspect: gl.getUniformLocation(program, "u_aspect"),
-    dprUniform: gl.getUniformLocation(program, "u_dpr"),
-    spin: gl.getUniformLocation(program, "u_spin"),
-    mx: gl.getUniformLocation(program, "u_pointer_x"),
-    my: gl.getUniformLocation(program, "u_pointer_y"),
-    opacity: gl.getUniformLocation(program, "u_opacity"),
-    dpr: 1,
+  // Keep the same point pairing every time a scroll position is revisited.
+  let seed = 0x57eab193;
+  const random = () => {
+    seed = (Math.imul(1664525, seed) + 1013904223) >>> 0;
+    return seed / 4294967296;
   };
-}
+  const origins = Array.from({ length: PARTICLE_COUNT }, (_, index) =>
+    logoPoints[Math.floor(index * logoPoints.length / PARTICLE_COUNT)],
+  ).sort((a, b) => a.x - b.x);
+  const targets = Array.from({ length: PARTICLE_COUNT }, (_, index) =>
+    wordPoints[Math.floor(index * wordPoints.length / PARTICLE_COUNT)],
+  ).sort((a, b) => a.x - b.x);
+  const colors = ["#83a0ba", "#b2c6d8", "#dce9f2", "#f4faff"];
 
-function resize(canvas: HTMLCanvasElement, renderer: Renderer) {
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-  const width = Math.max(1, Math.round(canvas.clientWidth * dpr));
-  const height = Math.max(1, Math.round(canvas.clientHeight * dpr));
-  if (canvas.width !== width || canvas.height !== height) {
-    canvas.width = width;
-    canvas.height = height;
-    renderer.gl.viewport(0, 0, width, height);
-  }
-  renderer.dpr = dpr;
-}
-
-function draw(
-  r: Renderer, canvas: HTMLCanvasElement, mark: HTMLDivElement,
-  p: number, angle: number, time: number, pointerX: number, pointerY: number,
-) {
-  const spread = smooth((p - .12) / .34);
-  const form = smooth((p - .48) / .29);
-  const drift = spread * (1 - form);
-  const width = Math.max(1, canvas.clientWidth);
-  const height = Math.max(1, canvas.clientHeight);
-  const aspect = width / height;
-  const mobile = Math.min(1, aspect / 1.55);
-  const perspective = 2.65 / 4.1;
-  const centerX = mark.offsetLeft;
-  const centerY = mark.offsetTop + mark.offsetHeight / 2;
-  const markWidth = mark.offsetWidth;
-  const markHeight = mark.offsetHeight;
-  const cos = Math.cos(angle);
-  const sin = Math.sin(angle);
-  const { globe, burst, word, sizes, colors, seeds } = r.geometry;
-
-  for (let i = 0; i < COUNT; i++) {
-    const j = i * 3;
-    const k = i * 5;
-    const x = globe[i * 2] * markWidth;
-    const y = globe[i * 2 + 1] * markHeight;
-    const screenX = centerX + x * cos - y * sin;
-    const screenY = centerY + x * sin + y * cos;
-    const logoX = (screenX / width * 2 - 1) * aspect / (perspective * mobile);
-    const logoY = (1 - screenY / height * 2) / perspective;
-
-    r.values[k] = mix(mix(logoX, burst[j], spread), word[j], form)
-      + drift * .14 * Math.sin(time * .6 + seeds[i]);
-    r.values[k + 1] = mix(mix(logoY, burst[j + 1], spread), word[j + 1], form)
-      + drift * .12 * Math.cos(time * .5 + seeds[i]);
-    r.values[k + 2] = mix(burst[j + 2] * spread, word[j + 2], form);
-    r.values[k + 3] = sizes[i];
-    r.values[k + 4] = colors[i];
-  }
-
-  const gl = r.gl;
-  gl.useProgram(r.program);
-  gl.bindBuffer(gl.ARRAY_BUFFER, r.buffer);
-  gl.bufferSubData(gl.ARRAY_BUFFER, 0, r.values);
-  gl.uniform1f(r.aspect, aspect);
-  gl.uniform1f(r.dprUniform, r.dpr);
-  gl.uniform1f(r.spin, drift * (Math.sin(time * .48) * .12 + pointerX * .18));
-  gl.uniform1f(r.mx, pointerX * drift);
-  gl.uniform1f(r.my, pointerY * drift);
-  gl.uniform1f(r.opacity, smooth((p - .10) / .13) * mix(.78, 1, form));
-  gl.clearColor(0, 0, 0, 0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.drawArrays(gl.POINTS, 0, COUNT);
+  return origins.map((origin, index) => {
+    const side = origin.x < 0 ? -1 : 1;
+    const fragment = fragmentIndex(origin);
+    const flare = random();
+    const scatter = { x: side * (.10 + random() * .15) + origin.x * .25, y: (random() - .5) * .62 };
+    // Adjacent fragments peel away in opposite directions, with a range of arc lengths.
+    const direction = fragment % 2 === 0 ? 1 : -1;
+    return {
+      origin,
+      fragment,
+      target: targets[index],
+      scatter,
+      turn: direction * Math.PI * (1.03 + random() * .42),
+      delay: random() * .14,
+      radius: .55 + random() ** 2 * 1.36,
+      color: flare > .992 ? "#c9ff4b" : colors[Math.floor(flare * colors.length)],
+    };
+  });
 }
 
 export function KulturaAtmosphere({ children }: { children: ReactNode }) {
@@ -298,101 +134,185 @@ export function KulturaAtmosphere({ children }: { children: ReactNode }) {
     const surface = canvas.current;
     const logo = mark.current;
     const logoImage = image.current;
-    if (!story || !layer || !surface || !logo || !logoImage) return;
+    const showroom = story?.querySelector<HTMLElement>("[data-kultura-showroom]");
+    const manifesto = story?.querySelector<HTMLElement>("[data-kultura-both]");
+    const ending = story?.querySelector<HTMLElement>("[data-kultura-ending]");
+    if (!story || !layer || !surface || !logo || !logoImage || !ending) return;
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let reduced = motion.matches;
-    let renderer: Renderer | null = null;
-    let attempted = false;
-    let contextLost = false;
+    const context = surface.getContext("2d");
+    let particles: Particle[] | null = null;
     let visible = false;
     let frame = 0;
-    let pointerX = 0, pointerY = 0, targetX = 0, targetY = 0;
-    const start = performance.now();
+    let painted = false;
+    let playhead: number | null = null;
+    let previousTime: number | null = null;
 
-    const paint = () => {
+    const paint = (time: number) => {
       frame = 0;
       if (!visible || document.hidden) return;
-      const rect = story.getBoundingClientRect();
-      const p = clamp((-rect.top + window.innerHeight * .10) /
-        Math.max(1, rect.height - window.innerHeight * .76));
-      const time = (performance.now() - start) * .001;
-      const angle = reduced ? 0 : (time % 26) / 26 * Math.PI * 2;
-      const hasParticles = renderer !== null && !contextLost && !reduced;
-      const logoOpacity = reduced
-        ? Number(p < .63) * .52
-        : (1 - smooth((p - .12) / .22)) * .52;
-      const fallbackOpacity = reduced ? Number(p >= .63) : smooth((p - .48) / .29);
-      layer.style.setProperty("--mark-opacity", logoOpacity.toFixed(3));
-      layer.style.setProperty("--word-opacity", hasParticles ? "0" : fallbackOpacity.toFixed(3));
-      layer.style.setProperty("--globe-angle", angle.toFixed(5) + "rad");
-      layer.style.setProperty("--ring-angle", (reduced ? 0 : p * 135).toFixed(2) + "deg");
-      layer.style.setProperty("--story-glow", (1 - smooth((p - .9) / .14) * .35).toFixed(3));
-      if (renderer && hasParticles) {
-        pointerX = mix(pointerX, targetX, .055);
-        pointerY = mix(pointerY, targetY, .055);
-        resize(surface, renderer);
-        draw(renderer, surface, logo, p, angle, time, pointerX, pointerY);
+
+      const height = Math.max(layer.clientHeight, 1);
+      const width = Math.max(layer.clientWidth, 1);
+      const showroomTop = (showroom?.getBoundingClientRect().top
+        ?? manifesto?.getBoundingClientRect().bottom
+        ?? ending.getBoundingClientRect().top) / height;
+      const endingTop = ending.getBoundingClientRect().top / height;
+      const storyRect = story.getBoundingClientRect();
+      const backgroundTravel = clamp((height - storyRect.top) / (Math.max(storyRect.height, height) + height));
+      // Stretch the same reversible stages across the showroom, even as its height changes.
+      const distanceFromStart = SHOWROOM_START - showroomTop;
+      const runway = Math.max(0, endingTop - showroomTop) + SHOWROOM_START - ENDING_WORD_REVEAL;
+      const releaseProgress = 1 + (ENDING_WORD_REVEAL - ENDING_FADE_OUT) / runway;
+      const target = Math.min(releaseProgress, Math.max(0, distanceFromStart / runway));
+      const reduced = motion.matches;
+      if (playhead === null || reduced) playhead = target;
+
+      // Follow scroll in both directions with a speed cap for large wheel or touch jumps.
+      const elapsed = Math.min(Math.max((time - (previousTime ?? time)) / 1000, 0), .05);
+      const difference = target - playhead;
+      if (Math.abs(difference) < .0005) {
+        playhead = target;
+      } else {
+        const step = Math.min(Math.abs(difference) * -Math.expm1(-8 * elapsed), MAX_PROGRESS_PER_SECOND * elapsed);
+        playhead += Math.sign(difference) * step;
       }
-      if (!reduced && (p < .34 || (hasParticles && p < .77))) {
-        frame = window.requestAnimationFrame(paint);
+      const settled = playhead === target;
+      previousTime = settled ? null : time;
+      if (!settled) frame = window.requestAnimationFrame(paint);
+
+      const progress = clamp(playhead);
+      const split = reduced ? 0 : ease(progress, .03, .27);
+      const showWord = progress >= .86;
+      const dissolve = reduced ? Number(showWord) : ease(progress, .24, .40);
+      const opacity = playhead < releaseProgress
+        ? ease(ENDING_WORD_REVEAL + (1 - playhead) * runway, ENDING_FADE_OUT, .43)
+        : 0;
+      const logoWidth = logo.offsetWidth;
+      const logoHeight = logo.offsetHeight;
+      const centerX = logo.offsetLeft;
+      const centerY = logo.offsetTop + logoHeight / 2;
+      const splitDistance = Math.min(logoWidth * .15, width * .105) * split;
+      const splitRise = splitDistance * .15;
+      const hasParticles = !reduced && Boolean(particles?.length);
+
+      layer.style.setProperty("--mark-opacity", String((1 - dissolve) * opacity * mix(.52, .82, split)));
+      const wordOpacity = reduced ? Number(showWord) : ease(progress, .75, .97);
+      layer.style.setProperty("--word-opacity", hasParticles ? "0" : String(wordOpacity * opacity));
+      layer.style.setProperty("--split-x", `${splitDistance}px`);
+      layer.style.setProperty("--split-y", `${splitRise}px`);
+      layer.style.setProperty("--story-glow", String(mix(.65, 1, opacity)));
+      layer.style.setProperty("--morph-settled", settled ? "1" : "0");
+      layer.style.setProperty("--plane-y", `${reduced ? 0 : mix(-1.5, 6.5, backgroundTravel)}svh`);
+      layer.style.setProperty("--dust-y", `${reduced ? 0 : mix(16, -16, backgroundTravel)}px`);
+
+      if (!context) return;
+      if (!hasParticles || !particles || dissolve === 0 || opacity === 0) {
+        if (painted) context.clearRect(0, 0, surface.width, surface.height);
+        painted = false;
+        return;
       }
+
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      const pixelWidth = Math.round(width * ratio);
+      const pixelHeight = Math.round(height * ratio);
+      if (surface.width !== pixelWidth) surface.width = pixelWidth;
+      if (surface.height !== pixelHeight) surface.height = pixelHeight;
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      context.clearRect(0, 0, width, height);
+
+      const wordWidth = Math.min(width * .79, 680);
+      const fieldWidth = Math.min(width, 900);
+      const fieldHeight = Math.min(height, 530);
+      const pointScale = Math.max(.65, Math.min(1.25, wordWidth / 510));
+      const spread = ease(progress, .46, .64);
+      const swirl = ease(progress, .47, .79);
+      const letterOpacity = ease(progress, .60, .99);
+      context.globalAlpha = dissolve * opacity * mix(.67, .93, letterOpacity);
+
+      const fragments = FRAGMENTS.map(({ side, center, drift, tilt, delay }) => {
+        const breakaway = ease(progress, .25 + delay, .48 + delay);
+        const rotation = tilt * breakaway;
+        return {
+          centerX: center.x * logoWidth,
+          centerY: center.y * logoHeight,
+          x: side * splitDistance + drift.x * logoWidth * breakaway,
+          y: side * splitRise + drift.y * logoHeight * breakaway,
+          cos: Math.cos(rotation),
+          sin: Math.sin(rotation),
+        };
+      });
+
+      for (const particle of particles) {
+        const piece = fragments[particle.fragment];
+        const localX = particle.origin.x * logoWidth - piece.centerX;
+        const localY = particle.origin.y * logoHeight - piece.centerY;
+        const fragmentX = piece.x + piece.centerX + localX * piece.cos - localY * piece.sin;
+        const fragmentY = piece.y + piece.centerY + localX * piece.sin + localY * piece.cos;
+        const turn = swirl * particle.turn;
+        const cos = Math.cos(turn);
+        const sin = Math.sin(turn);
+        const swirlX = (particle.scatter.x * cos - particle.scatter.y * sin) * fieldWidth;
+        const swirlY = (particle.scatter.x * sin + particle.scatter.y * cos) * fieldHeight;
+        const gather = ease(progress, .69 + particle.delay * .78, .98);
+        const x = mix(
+          mix(fragmentX, swirlX, spread),
+          particle.target.x * wordWidth,
+          gather,
+        );
+        const y = mix(
+          mix(fragmentY, swirlY, spread),
+          particle.target.y * wordWidth,
+          gather,
+        );
+        const radius = particle.radius * pointScale * mix(1 + spread * .25, 1.12, gather);
+        context.fillStyle = particle.color;
+        context.fillRect(centerX + x - radius / 2, centerY + y - radius / 2, radius, radius);
+      }
+      painted = true;
     };
 
     const request = () => {
       if (visible && !frame && !document.hidden) frame = window.requestAnimationFrame(paint);
     };
-    const stop = () => {
-      if (frame) window.cancelAnimationFrame(frame);
-      frame = 0;
-    };
-    const mouse = (event: PointerEvent) => {
-      if (!visible || reduced || event.pointerType === "touch") return;
-      targetX = (event.clientX / Math.max(window.innerWidth, 1) - .5) * 2;
-      targetY = (event.clientY / Math.max(window.innerHeight, 1) - .5) * 2;
-    };
     const prepare = () => {
-      if (visible && !reduced && !attempted && logoImage.complete && logoImage.naturalWidth) {
-        attempted = true;
-        renderer = setup(surface, logoImage);
+      if (visible && context && !motion.matches && particles === null && logoImage.complete && logoImage.naturalWidth) {
+        particles = makeParticles(logoImage);
       }
       request();
     };
-    const lost = () => { contextLost = true; request(); };
-    const preference = () => { reduced = motion.matches; stop(); prepare(); };
-    const visibility = () => { stop(); request(); };
     const observer = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
+      layer.style.setProperty("--ambient-state", visible ? "running" : "paused");
       if (visible) prepare();
-      else stop();
-    }, { rootMargin: "160px 0px", threshold: 0 });
+      else {
+        if (frame) window.cancelAnimationFrame(frame);
+        frame = 0;
+        playhead = null;
+        previousTime = null;
+      }
+    }, { rootMargin: "160px 0px" });
     observer.observe(story);
+    const resize = new ResizeObserver(request);
+    resize.observe(layer);
+    resize.observe(story);
+    if (showroom) resize.observe(showroom);
+
     logoImage.addEventListener("load", prepare);
-    surface.addEventListener("webglcontextlost", lost);
-    motion.addEventListener("change", preference);
-    window.addEventListener("pointermove", mouse, { passive: true });
+    motion.addEventListener("change", prepare);
     window.addEventListener("resize", request, { passive: true });
     window.addEventListener("scroll", request, { passive: true });
-    document.addEventListener("visibilitychange", visibility);
+    document.addEventListener("visibilitychange", request);
 
     return () => {
-      visible = false;
-      stop();
+      if (frame) window.cancelAnimationFrame(frame);
       observer.disconnect();
+      resize.disconnect();
       logoImage.removeEventListener("load", prepare);
-      surface.removeEventListener("webglcontextlost", lost);
-      motion.removeEventListener("change", preference);
-      window.removeEventListener("pointermove", mouse);
+      motion.removeEventListener("change", prepare);
       window.removeEventListener("resize", request);
       window.removeEventListener("scroll", request);
-      document.removeEventListener("visibilitychange", visibility);
-      if (renderer) {
-        const { gl, buffer, program, vertex, fragment } = renderer;
-        gl.deleteBuffer(buffer);
-        gl.deleteProgram(program);
-        gl.deleteShader(vertex);
-        gl.deleteShader(fragment);
-      }
+      document.removeEventListener("visibilitychange", request);
     };
   }, []);
 
@@ -400,16 +320,23 @@ export function KulturaAtmosphere({ children }: { children: ReactNode }) {
     <div className={styles.story} ref={root} data-kultura-story>
       <div className={styles.field} ref={field} aria-hidden="true">
         <div className={styles.ambientLight} />
-        <canvas className={styles.particles} ref={canvas} />
+        <div className={styles.dust} data-kultura-dust />
         <div className={styles.orbitOne} />
         <div className={styles.orbitTwo} />
-        <div className={styles.chromeMark} ref={mark}>
-          <div className={styles.globeSpin}>
-            <Image ref={image} src="/images/kultura-globe-scene.webp" alt="" fill unoptimized loading="lazy"
-              sizes="(max-width: 720px) 78vw, 520px" />
+        <div className={styles.motionPlane} data-kultura-motion-plane>
+          <div className={styles.chromeMark} ref={mark}>
+            <div className={`${styles.globeHalf} ${styles.globeLeft}`} data-kultura-globe-half="left">
+              <Image ref={image} src={GLOBE_IMAGE} alt="" fill unoptimized loading="lazy"
+                sizes="(max-width: 720px) 78vw, 520px" />
+            </div>
+            <div className={`${styles.globeHalf} ${styles.globeRight}`} data-kultura-globe-half="right">
+              <Image src={GLOBE_IMAGE} alt="" fill unoptimized loading="lazy"
+                sizes="(max-width: 720px) 78vw, 520px" />
+            </div>
           </div>
+          <canvas className={styles.particles} ref={canvas} data-kultura-morph-canvas />
+          <div className={styles.wordFallback}>KULTURA</div>
         </div>
-        <div className={styles.wordFallback}>KULTURA</div>
         <div className={styles.groundGlow} />
         <div className={styles.grain} />
       </div>
