@@ -16,5 +16,14 @@ export async function verifyActor(client: SupabaseClient<Database> | null, admin
         throw new AccessError("unavailable");
     if (admin && profile.role !== "admin")
         throw new AccessError("forbidden");
+    if (admin && !(await hasVerifiedAdminSession(client, user.id)))
+        throw new AccessError("mfa_required");
     return { client, user, profile };
 }
+
+export async function hasVerifiedAdminSession(client: SupabaseClient<Database>, userId: string) {
+    const { data, error } = await client.auth.getClaims();
+    if (error || data?.claims.sub !== userId) throw new AccessError("unavailable");
+    return data.claims.aal === "aal2";
+}
+

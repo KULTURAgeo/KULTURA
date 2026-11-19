@@ -11,6 +11,11 @@ export const TEST_BOOTSTRAP_SQL = `
  create function auth.uid() returns uuid language sql stable as $$
  select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
  $$;
+ -- Existing integration fixtures model verified sign-ins. Tests of lower assurance
+ -- explicitly set request.jwt.claims to an AAL1 token or empty claims.
+ create function auth.jwt() returns jsonb language sql stable as $$
+ select coalesce(nullif(current_setting('request.jwt.claims', true), '')::jsonb, '{"aal":"aal2"}'::jsonb)
+ $$;
  grant usage on schema auth to anon, authenticated, service_role;
  grant execute on function auth.uid() to anon, authenticated, service_role;
  create schema storage;
@@ -33,3 +38,4 @@ export async function createTestDatabase({ seed = true, phase2Only = false, thro
   if (seed) await db.exec(await readFile("supabase/seed.sql", "utf8"));
   return db;
 }
+

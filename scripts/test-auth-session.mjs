@@ -29,7 +29,9 @@ process.env.UPSTASH_REDIS_REST_TOKEN="fixture";
 process.env.RATE_LIMIT_HMAC_KEY="security-tests-only-not-a-real-secret";
 process.env.RATE_LIMIT_NAMESPACE="kultura-auth-fixture";
 const user={id:"10000000-0000-4000-8000-000000000001",aud:"authenticated",role:"authenticated",email:"session@example.invalid",app_metadata:{provider:"email"},user_metadata:{},created_at:new Date().toISOString()};
-const token=(expires=3600)=>[Buffer.from(JSON.stringify({alg:"HS256",typ:"JWT"})).toString("base64url"),Buffer.from(JSON.stringify({sub:user.id,aud:"authenticated",role:"authenticated",exp:Math.floor(Date.now()/1000)+expires})).toString("base64url"),"FIXTURE_SIGNATURE"].join(".");
+let profileRole = "customer", factors = [];
+const factorId = "10000000-0000-4000-8000-000000000099";
+const token=(expires=3600,aal="aal1")=>[Buffer.from(JSON.stringify({alg:"HS256",typ:"JWT"})).toString("base64url"),Buffer.from(JSON.stringify({sub:user.id,aud:"authenticated",role:"authenticated",aal,exp:Math.floor(Date.now()/1000)+expires})).toString("base64url"),Buffer.from("fixture signature").toString("base64url")].join(".");
 const session=(expires=3600)=>({access_token:token(expires),refresh_token:"FIXTURE_REFRESH",token_type:"bearer",expires_in:expires,expires_at:Math.floor(Date.now()/1000)+expires,user});
 let profileFailure=false, authFailure=false, refreshCount=0;
 const requests=[];
@@ -45,17 +47,28 @@ globalThis.fetch=async(input,init={})=>{
   return json({result:[1,60]});
  }
  if(url.pathname==="/auth/v1/token"){if(url.searchParams.get("grant_type")==="refresh_token")refreshCount++;return json(session());}
- if(url.pathname==="/auth/v1/user")return authFailure?json({message:"Unavailable"},503):json(user);
+ if(url.pathname==="/auth/v1/user")return authFailure?json({message:"Unavailable"},503):json({...user,factors});
+ if(url.pathname==="/auth/v1/factors" && init.method==="POST"){
+  factors=[{id:factorId,factor_type:"totp",status:"unverified"}];
+  return json({id:factorId,type:"totp",totp:{secret:"ABCDEFGHIJKLMNOP",qr_code:'<svg xmlns="http://www.w3.org/2000/svg"></svg>'}});
+ }
+ if(url.pathname==="/auth/v1/factors/"+factorId+"/challenge")return json({id:"mock-challenge",type:"totp"});
+ if(url.pathname==="/auth/v1/factors/"+factorId+"/verify"){
+  if(JSON.parse(init.body).code!=="123456")return json({message:"Invalid code"},422);
+  factors=[{id:factorId,factor_type:"totp",status:"verified"}];
+  return json({...session(),access_token:token(3600,"aal2"),user:{...user,factors}});
+ }
  if(url.pathname==="/auth/v1/signup")return json({user,session:null});
  if(url.pathname==="/auth/v1/recover")return json({});
  if(url.pathname==="/auth/v1/verify")return json(session());
  if(url.pathname==="/auth/v1/logout")return json({});
- if(url.pathname==="/rest/v1/profiles")return profileFailure?json({code:"PGRST116",message:"Profile missing"},406):json({id:user.id,role:"customer",full_name:null,phone:null});
+ if(url.pathname==="/rest/v1/profiles")return profileFailure?json({code:"PGRST116",message:"Profile missing"},406):json({id:user.id,role:profileRole,full_name:null,phone:null});
  throw new Error("Unexpected fixture request: "+url.pathname);
 };
 const {authenticate,logout}=await import("../src/app/auth/actions.ts");
 const {POST:logoutPost}=await import("../src/app/auth/logout/route.ts");
-const {requirePage}=await import("../src/lib/auth/guards.ts");
+const {requirePage,requireActionActor}=await import("../src/lib/auth/guards.ts");
+const {enrollAdminAuthenticator,verifyAdminAuthenticator}=await import("../src/app/auth/admin-mfa/actions.ts");
 const {proxy}=await import("../src/proxy.ts");
 const {NextRequest}=await import("next/server");
 const {createBrowserSessionClient}=await import("../src/lib/supabase/client.ts");
@@ -73,6 +86,35 @@ await check("Password login persists production cookies and safe next destinatio
 });
 await check("New server request reads login cookies and grants account access",async()=>{assert.equal((await requirePage()).user.id,user.id);});
 await check("Authenticated customer still cannot access admin",async()=>{await assert.rejects(()=>requirePage(true),e=>e.redirectTo==="/account?restricted=1");});
+await check("Customer session cannot start admin authenticator setup",async()=>{
+ const before=requests.filter(request=>request.path==="/auth/v1/factors").length;
+ assert.equal((await enrollAdminAuthenticator({},new FormData())).ok,false);
+ assert.equal(requests.filter(request=>request.path==="/auth/v1/factors").length,before);
+});
+await check("Admin enrollment and subsequent login require a valid authenticator code",async()=>{
+ profileRole="admin";
+ const verify=code=>{const form=new FormData();form.set("factor_id",factorId);form.set("code",code);return verifyAdminAuthenticator({},form);};
+ try {
+  await assert.rejects(()=>requirePage(true),e=>e.redirectTo==="/auth/admin-mfa");
+  await assert.rejects(()=>requireActionActor(true),e=>e.code==="mfa_required");
+  const enrolled=await enrollAdminAuthenticator({},new FormData());
+  assert.equal(enrolled.setup?.factorId,factorId);
+  assert.match(enrolled.setup?.qr??"",/^data:image\/svg\+xml,%3Csvg/);
+  assert.equal((await verify("000000")).ok,false);
+  await assert.rejects(()=>requirePage(true),e=>e.redirectTo==="/auth/admin-mfa");
+  assert.equal((await verify("123456")).redirectTo,"/admin");
+  assert.equal((await requireActionActor(true)).user.id,user.id);
+  await authenticate({},form("login",{next:"/admin"}));
+  await assert.rejects(()=>requirePage(true),e=>e.redirectTo==="/auth/admin-mfa");
+  assert.equal((await enrollAdminAuthenticator({},new FormData())).ok,false);
+  assert.equal((await verify("123456")).redirectTo,"/admin");
+  assert.equal((await requirePage(true)).user.id,user.id);
+ } finally {
+  profileRole="customer";
+  factors=[];
+  await authenticate({},form("login"));
+ }
+});
 await check("Profile failure is not disguised as a logged-out session",async()=>{profileFailure=true;try{await assert.rejects(()=>requirePage(),e=>e.code==="unavailable"&&!e.redirectTo);}finally{profileFailure=false;}});
 await check("Auth service outage does not become a login redirect",async()=>{authFailure=true;try{await assert.rejects(()=>requirePage(),e=>e.code==="unavailable"&&!e.redirectTo);}finally{authFailure=false;}});
 await check("External next destination is rejected",async()=>{assert.equal((await authenticate({},form("login",{next:"https://evil.invalid"}))).redirectTo,"/account");});
@@ -228,3 +270,4 @@ await browser.auth.stopAutoRefresh();
 await writeFile("qa/auth-session-results.json",JSON.stringify({scope:"Real SSR SDK, auth actions, guards, proxy and callback routes with simulated Supabase HTTP and cookies; not hosted Supabase.",passed:passed.length,checks:passed},null,2));
 console.warn=originalWarn;
 console.log(passed.length+" authentication/session integration checks passed");
+
