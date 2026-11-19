@@ -21,6 +21,8 @@ export async function requirePage(admin = false) {
   } catch (error) {
     if (error instanceof AccessError && error.code === "forbidden")
       redirect("/account?restricted=1");
+    if (error instanceof AccessError && error.code === "mfa_required")
+      redirect("/auth/admin-mfa");
     if (error instanceof AccessError && error.code === "unauthenticated")
       redirect("/login?next=" + (admin ? "/admin" : "/account"));
     throw error;
@@ -33,3 +35,4 @@ export async function requireActionActor(admin = false) {
   await rateLimit(admin ? "admin" : "customer", actor.user.id, admin ? 120 : 60, 60);
   return actor;
 }
+

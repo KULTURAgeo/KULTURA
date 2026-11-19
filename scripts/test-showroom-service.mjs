@@ -22,8 +22,8 @@ const publishableKey = "sb_publishable_SHOWROOM_SYNTHETIC";
 const supabaseUrl = "https://showroom-fixture.supabase.co";
 const tokenFor = id => [
   Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url"),
-  Buffer.from(JSON.stringify({ sub: id, aud: "authenticated", role: "authenticated", exp: Math.floor(Date.now() / 1000) + 3600 })).toString("base64url"),
-  "SYNTHETIC_SIGNATURE",
+  Buffer.from(JSON.stringify({ sub: id, aud: "authenticated", role: "authenticated", aal: "aal2", exp: Math.floor(Date.now() / 1000) + 3600 })).toString("base64url"),
+  Buffer.from("fixture signature").toString("base64url"),
 ].join(".");
 globalThis.__showroomCookies = {
   getAll() {
@@ -345,3 +345,4 @@ try {
   console.error = originalError;
   await db.close();
 }
+

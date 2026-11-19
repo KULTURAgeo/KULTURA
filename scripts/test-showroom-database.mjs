@@ -13,10 +13,11 @@ async function check(name, run) {
   checks.push(name);
 }
 
-async function asRole(role, userId, sql, values = []) {
+async function asRole(role, userId, sql, values = [], claims = { aal: 'aal2' }) {
   await db.exec(`begin; set local role ${role};`);
   try {
     await db.query("select set_config('request.jwt.claim.sub', $1, true)", [userId ?? '']);
+    await db.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify(claims)]);
     const result = await db.query(sql, values);
     await db.exec('commit;');
     return result;
@@ -48,6 +49,16 @@ try {
   });
 
   let productCard;
+  await check('Admin without a verified second factor cannot write through RLS or admin RPCs', async () => {
+    for (const claims of [{}, { aal: 'aal1' }]) {
+      await assert.rejects(asRole('authenticated', admin,
+        "insert into public.homepage_showroom_items(source_kind,category_id) values ('category',$1)",
+        [category], claims), error => error.code === '42501');
+      await assert.rejects(asRole('authenticated', admin,
+        'select public.admin_save_checkout_settings(1000, 10000)', [], claims),
+        error => error.code === '42501');
+    }
+  });
   await check('Admin creates product and category cards with a stable ordered list', async () => {
     productCard = (await adminQuery("insert into public.homepage_showroom_items(source_kind,product_id,title,sort_position) values ('product',$1,'QA Product',20) returning id,updated_at", [activeProduct])).rows[0];
     await adminQuery("insert into public.homepage_showroom_items(source_kind,category_id,title,sort_position) values ('category',$1,'QA Category',10)", [category]);
@@ -119,3 +130,4 @@ try {
 } finally {
   await db.close();
 }
+

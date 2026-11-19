@@ -7,12 +7,14 @@ export type ActionState = {
     reload?: boolean;
 };
 export class AccessError extends Error {
-    constructor(public code: "unauthenticated" | "forbidden" | "unavailable") { super(code); }
+    constructor(public code: "unauthenticated" | "forbidden" | "unavailable" | "mfa_required") { super(code); }
 }
 export function safeFailure(error: unknown): ActionState {
     if (error instanceof RequestError) return { ok: false, message: error.message };
     if (error instanceof InputError)
         return { ok: false, message: error.message };
+    if (error instanceof AccessError && error.code === "mfa_required")
+        return { ok: false, message: "Verify your authenticator to continue.", redirectTo: "/auth/admin-mfa" };
     if (error instanceof AccessError)
         return { ok: false, message: error.code === "unauthenticated" ? "Please sign in again." : error.code === "forbidden" ? "You do not have permission to perform this action." : "This service is temporarily unavailable." };
     if (typeof error === "object" && error !== null && "code" in error) {
@@ -26,3 +28,4 @@ export function safeFailure(error: unknown): ActionState {
     }
     return { ok: false, message: "We could not complete this request. Please try again." };
 }
+
