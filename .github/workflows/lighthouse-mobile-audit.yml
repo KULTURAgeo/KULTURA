@@ -1,7 +1,7 @@
 name: KULTURA mobile Lighthouse audit
 on:
   pull_request:
-    types: [opened]
+    types: [opened, synchronize]
 permissions:
   contents: read
 jobs:
@@ -21,5 +21,5 @@ jobs:
           for route in home drops; do
             if [ "$route" = home ]; then page='/'; else page='/drops?lang=ka'; fi
             npx --yes lighthouse@13.6.0 "https://kultura-liart.vercel.app$page" --quiet --throttling-method=simulate --chrome-flags='--headless --disable-gpu' --only-categories=performance,accessibility,seo --output=json --output-path="$RUNNER_TEMP/$route.json"
-            node -e 'const r=require(process.argv[1]);const a=r.audits;console.log(JSON.stringify({url:r.finalDisplayedUrl,formFactor:r.configSettings.formFactor,settings:r.configSettings.throttling,performance:r.categories.performance.score,accessibility:r.categories.accessibility.score,seo:r.categories.seo.score,lcp:a["largest-contentful-paint"].numericValue,tbt:a["total-blocking-time"].numericValue,cls:a["cumulative-layout-shift"].numericValue,contrast:a["color-contrast"].score,contrastNodes:a["color-contrast"].details?.items?.map(x=>x.node?.selector)},null,2))' "$RUNNER_TEMP/$route.json"
+            node -e 'const r=require(process.argv[1]);const a=r.audits;console.log(JSON.stringify({url:r.finalDisplayedUrl,formFactor:r.configSettings.formFactor,settings:r.configSettings.throttling,performance:r.categories.performance.score,accessibility:r.categories.accessibility.score,seo:r.categories.seo.score,lcp:a["largest-contentful-paint"].numericValue,tbt:a["total-blocking-time"].numericValue,cls:a["cumulative-layout-shift"].numericValue,failedAudits:Object.values(r.categories).flatMap(cat=>cat.auditRefs.filter(ref=>ref.weight>0&&a[ref.id]?.score!==null&&a[ref.id]?.score<1).map(ref=>({id:ref.id,score:a[ref.id].score,info:a[ref.id].displayValue,items:a[ref.id].details?.items?.slice(0,4).map(x=>({href:x.href??x.url,node:x.node?.selector,reason:x.reason}))}))),contrast:a["color-contrast"].score,contrastNodes:a["color-contrast"].details?.items?.map(x=>x.node?.selector)},null,2))' "$RUNNER_TEMP/$route.json"
           done
