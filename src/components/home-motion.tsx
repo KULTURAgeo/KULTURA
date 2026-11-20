@@ -54,7 +54,8 @@ export function HomeMotion({
     const node = root.current;
     if (!node || !catalogReady) return;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const dataSaver = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches || dataSaver;
     const revealNodes = Array.from(node.querySelectorAll<HTMLElement>("[data-reveal]"));
 
     const observer = new IntersectionObserver(
@@ -76,6 +77,7 @@ export function HomeMotion({
     });
 
     if (reduced) {
+      node.dataset.staticMotion = "true";
       revealNodes.forEach((item) => item.setAttribute("data-visible", "true"));
       const staticPhone = node.querySelector<HTMLElement>("[data-phone]");
       const staticBackdrop = node.querySelector<HTMLElement>("[data-demo-backdrop]");
@@ -85,6 +87,7 @@ export function HomeMotion({
       }
       if (staticBackdrop) staticBackdrop.style.opacity = "1";
       return () => {
+        delete node.dataset.staticMotion;
         observer.disconnect();
       };
     }

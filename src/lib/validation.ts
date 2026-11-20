@@ -61,7 +61,7 @@ export function version(data: FormData): string {
 export function safeNext(value: unknown): string {
     if (typeof value !== "string")
         return "/account";
-    if (value === "/checkout" || value === "/checkout/review")
+    if (value === "/checkout" || value === "/checkout/review" || value === "/drops")
         return value;
     return /^\/(account|admin)(\/[a-zA-Z0-9-]+)*$/.test(value) ? value : "/account";
 }

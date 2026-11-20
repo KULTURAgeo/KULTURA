@@ -112,6 +112,87 @@ updated_at?: string;
 };
 Relationships: [];
 };
+drop_alerts: {
+Row: {
+id: string;
+release_id: string;
+user_id: string;
+locale: string;
+created_at: string;
+first_attempt_at: string | null;
+claimed_at: string | null;
+sent_at: string | null;
+};
+Insert: {
+id?: string;
+release_id: string;
+user_id: string;
+locale: string;
+created_at?: string;
+first_attempt_at?: string | null;
+claimed_at?: string | null;
+sent_at?: string | null;
+};
+Update: {
+id?: string;
+release_id?: string;
+user_id?: string;
+locale?: string;
+created_at?: string;
+first_attempt_at?: string | null;
+claimed_at?: string | null;
+sent_at?: string | null;
+};
+Relationships: [{"foreignKeyName":"drop_alerts_release_id_fkey","columns":["release_id"],"isOneToOne":false,"referencedRelation":"drop_releases","referencedColumns":["id"]}];
+};
+drop_release_products: {
+Row: {
+release_id: string;
+product_id: string;
+};
+Insert: {
+release_id: string;
+product_id: string;
+};
+Update: {
+release_id?: string;
+product_id?: string;
+};
+Relationships: [{"foreignKeyName":"drop_release_products_product_id_fkey","columns":["product_id"],"isOneToOne":false,"referencedRelation":"products","referencedColumns":["id"]},{"foreignKeyName":"drop_release_products_release_id_fkey","columns":["release_id"],"isOneToOne":false,"referencedRelation":"drop_releases","referencedColumns":["id"]}];
+};
+drop_releases: {
+Row: {
+id: string;
+title: string;
+title_ka: string;
+launches_at: string;
+published: boolean;
+archived: boolean;
+created_at: string;
+updated_at: string;
+};
+Insert: {
+id?: string;
+title: string;
+title_ka?: string;
+launches_at: string;
+published?: boolean;
+archived?: boolean;
+created_at?: string;
+updated_at?: string;
+};
+Update: {
+id?: string;
+title?: string;
+title_ka?: string;
+launches_at?: string;
+published?: boolean;
+archived?: boolean;
+created_at?: string;
+updated_at?: string;
+};
+Relationships: [];
+};
 homepage_showroom_items: {
 Row: {
 id: string;
@@ -689,6 +770,7 @@ checkout_create_unpaid_order: { Args: { p_cart: Json | null; p_address: Json | n
 checkout_get_shipping_settings: { Args: { p_request: boolean | null }; Returns: Json };
 checkout_quote_promo: { Args: { p_code: string | null; p_subtotal: string | null }; Returns: Json };
 checkout_submit_order: { Args: { p_request_id: string | null; p_cart: Json | null; p_address: Json | null; p_promo_code: string | null }; Returns: string };
+claim_drop_alerts: { Args: { p_release_id: string | null }; Returns: Json };
 customer_create_return_request: { Args: { p_order_id: string | null; p_request_type: string | null; p_reason: string | null; p_details: string | null; p_items: Json | null }; Returns: string };
 customer_save_address: { Args: { p_id: string | null; p_address: Json | null }; Returns: string };
 notification_claim: { Args: { p_notification_id: string | null; p_channel: string | null }; Returns: boolean };

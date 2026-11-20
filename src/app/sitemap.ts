@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { isIndexable, siteUrl } from "@/lib/site";
+import { isIndexable, languageUrls, siteUrl } from "@/lib/site";
 import {
   isSearchIndexableCategorySlug,
   isSearchIndexableProductSlug,
@@ -23,25 +23,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/contact", priority: 0.5, changeFrequency: "monthly" as const },
   ];
 
+  const localized = (path: string, priority: number, changeFrequency: "daily" | "weekly"): MetadataRoute.Sitemap => {
+    const languages = languageUrls(path);
+    return [languages.en, languages.ka].map(url => ({
+      url, priority, changeFrequency, alternates: { languages },
+    }));
+  };
   return [
-    ...staticPages.map(({ path, priority, changeFrequency }) => ({
-      url: new URL(path, siteUrl()).href,
-      priority,
-      changeFrequency,
-    })),
+    ...staticPages.flatMap(({ path, priority, changeFrequency }): MetadataRoute.Sitemap =>
+      changeFrequency === "monthly"
+        ? [{ url: new URL(path, siteUrl()).href, priority, changeFrequency }]
+        : localized(path, priority, changeFrequency)),
+    ...["x", "unisex", "y"].flatMap(division => localized("/shop/" + division, 0.8, "daily")),
     ...categories
       .filter((category) => isSearchIndexableCategorySlug(category.slug))
-      .map((category) => ({
-        url: new URL("/shop/" + category.slug, siteUrl()).href,
-        priority: 0.8,
-        changeFrequency: "daily" as const,
-      })),
+      .filter(category => !["x", "unisex", "y"].includes(category.slug))
+      .flatMap(category => localized("/shop/" + category.slug, 0.8, "daily")),
     ...products
       .filter((product) => isSearchIndexableProductSlug(product.slug))
-      .map((product) => ({
-        url: new URL("/product/" + product.slug, siteUrl()).href,
-        priority: 0.7,
-        changeFrequency: "daily" as const,
-      })),
+      .flatMap(product => localized("/product/" + product.slug, 0.7, "daily")),
   ];
 }

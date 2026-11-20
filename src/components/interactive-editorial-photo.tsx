@@ -31,7 +31,7 @@ export function InteractiveEditorialPhoto({
 
   function track(event: PointerEvent<HTMLAnchorElement>) {
     const element = card.current;
-    if (!element) return;
+    if (!element || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     if (event.pointerType === "touch" && event.buttons === 0) return;
     const rect = element.getBoundingClientRect();
     const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / Math.max(rect.width, 1)));

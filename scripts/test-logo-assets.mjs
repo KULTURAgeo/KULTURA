@@ -3,11 +3,15 @@ import { readFile, readdir } from "node:fs/promises";
 import sharp from "sharp";
 
 const page = await readFile("src/app/page.tsx", "utf8");
+const atmosphere = await readFile("src/components/kultura-atmosphere.tsx", "utf8");
 const names = await readdir("public/images");
 // A page can reuse the same verified asset (e.g. phone badge and portal button).
 // Validate the unique referenced files rather than requiring one use per asset.
 const paths = [...new Set([...page.matchAll(/src="(\/images\/kultura-globe-[^"]+)"/g)].map(match => match[1]))];
-assert.deepEqual(paths.sort(), ["/images/kultura-globe-phone.webp", "/images/kultura-globe-scene.webp"]);
+assert.deepEqual(paths, ["/images/kultura-globe-phone.webp"]);
+assert.match(page, /src="\/images\/new-drops-dust\.svg"/);
+assert.match(atmosphere, /"\/images\/kultura-globe-scene\.webp"/);
+paths.push("/images/kultura-globe-scene.webp");
 assert.doesNotMatch(page, /kultura-phone-badge\.png|kultura-scene-logo\.jpg|kultura-globe-badge/);
 for (const path of paths) {
   assert.ok(names.includes(path.split("/").at(-1)), "Exact case-sensitive filename: " + path);
@@ -35,8 +39,13 @@ for (const path of paths) {
   }
 }
 await sharp("public/images/kultura-globe-original.jpeg").raw().toBuffer();
+const dustPath = "/images/new-drops-dust.svg";
+const dust = await readFile("public" + dustPath);
+const mask = await sharp(dust).ensureAlpha().raw().toBuffer();
+assert.ok(mask.some((value, index) => index % 4 === 3 && value > 128), "Particle lettering paints visible pixels");
 if (process.env.QA_BASE_URL) {
   const html=await (await fetch(process.env.QA_BASE_URL)).text();
-  for(const path of paths) assert.ok(html.includes('src="'+path+'"'),"Built homepage uses direct public asset path");
+  for(const path of [...paths, dustPath]) assert.ok(html.includes('src="'+path+'"'),"Built homepage uses direct public asset path");
 }
-console.log("Both logo files fully decode, match exact public paths, have appropriate resolution and retain the complete artwork." + (process.env.QA_BASE_URL ? " Production HTTP assets and HTML verified." : ""));
+console.log("The phone badge, atmosphere globe, and New Drops particle lettering render." + (process.env.QA_BASE_URL ? " Production HTTP assets and HTML verified." : ""));
+

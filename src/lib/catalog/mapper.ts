@@ -29,7 +29,7 @@ export type CatalogRow = Pick<
 export function mapProduct(row: CatalogRow, supabaseUrl?: string): Product {
   const images = [...row.images]
     .sort((a, b) => a.sort_position - b.sort_position)
-    .flatMap((image) => {
+    .flatMap((image, index) => {
       let src = image.image_url;
       if (image.storage_path && supabaseUrl)
         src =
@@ -47,7 +47,10 @@ export function mapProduct(row: CatalogRow, supabaseUrl?: string): Product {
           )
         : false;
       if (!local && !storage) return [];
-      return [{ src, alt: image.alt_text ?? row.name }];
+      const alt = image.alt_text?.trim();
+      const name = row.name.trim().toLowerCase() === "lukachemia"
+        ? `KULTURA ${row.category?.name ?? "collection"}` : row.name;
+      return [{ src, alt: alt && alt.toLowerCase() !== "lukachemia" ? alt : `${name} — product photo ${index + 1}` }];
     });
   return {
     id: row.id,

@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     serverActions: { bodySizeLimit: "4mb" },
   },
   images: {
+    deviceSizes: [640, 750, 828, 1080, 1200, 1440, 1920],
     remotePatterns: origin
       ? [new URL("/storage/v1/object/public/product-images/**", origin)]
       : [],

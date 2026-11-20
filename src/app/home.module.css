@@ -696,6 +696,8 @@
   .floatCard,
   .orbitHeading { transition: none; }
 }
+.home[data-static-motion="true"] .demoTrack { height: 100svh; }
+.home[data-static-motion="true"] [data-reveal] { opacity: 1; transform: none; }
 
 /* The motion-led homepage normally uses warm paper tones. When visitors select
    dark mode, keep the artwork as-is but flip every text-based section. */

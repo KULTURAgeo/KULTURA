@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { pageMetadata } from "@/lib/site";
+import { localizedPageMetadata } from "@/lib/site";
 import { campaignImage, money } from "@/lib/catalog";
 import { getHomepageCatalog } from "@/lib/catalog/repository";
 import { getHomepageShowroom } from "@/lib/showroom/repository";
@@ -14,7 +14,9 @@ import styles from "./home.module.css";
 import { getServerLocale } from "@/lib/i18n-server";
 import { translate, type Locale } from "@/lib/i18n";
 
-export const metadata = pageMetadata("KULTURA — Step Into Kultura", "/");
+export async function generateMetadata() {
+  return localizedPageMetadata(await getServerLocale(), "KULTURA — Step Into Kultura", "/");
+}
 
 const INSTAGRAM_URL = "https://www.instagram.com/kultura.geo/";
 
@@ -248,8 +250,8 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
                 position: "absolute",
                 left: "50%",
                 top: "50%",
-                width: "min(980px, 74vw)",
-                aspectRatio: "1091 / 630",
+                width: "min(1440px, 98vw)",
+                aspectRatio: "1200 / 430",
                 transform: "translate(-50%, -50%) scale(.72)",
                 zIndex: 0,
                 opacity: 0,
@@ -257,12 +259,11 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
               }}
             >
               <Image
-                src="/images/kultura-globe-scene.webp"
+                src="/images/new-drops-dust.svg"
                 alt=""
                 fill
                 unoptimized
-                loading="eager"
-                sizes="74vw"
+                sizes="98vw"
                 style={{ objectFit: "contain", objectPosition: "center" }}
               />
             </div>
@@ -293,7 +294,7 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
               >
                 <InteractiveEditorialPhoto
                   image={heroProduct?.image ?? campaignImage}
-                  alt={heroProduct?.name ?? "KULTURA featured product"}
+                  alt={heroProduct?.images[0]?.alt ?? "KULTURA campaign photograph"}
                   href={heroProduct ? "/product/" + heroProduct.slug : "/shop"}
                   sizes="(max-width: 720px) 55vw, 28vw"
                   label="EXPLORE PRODUCT"
@@ -326,7 +327,7 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
                 >
                   <InteractiveEditorialPhoto
                     image={product?.image ?? campaignImage}
-                    alt={product?.name ?? "KULTURA product"}
+                    alt={product?.images[0]?.alt ?? "KULTURA campaign photograph"}
                     href={product ? "/product/" + product.slug : "/shop"}
                     sizes="15vw"
                     label="VIEW PIECE"

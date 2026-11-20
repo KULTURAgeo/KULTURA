@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import styles from "./division-switcher.module.css";
 import { isShopDivision } from "@/lib/catalog/divisions";
-import { pageMetadata } from "@/lib/site";
+import { localizedPageMetadata } from "@/lib/site";
+import { getServerLocale } from "@/lib/i18n-server";
 import { isSearchIndexableCategorySlug } from "@/lib/seo-indexing";
 import { Container } from "@/components/ui";
 import { CatalogGrid } from "@/components/catalog-grid";
@@ -27,8 +28,11 @@ export async function generateMetadata({
   params: Promise<{ category: string }>;
 }) {
   const { category } = await params;
-  const result = isShopDivision(category) ? null : await getCategoryCatalog(category);
-  const metadata = pageMetadata(
+  const [result, locale] = await Promise.all([
+    isShopDivision(category) ? null : getCategoryCatalog(category), getServerLocale(),
+  ]);
+  const metadata = localizedPageMetadata(
+    locale,
     isShopDivision(category) ? divisionLabel(category) : (result?.category?.name ?? "Category unavailable"),
     "/shop/" + category,
   );

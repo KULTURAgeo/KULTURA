@@ -1,17 +1,22 @@
-import type { Metadata } from "next";
 import Link from "next/link";
-import { pageMetadata } from "@/lib/site";
+import { localizedPageMetadata } from "@/lib/site";
+import { getServerLocale } from "@/lib/i18n-server";
+import { translate } from "@/lib/i18n";
 import { Container } from "@/components/ui";
 import styles from "./shop-gateway.module.css";
 
-export const metadata: Metadata = pageMetadata("Shop", "/shop");
+export async function generateMetadata() {
+  const locale = await getServerLocale();
+  return localizedPageMetadata(locale, translate(locale, "Shop"), "/shop");
+}
 
-export default function Shop() {
+export default async function Shop() {
+  const locale = await getServerLocale();
   return (
     <Container className={styles.page}>
       <div className={styles.intro}>
         <p className={styles.eyebrow}>THE KULTURA UNIFORM</p>
-        <h1 className={styles.heading}>SHOP <span className="chrome">/ 03</span></h1>
+        <h1 className={styles.heading}>{translate(locale, "SHOP")} <span className="chrome">/ 03</span></h1>
       </div>
       <nav className={styles.gateway} aria-label="Choose your shop division">
         <Link href="/shop/x" className={styles.tile + " " + styles.x} aria-label="Shop X — Woman">

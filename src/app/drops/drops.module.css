@@ -1,0 +1,48 @@
+.launch {
+  display: grid;
+  gap: 1.1rem;
+  margin: 2rem 0 3.5rem;
+  padding: clamp(1.15rem, 4vw, 3rem);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--foreground);
+}
+.launch h2,
+.release h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.launch p { margin: 0; }
+.countdown {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(.3rem, 2vw, 1rem);
+  max-width: 34rem;
+  margin: 0;
+}
+.countdown > div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: .35rem;
+  border-top: 1px solid var(--line);
+  padding: .7rem 0;
+}
+.countdown dd {
+  margin: 0;
+  font-size: clamp(1.35rem, 6vw, 3.25rem);
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.countdown dt,
+.meta { color: var(--muted); }
+.countdown dt { font-size: clamp(.65rem, 2.7vw, .875rem); }
+.release { padding: 2rem 0; border-top: 1px solid var(--line); }
+.status {
+  display: inline-block;
+  border: 1px solid currentColor;
+  padding: .2rem .55rem;
+  font-size: .8rem;
+  font-weight: 700;
+}
+.launch :focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
