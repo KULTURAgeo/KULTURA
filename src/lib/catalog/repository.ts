@@ -23,6 +23,7 @@ type ProductFilters = {
   excludeCategoryId?: string;
   excludeSlug?: string;
   slugs?: readonly string[];
+  ids?: readonly string[];
   featured?: boolean;
   drop?: boolean;
   limit?: number;
@@ -63,6 +64,7 @@ async function loadProducts(
       query = query.neq("category_id", filters.excludeCategoryId);
     if (filters.excludeSlug) query = query.neq("slug", filters.excludeSlug);
     if (filters.slugs) query = query.in("slug", filters.slugs);
+    if (filters.ids) query = query.in("id", filters.ids);
     if (filters.featured !== undefined)
       query = query.eq("featured", filters.featured);
     if (filters.drop !== undefined) query = query.eq("is_drop", filters.drop);
@@ -266,6 +268,15 @@ const loadDropProducts = async (): Promise<{
     return { status: "unavailable", products: [] };
   }
 };
+
+export async function getProductsForDrops(ids: readonly string[]) {
+  const client = createCatalogClient();
+  if (!client || !ids.length) return [];
+  const groups = Array.from({ length: Math.ceil(ids.length / 75) }, (_, i) => ids.slice(i * 75, i * 75 + 75));
+  const products: Product[] = [];
+  for (const group of groups) products.push(...await loadProducts(client, { ids: group }));
+  return products;
+}
 
 const loadCategoryCatalog = async (
   slug: string,

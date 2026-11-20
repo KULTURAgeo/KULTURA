@@ -5,7 +5,7 @@ import { money, type Product } from "@/lib/catalog";
 import { ProductBadges } from "./product-badges";
 import { LocalizedCategoryName } from "./localized-category-name";
 import { LocalizedColorNames } from "./localized-color-names";
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, stockLabel }: { product: Product; stockLabel?: string }) {
   return (
     <MotionProductCard>
       <Link href={`/product/${product.slug}`}>
@@ -14,7 +14,7 @@ export function ProductCard({ product }: { product: Product }) {
             src={product.image}
             alt={product.images[0]?.alt ?? product.name}
             fill
-            quality={90}
+            quality={75}
             sizes="(max-width: 767px) 50vw, 25vw"
           />
           <div className="product-badge">
@@ -31,6 +31,7 @@ export function ProductCard({ product }: { product: Product }) {
         <p className="product-subtitle">
           <LocalizedColorNames colors={[...new Set(product.variants.map(v => v.color))]} /> / <LocalizedCategoryName name={product.category} slug={product.categorySlug} />
         </p>
+        {stockLabel && <p className="product-subtitle">{stockLabel}</p>}
       </Link>
     </MotionProductCard>
   );

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { LOCALE_COOKIE, isLocale, type Locale } from "@/lib/i18n";
 import { useLanguage } from "./language-provider";
 
-/** Uses a necessary preference cookie; leaves the URL, checkout and cart intact. */
+/** Saves the choice and updates any explicit language already present in the URL. */
 export function LanguageSwitcher({ mobile = false }: { mobile?: boolean }) {
   const { locale, setLocale, t } = useLanguage();
   const [pending, startTransition] = useTransition();
@@ -14,7 +14,13 @@ export function LanguageSwitcher({ mobile = false }: { mobile?: boolean }) {
     const value: Locale = next;
     document.cookie = `${LOCALE_COOKIE}=${value}; path=/; max-age=31536000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
     setLocale(value);
-    startTransition(() => router.refresh());
+    const url = new URL(location.href);
+    if (url.searchParams.has("lang")) {
+      url.searchParams.set("lang", value);
+      location.replace(url.href);
+    } else {
+      startTransition(() => router.refresh());
+    }
   };
   return (
     <label className={mobile ? "kultura-language-switcher mobile" : "kultura-language-switcher"}>

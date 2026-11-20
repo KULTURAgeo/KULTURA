@@ -119,7 +119,7 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
         ...item,
         href: category ? "/shop/" + encodeURIComponent(category.slug) : "/shop",
         image: product?.image ?? null,
-        imageAlt: product?.name ?? item.en,
+        imageAlt: product?.images[0]?.alt ?? item.en,
         kind: "category" as const,
         productName: product?.name,
       };
@@ -154,12 +154,14 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
   const tiltRef = useRef(0);
   const tiltTargetRef = useRef(0);
   const movedRef = useRef(false);
+  const wakeWheel = useRef<() => void>(() => {});
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMotion = () => setReducedMotion(query.matches);
+    const dataSaver = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    const updateMotion = () => setReducedMotion(query.matches || Boolean(dataSaver));
     updateMotion();
     query.addEventListener("change", updateMotion);
     const observer = new IntersectionObserver(
@@ -174,20 +176,24 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
   }, []);
 
   // RAF springs provide inertial movement without loading a heavy 3D runtime.
-  // Runs only while the scene is visible; never affects the LCP hero.
+  // Stop scheduling frames once rotation and tilt settle.
   useEffect(() => {
     const wheel = wheelRef.current;
     if (!wheel) return;
     if (reducedMotion) {
-      angleRef.current = targetRef.current;
-      velocityRef.current = 0;
-      wheel.style.transform = "rotateX(-9deg) rotateY(" + angleRef.current + "deg)";
-      return;
+      wakeWheel.current = () => {
+        angleRef.current = targetRef.current;
+        velocityRef.current = 0;
+        wheel.style.transform = "rotateX(-9deg) rotateY(" + angleRef.current + "deg)";
+      };
+      wakeWheel.current();
+      return () => { wakeWheel.current = () => {}; };
     }
     if (!inView) return;
     let raf = 0;
     let previous = 0;
     const tick = (time: number) => {
+      raf = 0;
       const dt = Math.min(2, Math.max(0.2, (time - (previous || time - 16.67)) / 16.67));
       previous = time;
       const distance = targetRef.current - angleRef.current;
@@ -199,11 +205,23 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
         velocityRef.current = 0;
       }
       tiltRef.current += (tiltTargetRef.current - tiltRef.current) * Math.min(1, 0.095 * dt);
+      const tiltSettled = Math.abs(tiltTargetRef.current - tiltRef.current) < 0.01;
+      if (tiltSettled) tiltRef.current = tiltTargetRef.current;
       wheel.style.transform = "rotateX(" + (-9 + tiltRef.current).toFixed(3) + "deg) rotateY(" + angleRef.current.toFixed(3) + "deg)";
+      if (angleRef.current !== targetRef.current || velocityRef.current !== 0 || !tiltSettled) {
+        raf = window.requestAnimationFrame(tick);
+      }
+    };
+    wakeWheel.current = () => {
+      if (raf) return;
+      previous = 0;
       raf = window.requestAnimationFrame(tick);
     };
-    raf = window.requestAnimationFrame(tick);
-    return () => window.cancelAnimationFrame(raf);
+    wakeWheel.current();
+    return () => {
+      wakeWheel.current = () => {};
+      window.cancelAnimationFrame(raf);
+    };
   }, [inView, reducedMotion]);
 
   function snapTo(index: number) {
@@ -214,10 +232,7 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
     targetRef.current = target;
     setSelected(normalized);
     setAutoPlay(false);
-    if (reducedMotion && wheelRef.current) {
-      angleRef.current = target;
-      wheelRef.current.style.transform = "rotateX(-9deg) rotateY(" + target + "deg)";
-    }
+    wakeWheel.current();
   }
 
   useEffect(() => {
@@ -225,6 +240,7 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
     const timer = window.setInterval(() => {
       targetRef.current -= step;
       setSelected((index) => (index + 1) % cardCount);
+      wakeWheel.current();
     }, 6200);
     return () => window.clearInterval(timer);
   }, [inView, isHovering, hasFocus, autoPlay, reducedMotion, cardCount, step]);
@@ -235,13 +251,14 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
 
   function updateSceneLighting(event: PointerEvent<HTMLDivElement>) {
     const stage = stageRef.current;
-    if (!stage) return;
+    if (!stage || reducedMotion) return;
     const box = stage.getBoundingClientRect();
     const x = (event.clientX - box.left) / Math.max(box.width, 1);
     const y = (event.clientY - box.top) / Math.max(box.height, 1);
     stage.style.setProperty("--light-x", (x * 100).toFixed(1) + "%");
     stage.style.setProperty("--light-y", (y * 100).toFixed(1) + "%");
     tiltTargetRef.current = (0.5 - y) * 13;
+    wakeWheel.current();
   }
 
   function startDrag(event: PointerEvent<HTMLDivElement>) {
@@ -275,6 +292,7 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
     pointer.lastX = event.clientX;
     pointer.lastTime = event.timeStamp;
     targetRef.current = pointer.angle + distance * 0.33;
+    if (!reducedMotion) wakeWheel.current();
     if (movedRef.current) setAutoPlay(false);
   }
 
@@ -294,6 +312,7 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
     } else {
       targetRef.current = pointer.angle;
     }
+    wakeWheel.current();
     if (pointer.capturedBy?.hasPointerCapture(event.pointerId)) {
       pointer.capturedBy.releasePointerCapture(event.pointerId);
     }
@@ -301,13 +320,14 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
 
   function resetStage() {
     tiltTargetRef.current = 0;
+    wakeWheel.current();
     setIsHovering(false);
     stageRef.current?.style.removeProperty("--light-x");
     stageRef.current?.style.removeProperty("--light-y");
   }
 
   function moveCard(event: PointerEvent<HTMLButtonElement>) {
-    if (event.pointerType === "touch") return;
+    if (event.pointerType === "touch" || reducedMotion) return;
     const card = event.currentTarget;
     const rect = card.getBoundingClientRect();
     const x = (event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5;

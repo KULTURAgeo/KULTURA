@@ -49,7 +49,7 @@ type Particle = {
   color: string;
 };
 
-function makeParticles(image: HTMLImageElement): Particle[] {
+function makeParticles(image: HTMLImageElement, count: number): Particle[] {
   const sample = document.createElement("canvas");
   const context = sample.getContext("2d", { willReadFrequently: true });
   if (!context) return [];
@@ -93,11 +93,11 @@ function makeParticles(image: HTMLImageElement): Particle[] {
     seed = (Math.imul(1664525, seed) + 1013904223) >>> 0;
     return seed / 4294967296;
   };
-  const origins = Array.from({ length: PARTICLE_COUNT }, (_, index) =>
-    logoPoints[Math.floor(index * logoPoints.length / PARTICLE_COUNT)],
+  const origins = Array.from({ length: count }, (_, index) =>
+    logoPoints[Math.floor(index * logoPoints.length / count)],
   ).sort((a, b) => a.x - b.x);
-  const targets = Array.from({ length: PARTICLE_COUNT }, (_, index) =>
-    wordPoints[Math.floor(index * wordPoints.length / PARTICLE_COUNT)],
+  const targets = Array.from({ length: count }, (_, index) =>
+    wordPoints[Math.floor(index * wordPoints.length / count)],
   ).sort((a, b) => a.x - b.x);
   const colors = ["#83a0ba", "#b2c6d8", "#dce9f2", "#f4faff"];
 
@@ -140,6 +140,8 @@ export function KulturaAtmosphere({ children }: { children: ReactNode }) {
     if (!story || !layer || !surface || !logo || !logoImage || !ending) return;
 
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const compact = window.matchMedia("(max-width: 767px)").matches;
+    const dataSaver = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
     const context = surface.getContext("2d");
     let particles: Particle[] | null = null;
     let visible = false;
@@ -165,7 +167,7 @@ export function KulturaAtmosphere({ children }: { children: ReactNode }) {
       const runway = Math.max(0, endingTop - showroomTop) + SHOWROOM_START - ENDING_WORD_REVEAL;
       const releaseProgress = 1 + (ENDING_WORD_REVEAL - ENDING_FADE_OUT) / runway;
       const target = Math.min(releaseProgress, Math.max(0, distanceFromStart / runway));
-      const reduced = motion.matches;
+      const reduced = motion.matches || dataSaver;
       if (playhead === null || reduced) playhead = target;
 
       // Follow scroll in both directions with a speed cap for large wheel or touch jumps.
@@ -213,7 +215,7 @@ export function KulturaAtmosphere({ children }: { children: ReactNode }) {
         return;
       }
 
-      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+      const ratio = Math.min(window.devicePixelRatio || 1, compact ? 1.15 : 1.5);
       const pixelWidth = Math.round(width * ratio);
       const pixelHeight = Math.round(height * ratio);
       if (surface.width !== pixelWidth) surface.width = pixelWidth;
@@ -276,14 +278,14 @@ export function KulturaAtmosphere({ children }: { children: ReactNode }) {
       if (visible && !frame && !document.hidden) frame = window.requestAnimationFrame(paint);
     };
     const prepare = () => {
-      if (visible && context && !motion.matches && particles === null && logoImage.complete && logoImage.naturalWidth) {
-        particles = makeParticles(logoImage);
+      if (visible && context && !motion.matches && !dataSaver && particles === null && logoImage.complete && logoImage.naturalWidth) {
+        particles = makeParticles(logoImage, compact ? 1600 : PARTICLE_COUNT);
       }
       request();
     };
     const observer = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
-      layer.style.setProperty("--ambient-state", visible ? "running" : "paused");
+      layer.style.setProperty("--ambient-state", visible && !dataSaver ? "running" : "paused");
       if (visible) prepare();
       else {
         if (frame) window.cancelAnimationFrame(frame);

@@ -105,6 +105,9 @@ export async function proxy(request: NextRequest) {
   const policy = contentSecurityPolicy(nonce, request.nextUrl.protocol === "https:");
   request.headers.set("x-nonce", nonce);
   request.headers.set("x-kultura-pathname", pathname);
+  // Overwrite any incoming value. Only the public URL can choose an explicit locale.
+  request.headers.set("x-kultura-language", request.nextUrl.searchParams.get("lang") === "ka" ? "ka" :
+    request.nextUrl.searchParams.get("lang") === "en" ? "en" : "");
   request.headers.set("Content-Security-Policy", policy);
   let response = NextResponse.next({ request });
 

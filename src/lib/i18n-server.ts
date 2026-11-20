@@ -1,7 +1,8 @@
 import "server-only";
-import { cookies } from "next/headers";
-import { DEFAULT_LOCALE, isLocale, LOCALE_COOKIE, type Locale } from "./i18n";
+import { cookies, headers } from "next/headers";
+import { LOCALE_COOKIE, type Locale } from "./i18n";
+import { chooseLocale } from "./locale-preference";
 export async function getServerLocale(): Promise<Locale> {
-  const value = (await cookies()).get(LOCALE_COOKIE)?.value;
-  return isLocale(value) ? value : DEFAULT_LOCALE;
+  const [request, jar] = await Promise.all([headers(), cookies()]);
+  return chooseLocale(request.get("x-kultura-language"), jar.get(LOCALE_COOKIE)?.value, request.get("accept-language"));
 }

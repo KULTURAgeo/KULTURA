@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { pageMetadata, siteUrl } from "@/lib/site";
+import { languageUrls, localizedPageMetadata, siteUrl } from "@/lib/site";
+import { getServerLocale } from "@/lib/i18n-server";
 import { isSearchIndexableProductSlug } from "@/lib/seo-indexing";
 import { notFound } from "next/navigation";
 import {
@@ -24,16 +25,18 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { product: p } = await getCachedProductBySlug(slug);
-  const metadata = pageMetadata(
+  const [{ product: p }, locale] = await Promise.all([getCachedProductBySlug(slug), getServerLocale()]);
+  const metadata = localizedPageMetadata(
+    locale,
     p?.seoTitle ?? p?.name ?? "Product unavailable",
     "/product/" + slug,
     p?.seoDescription ?? p?.description,
+    p ? `${p.name} — KULTURA-ს კოლექციიდან. იხილე ფასი, ზომები და ხელმისაწვდომობა.` : undefined,
   );
   if (p)
     metadata.openGraph = {
       ...metadata.openGraph,
-      images: [{ url: p.image, alt: p.name }],
+      images: [{ url: p.image, alt: p.images[0]?.alt ?? p.name }],
     };
 
   if (!p || !isSearchIndexableProductSlug(slug)) {
@@ -49,7 +52,7 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { product, status } = await getCachedProductBySlug(slug);
+  const [{ product, status }, locale] = await Promise.all([getCachedProductBySlug(slug), getServerLocale()]);
   if (status !== "ready")
     return (
       <Container className="page-section">
@@ -59,7 +62,7 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const origin = siteUrl();
-  const productUrl = new URL("/product/" + product.slug, origin).href;
+  const productUrl = languageUrls("/product/" + product.slug)[locale];
   const inStock = product.variants.some((variant) => variant.stock > 0);
   const images = product.images.length
     ? product.images.map((image) => new URL(image.src, origin).href)
@@ -70,7 +73,10 @@ export default async function ProductPage({
       "@context": "https://schema.org",
       "@type": "Product",
       name: product.name,
-      description: product.seoDescription ?? product.description,
+      description: locale === "ka"
+        ? `${product.name} — KULTURA-ს კოლექციიდან. იხილე ფასი, ზომები და ხელმისაწვდომობა.`
+        : product.seoDescription ?? product.description,
+      inLanguage: locale,
       image: images,
       url: productUrl,
       sku: product.variants[0]?.sku,
