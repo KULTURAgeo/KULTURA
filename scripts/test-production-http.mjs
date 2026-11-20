@@ -28,7 +28,7 @@ await check("Prelaunch sitemap excludes URLs",async()=>assert.ok(!(await(await f
 for(const path of ["/social-card.png","/apple-touch-icon.png","/icon.svg"]){
  await check("Metadata asset "+path,async()=>{const r=await fetch(base+path);assert.equal(r.status,200);assert.match(r.headers.get("content-type"),/image\//);});
 }
-await check("Canonical and Open Graph metadata",async()=>{const html=await(await fetch(base+"/shop")).text();assert.match(html,/rel="canonical" href="http:\/\/localhost:3000\/shop"/);assert.match(html,/social-card.png/);});
+await check("Canonical and Open Graph metadata",async()=>{const html=await(await fetch(base+"/shop")).text();assert.match(html,/rel="canonical" href="http:\/\/localhost:3000\/shop\?lang=en"/);assert.match(html,/social-card.png/);});
 await check("Invalid callback never follows external next URL",async()=>{const r=await fetch(base+"/auth/callback?code=invalid&next=https://example.invalid",{redirect:"manual"});assert.ok([303,307].includes(r.status));assert.ok(new URL(r.headers.get("location")).pathname==="/login");assert.match(r.headers.get("cache-control"),/no-store/);});
 await writeFile("qa/production-http-results.json",JSON.stringify({scope:"Latest production build; Supabase unconfigured; prelaunch indexing disabled",passed:checks.length,checks},null,2));
 console.log(checks.length+" production HTTP checks passed");
