@@ -23,7 +23,7 @@ export function languageUrls(path: string) {
   const ka = new URL(path, origin);
   en.searchParams.set("lang", "en");
   ka.searchParams.set("lang", "ka");
-  return { en: en.href, ka: ka.href, "x-default": new URL(path, origin).href };
+  return { en: en.href, ka: ka.href, "x-default": en.href };
 }
 
 export function localizedPageMetadata(

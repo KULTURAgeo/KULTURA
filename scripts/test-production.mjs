@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {validateProductionEnv} from "./validate-production-env.mjs";
 import {writeFile,readFile} from "node:fs/promises";
-import {siteUrl,isIndexable,pageMetadata} from "../src/lib/site.ts";
+import {siteUrl,isIndexable,pageMetadata,localizedPageMetadata} from "../src/lib/site.ts";
 import {supabaseConfig} from "../src/lib/supabase/config.ts";
 import {MAX_UPLOAD_BYTES} from "../src/lib/upload-limits.ts";
 const passed=[];const original={...process.env};
@@ -17,6 +17,14 @@ try{
  process.env.VERCEL_ENV="production";check("Production indexing explicitly enabled",()=>assert.equal(isIndexable(),true));
  process.env.SITE_INDEXABLE="false";check("Production prelaunch noindex",()=>assert.equal(isIndexable(),false));
  check("Canonical and social metadata use page path",()=>assert.equal(pageMetadata("Shop","/shop").alternates.canonical,"/shop"));
+ check("Language fallback points to a stable localized canonical",()=>{
+  const en=localizedPageMetadata("en","Shop","/shop").alternates;
+  const ka=localizedPageMetadata("ka","Shop","/shop").alternates;
+  assert.equal(en.canonical,"https://store.example/shop?lang=en");
+  assert.equal(ka.canonical,"https://store.example/shop?lang=ka");
+  assert.equal(ka.languages["x-default"],en.canonical);
+  assert.deepEqual(ka.languages,en.languages);
+ });
  process.env.SUPABASE_URL="https://user:password@example.supabase.co";process.env.SUPABASE_PUBLISHABLE_KEY="sb_publishable_TEST_ONLY";
  check("Supabase credential-bearing URLs rejected",()=>assert.throws(()=>supabaseConfig()));
  check("Upload leaves room beneath Vercel payload limit",()=>assert.equal(MAX_UPLOAD_BYTES,3145728));
