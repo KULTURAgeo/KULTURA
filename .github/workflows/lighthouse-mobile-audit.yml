@@ -1,0 +1,25 @@
+name: KULTURA mobile Lighthouse audit
+on:
+  pull_request:
+    types: [opened]
+permissions:
+  contents: read
+jobs:
+  mobile:
+    if: github.head_ref == 'qa/drops-mobile-lighthouse-20261120'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Audit public pages under simulated slow 4G
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CHROME_PATH="$(command -v google-chrome)"
+          for route in home drops; do
+            if [ "$route" = home ]; then page='/'; else page='/drops?lang=ka'; fi
+            npx --yes lighthouse@13.6.0 "https://kultura-liart.vercel.app$page" --quiet --throttling-method=simulate --chrome-flags='--headless --disable-gpu' --only-categories=performance,accessibility,seo --output=json --output-path="$RUNNER_TEMP/$route.json"
+            node -e 'const r=require(process.argv[1]);const a=r.audits;console.log(JSON.stringify({url:r.finalDisplayedUrl,formFactor:r.configSettings.formFactor,settings:r.configSettings.throttling,performance:r.categories.performance.score,accessibility:r.categories.accessibility.score,seo:r.categories.seo.score,lcp:a["largest-contentful-paint"].numericValue,tbt:a["total-blocking-time"].numericValue,cls:a["cumulative-layout-shift"].numericValue,contrast:a["color-contrast"].score,contrastNodes:a["color-contrast"].details?.items?.map(x=>x.node?.selector)},null,2))' "$RUNNER_TEMP/$route.json"
+          done
