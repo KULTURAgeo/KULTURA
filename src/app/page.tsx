@@ -6,7 +6,7 @@ import { getHomepageCatalog } from "@/lib/catalog/repository";
 import { getHomepageShowroom } from "@/lib/showroom/repository";
 import { Newsletter } from "@/components/newsletter";
 import { HomeMotion } from "@/components/home-motion";
-import { KulturaProductOrbit } from "@/components/kultura-product-orbit";
+import { HomeShowroom } from "@/components/home-showroom";
 import { KulturaAtmosphere } from "@/components/kultura-atmosphere";
 import { InteractiveEditorialPhoto } from "@/components/interactive-editorial-photo";
 import { Suspense } from "react";
@@ -63,7 +63,8 @@ export default async function Home() {
         </div>
 
         <div className={styles.heroPeek} aria-hidden="true">
-          <Image src={campaignImage} alt="" fill priority sizes="100vw" />
+          <Image src={campaignImage} alt="" fill loading="eager" fetchPriority="high"
+            sizes="(max-width: 1480px) 100vw, 1480px" />
           <span className={styles.heroPeekGrid} />
           <span className={styles.heroPeekWord}>KULTURA</span>
         </div>
@@ -145,7 +146,8 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
                       src={product?.image ?? campaignImage}
                       alt={product?.images[0]?.alt ?? "KULTURA product"}
                       fill
-                      sizes="260px"
+                      quality={65}
+                      sizes="(max-width: 720px) 55vw, 360px"
                     />
                     <div className={styles.phoneSlideShade} />
                     <div className={styles.phoneMeta}>
@@ -188,7 +190,7 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
                     alt="KULTURA globe logo"
                     fill
                     unoptimized
-                    loading="eager"
+                    loading="lazy"
                     sizes="64px"
                     style={{ objectFit: "contain", objectPosition: "center", padding: "1px 3px" }}
                   />
@@ -206,7 +208,7 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
               position: "absolute",
               left: "50%",
               top: "50%",
-              width: "100vw",
+              width: "100%",
               height: "100svh",
               transform: "translate(-50%, -50%)",
               overflow: "hidden",
@@ -240,7 +242,7 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
               }}
             >
               <span style={{ position: "relative", width: 82, height: 40, borderRadius: 999, background: "#0b0b0b", overflow: "hidden" }}>
-                <Image src="/images/kultura-globe-phone.webp" alt="" fill unoptimized loading="eager" sizes="82px" style={{ objectFit: "contain", padding: "4px 6px" }} />
+                <Image src="/images/kultura-globe-phone.webp" alt="" fill unoptimized loading="lazy" sizes="82px" style={{ objectFit: "contain", padding: "4px 6px" }} />
               </span>
             </div>
 
@@ -296,7 +298,7 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
                   image={heroProduct?.image ?? campaignImage}
                   alt={heroProduct?.images[0]?.alt ?? "KULTURA campaign photograph"}
                   href={heroProduct ? "/product/" + heroProduct.slug : "/shop"}
-                  sizes="(max-width: 720px) 55vw, 28vw"
+                  sizes="(max-width: 510px) 57vw, (max-width: 720px) 290px, (max-width: 1464px) 28vw, 410px"
                   label="EXPLORE PRODUCT"
                   featured
                 />
@@ -329,7 +331,7 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
                     image={product?.image ?? campaignImage}
                     alt={product?.images[0]?.alt ?? "KULTURA campaign photograph"}
                     href={product ? "/product/" + product.slug : "/shop"}
-                    sizes="15vw"
+                    sizes="(max-width: 720px) 20vw, (max-width: 1480px) 15vw, 230px"
                     label="VIEW PIECE"
                   />
                 </div>
@@ -352,7 +354,7 @@ async function HomeCatalog({ locale }: { locale: Locale }) {
         <Link href="/shop" className={styles.cta}>{t("CATEGORIES")}</Link>
       </section>
 
-      <KulturaProductOrbit products={showcase} categories={categories} items={showroomItems} />
+      <HomeShowroom products={showcase} categories={categories} items={showroomItems} />
 
         <section className={styles.endScene} data-kultura-ending>
         <Image src={thirdProduct?.image ?? campaignImage} alt="" fill sizes="100vw" />

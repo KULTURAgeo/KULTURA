@@ -1,9 +1,13 @@
 import Link from "next/link";
+import Image from "next/image";
 import { localizedPageMetadata } from "@/lib/site";
 import { getServerLocale } from "@/lib/i18n-server";
 import { translate } from "@/lib/i18n";
 import { Container } from "@/components/ui";
 import styles from "./shop-gateway.module.css";
+
+const narrowTileSizes = "(max-width: 480px) 78vw, (max-width: 767px) 72vw, (max-width: 1500px) 28vw, 410px";
+const wideTileSizes = "(max-width: 480px) 78vw, (max-width: 767px) 72vw, (max-width: 1500px) 41vw, 600px";
 
 export async function generateMetadata() {
   const locale = await getServerLocale();
@@ -19,17 +23,22 @@ export default async function Shop() {
         <h1 className={styles.heading}>{translate(locale, "SHOP")} <span className="chrome">/ 03</span></h1>
       </div>
       <nav className={styles.gateway} aria-label="Choose your shop division">
-        <Link href="/shop/x" className={styles.tile + " " + styles.x} aria-label="Shop X — Woman">
+        <Link href="/shop/x" className={styles.tile} aria-label="Shop X — Woman">
+          <Image src="/images/shop-x.webp" alt="" fill sizes={narrowTileSizes} quality={65}
+            fetchPriority="high" loading="eager" className={styles.tileImage} />
           <span className={styles.micro}>KULTURA / 01</span>
           <span className={styles.title}>X</span>
           <span className={styles.arrow} aria-hidden="true">↗</span>
         </Link>
         <Link href="/shop/unisex" className={styles.tile + " " + styles.unisex} aria-label="Shop UNISEX">
+          <Image src="/images/shop-unisex.webp" alt="" fill sizes={wideTileSizes} quality={65} className={styles.tileImage} />
+          <Image src="/images/shop-unisex.webp" alt="" fill sizes={wideTileSizes} quality={65} className={styles.groupPhoto} />
           <span className={styles.micro}>KULTURA / 02</span>
           <span className={styles.title}>UNISEX</span>
           <span className={styles.arrow} aria-hidden="true">↗</span>
         </Link>
-        <Link href="/shop/y" className={styles.tile + " " + styles.y} aria-label="Shop Y — Men">
+        <Link href="/shop/y" className={styles.tile} aria-label="Shop Y — Men">
+          <Image src="/images/shop-y.webp" alt="" fill sizes={narrowTileSizes} quality={65} className={styles.tileImage} />
           <span className={styles.micro}>KULTURA / 03</span>
           <span className={styles.title}>Y</span>
           <span className={styles.arrow} aria-hidden="true">↗</span>

@@ -46,16 +46,13 @@
   color: #fff;
   text-decoration: none;
 }
-.tile::before {
-  position: absolute;
-  inset: 0;
+.tileImage, .groupPhoto {
   z-index: -2;
-  content: "";
-  background-size: cover;
-  background-position: center 28%;
-  background-repeat: no-repeat;
   transition: transform .7s ease, filter .7s ease;
 }
+.tileImage { object-fit: cover; object-position: center 27%; }
+.unisex .tileImage { object-position: center; }
+.groupPhoto { object-fit: contain; }
 .tile::after {
   position: absolute;
   inset: 0;
@@ -63,23 +60,14 @@
   content: "";
   background: linear-gradient(0deg, rgba(0,0,0,.72), transparent 39%, rgba(0,0,0,.15));
 }
-.tile:hover::before,
-.tile:focus-visible::before {
+.tile:hover img,
+.tile:focus-visible img {
   transform: scale(1.045);
   filter: brightness(1.08);
 }
 .tile:focus-visible {
   outline: 2px solid white;
   outline-offset: -4px;
-}
-.x::before { background-image: url("/images/shop-x.webp"); background-position: center 27%; }
-.y::before { background-image: url("/images/shop-y.webp"); background-position: center 27%; }
-/* Show the entire wide group portrait in a tall card, while filling side space. */
-.unisex::before {
-  background-image: url("/images/shop-unisex.webp"), url("/images/shop-unisex.webp");
-  background-size: contain, cover;
-  background-position: center, center;
-  background-color: #181818;
 }
 .title {
   margin-bottom: clamp(22px, 5svh, 54px);
@@ -107,12 +95,12 @@
 }
 @media (max-width: 767px) {
   .page {
-    height: calc(100svh - 72px);
+    height: calc(100svh - 118px);
     min-height: 380px;
     padding-top: 14px;
     padding-bottom: 12px;
   }
-  .heading { font-size: clamp(46px, 11vw, 70px); margin-bottom: 14px; }
+  .heading { font-size: clamp(31px, 10vw, 70px); margin-bottom: 14px; overflow-wrap: anywhere; }
   .eyebrow { font-size: 10px; margin-bottom: 7px; }
   /* Keep all 3 sections in one swipeable horizontal row on narrow screens. */
   .gateway {
@@ -128,8 +116,8 @@
   .tile { scroll-snap-align: start; }
   .micro { left: 14px; top: 14px; font-size: 10px; }
   .arrow { right: 14px; bottom: 14px; font-size: 25px; }
-  .title { font-size: clamp(54px, 14vw, 78px); margin-bottom: 30px; }
-  .unisex .title { font-size: clamp(40px, 10vw, 58px); }
+  .title { font-size: clamp(40px, 13vw, 78px); margin-bottom: 30px; }
+  .unisex .title { font-size: clamp(27px, 10vw, 58px); }
 }
 @media (max-width: 480px) {
   .gateway { grid-auto-columns: minmax(78vw, 1fr); }
@@ -138,4 +126,8 @@
   .page { min-height: 340px; padding-top: 8px; padding-bottom: 8px; }
   .heading { font-size: clamp(42px, 4.8vw, 60px); margin-bottom: 8px; }
   .title { margin-bottom: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tile img { transition: none; }
+  .tile:hover img, .tile:focus-visible img { transform: none; }
 }
