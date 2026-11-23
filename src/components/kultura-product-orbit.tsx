@@ -95,6 +95,7 @@ type OrbitProps = {
   products: Product[];
   categories: Category[];
   items?: ShowroomCard[];
+  preview?: boolean;
 };
 
 export function KulturaProductOrbit(props: OrbitProps) {
@@ -102,11 +103,11 @@ export function KulturaProductOrbit(props: OrbitProps) {
   return <ProductOrbit key={selectionKey} {...props} />;
 }
 
-function ProductOrbit({ products, categories, items }: OrbitProps) {
+function ProductOrbit({ products, categories, items, preview = false }: OrbitProps) {
   const { locale } = useLanguage();
   const isKa = locale === "ka";
   const [selected, setSelected] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(true);
+  const [autoPlay, setAutoPlay] = useState(!preview);
   const [inView, setInView] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [hasFocus, setHasFocus] = useState(false);
@@ -379,6 +380,10 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
   if (!current) return null;
   const currentTitle = isKa ? current.ka : current.en;
   const titleLength = Array.from(currentTitle).length;
+  const exploreLabel = current.kind === "product"
+    ? (isKa ? "ნივთის ნახვა" : "EXPLORE PIECE")
+    : (isKa ? "კოლექციის ნახვა" : "EXPLORE COLLECTION");
+  const exploreContent = <>{exploreLabel}<span aria-hidden="true">↗</span></>;
 
   return (
     <section ref={rootRef} data-kultura-showroom data-single={cardCount === 1 ? "true" : undefined}
@@ -427,6 +432,7 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
                     <span className={styles.cardArt}>
                       {item.image ? (
                         <Image src={item.image} alt={item.imageAlt} fill
+                          unoptimized={item.image.startsWith("blob:")}
                           sizes="(max-width: 750px) 190px, 270px" loading="lazy" />
                       ) : (
                         <CategorySculpture item={item} index={index} />
@@ -454,10 +460,8 @@ function ProductOrbit({ products, categories, items }: OrbitProps) {
               {isKa ? "კოლექციიდან" : "FROM THE COLLECTION"} / {current.productName}
             </span>
           )}
-          <Link className={styles.explore} href={current.href}>
-            {current.kind === "product" ? (isKa ? "ნივთის ნახვა" : "EXPLORE PIECE") : (isKa ? "კოლექციის ნახვა" : "EXPLORE COLLECTION")}
-            <span aria-hidden="true">↗</span>
-          </Link>
+          {preview ? <span className={styles.explore}>{exploreContent}</span>
+            : <Link className={styles.explore} href={current.href}>{exploreContent}</Link>}
         </div>
       </div>
 

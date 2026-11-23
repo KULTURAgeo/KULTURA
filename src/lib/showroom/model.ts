@@ -17,6 +17,11 @@ export function isShowroomNotInstalled(error: { code?: string } | null) {
   return error?.code === "42P01" || error?.code === "PGRST205";
 }
 
+export function showroomUploadUrl(path: string | null | undefined, supabaseUrl?: string): string | null {
+  if (!supabaseUrl || !path || !/^showroom\/[a-f0-9-]{36}\/[a-f0-9-]{36}\.webp$/.test(path)) return null;
+  return `${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/public/product-images/${path}`;
+}
+
 export function showroomImage(
   images: { image_url: string | null; storage_path: string | null; sort_position: number }[],
   supabaseUrl?: string,

@@ -208,6 +208,7 @@ sort_position: number;
 is_active: boolean;
 created_at: string;
 updated_at: string;
+image_path: string | null;
 };
 Insert: {
 id?: string;
@@ -223,6 +224,7 @@ sort_position?: number;
 is_active?: boolean;
 created_at?: string;
 updated_at?: string;
+image_path?: string | null;
 };
 Update: {
 id?: string;
@@ -238,6 +240,7 @@ sort_position?: number;
 is_active?: boolean;
 created_at?: string;
 updated_at?: string;
+image_path?: string | null;
 };
 Relationships: [{"foreignKeyName":"homepage_showroom_items_category_id_fkey","columns":["category_id"],"isOneToOne":false,"referencedRelation":"categories","referencedColumns":["id"]},{"foreignKeyName":"homepage_showroom_items_image_product_id_fkey","columns":["image_product_id"],"isOneToOne":false,"referencedRelation":"products","referencedColumns":["id"]},{"foreignKeyName":"homepage_showroom_items_product_id_fkey","columns":["product_id"],"isOneToOne":false,"referencedRelation":"products","referencedColumns":["id"]}];
 };

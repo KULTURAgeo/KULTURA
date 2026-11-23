@@ -9,7 +9,7 @@
   gap: 20px;
   min-width: 0;
 }
-.controls select, .controls input, .controls textarea { width: 100%; min-width: 0; }
+.controls select, .controls input:not([type="checkbox"]), .controls textarea { width: 100%; min-width: 0; }
 .visibility { align-self: end; padding-block: 16px; }
 .preview {
   border: 1px solid var(--border, #383b3d);
@@ -24,6 +24,32 @@
 .preview strong { font-size: 16px; line-height: 1.3; overflow-wrap: anywhere; }
 .preview > span { font-size: 10px; letter-spacing: .08em; }
 .photoPlaceholder { position: absolute; inset: 0; display: grid; place-content: center; color: var(--muted); font-size: 13px; text-align: center; }
+.dialog {
+  width: min(1130px, calc(100% - 24px));
+  max-width: none;
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  color: #f6f7f5;
+  background: radial-gradient(ellipse at center, #17242e, #080d12 72%);
+  border: 1px solid #4d565f;
+  border-radius: 16px;
+}
+.dialog::backdrop { background: #000b; }
+.dialogHeader {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px clamp(14px, 3vw, 24px);
+  background: #10151a;
+}
+.dialogHeader h2 { margin: 0; font-size: clamp(.85rem, 2vw, 1.2rem); }
+.dialogHeader button { flex: none; color: #f6f7f5; border-color: #687382; }
 @media (max-width: 720px) {
   .editor { grid-template-columns: minmax(0, 1fr); }
   .preview { width: min(100%, 280px); grid-row: 1; justify-self: center; }

@@ -1,12 +1,26 @@
 "use server";
 
 import { revalidatePath, updateTag } from "next/cache";
+import { randomUUID } from "node:crypto";
 import { safeFailure, type ActionState } from "@/lib/actions";
+import { processProductImage } from "@/lib/admin/image";
 import { requireActionActor } from "@/lib/auth/guards";
 import { strictForm } from "@/lib/security/input";
 import { id, integer, text, version, InputError } from "@/lib/validation";
 import { MAX_SHOWROOM_ITEMS, SHOWROOM_CACHE_TAG } from "@/lib/showroom/model";
 import type { Database } from "@/lib/supabase/database.types";
+
+type AdminClient = Awaited<ReturnType<typeof requireActionActor>>["client"];
+
+async function removeCardPhoto(client: AdminClient, path: string | null | undefined) {
+  if (!path) return;
+  try {
+    const { error } = await client.storage.from("product-images").remove([path]);
+    if (error) console.warn("[showroom] Photo cleanup failed.");
+  } catch {
+    console.warn("[showroom] Photo cleanup failed.");
+  }
+}
 
 function refreshShowroom() {
   updateTag(SHOWROOM_CACHE_TAG);
@@ -31,10 +45,11 @@ export async function saveShowroomSettings(_state: ActionState, data: FormData):
 
 export async function saveShowroomItem(_state: ActionState, data: FormData): Promise<ActionState> {
   try {
-    strictForm(data, ["id", "updated_at", "source_kind", "product_id", "category_id", "image_product_id", "title", "title_ka", "description", "description_ka", "sort_position", "is_active"]);
+    strictForm(data, ["id", "updated_at", "source_kind", "product_id", "category_id", "image_product_id", "title", "title_ka", "description", "description_ka", "sort_position", "is_active", "image", "remove_image"]);
     const { client } = await requireActionActor(true);
     const rawId = data.get("id");
-    const itemId = rawId ? id(rawId, "showroom card") : null;
+    const itemId = rawId ? id(rawId, "showroom card") : randomUUID();
+    const expectedVersion = rawId ? version(data) : null;
     const sourceKind = text(data, "source_kind", 10);
     if (sourceKind !== "product" && sourceKind !== "category") throw new InputError("Choose a product or category.");
 
@@ -71,16 +86,43 @@ export async function saveShowroomItem(_state: ActionState, data: FormData): Pro
       if (!selected.data) throw new InputError("This image product is unavailable. Reload the page.");
     }
 
-    const result = itemId
+    const file = data.get("image");
+    const upload = file instanceof File && file.size > 0 ? file : null;
+    const replacePhoto = Boolean(upload) || data.get("remove_image") === "on";
+    let oldImage: string | null = null;
+    if (expectedVersion && replacePhoto) {
+      const current = await client.from("homepage_showroom_items").select("image_path")
+        .eq("id", itemId).eq("updated_at", expectedVersion).maybeSingle();
+      if (current.error) throw current.error;
+      if (!current.data) throw new InputError("This card changed. Reload before saving.");
+      oldImage = current.data.image_path;
+    }
+
+    let newImage: string | null = null;
+    if (upload) {
+      const bytes = await processProductImage(upload);
+      newImage = `showroom/${itemId}/${randomUUID()}.webp`;
+      const { error } = await client.storage.from("product-images").upload(newImage, bytes, {
+        contentType: "image/webp", upsert: false, cacheControl: "3600",
+      });
+      if (error) throw error;
+    }
+    if (replacePhoto) values.image_path = newImage;
+
+    const result = expectedVersion
       ? await client.from("homepage_showroom_items").update(values)
-        .eq("id", itemId).eq("updated_at", version(data)).select("id").single()
-      : await client.from("homepage_showroom_items").insert(values).select("id").single();
+        .eq("id", itemId).eq("updated_at", expectedVersion).select("id").single()
+      : await client.from("homepage_showroom_items").insert({ ...values, id: itemId }).select("id").single();
+    // A server error with no database code can mean the write's outcome is unknown.
+    // Keep the object in that case so a committed card never points to a missing file.
+    if (result.error?.code && result.status < 500) await removeCardPhoto(client, newImage);
     if (result.error?.code === "23514") {
       return { ok: false, message: `Use up to ${MAX_SHOWROOM_ITEMS} cards. Remove a card before adding another.` };
     }
     if (result.error) throw result.error;
+    if (replacePhoto) await removeCardPhoto(client, oldImage);
     refreshShowroom();
-    return { ok: true, message: itemId ? "Showroom card updated." : "Showroom card added.", reload: true };
+    return { ok: true, message: expectedVersion ? "Showroom card updated." : "Showroom card added.", reload: true };
   } catch (error) {
     return safeFailure(error);
   }
@@ -90,9 +132,10 @@ export async function deleteShowroomItem(_state: ActionState, data: FormData): P
   try {
     strictForm(data, ["id", "updated_at"]);
     const { client } = await requireActionActor(true);
-    const { error } = await client.from("homepage_showroom_items").delete()
-      .eq("id", id(data.get("id"), "showroom card")).eq("updated_at", version(data)).select("id").single();
+    const { data: removed, error } = await client.from("homepage_showroom_items").delete()
+      .eq("id", id(data.get("id"), "showroom card")).eq("updated_at", version(data)).select("image_path").single();
     if (error) throw error;
+    await removeCardPhoto(client, removed.image_path);
     refreshShowroom();
     return { ok: true, message: "Card removed from the 3D showroom.", reload: true };
   } catch (error) {
