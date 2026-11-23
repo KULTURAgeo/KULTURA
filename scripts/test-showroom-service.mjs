@@ -12,6 +12,7 @@ const repoDirectory = resolve(scriptDirectory, "..");
 process.chdir(repoDirectory);
 const requireFromRepo = createRequire(resolve(repoDirectory, "package.json"));
 const ts = requireFromRepo("typescript");
+const sharp = requireFromRepo("sharp");
 globalThis.__showroomInvalidations = [];
 globalThis.__showroomHeaders = new Headers({
   origin: "https://showroom.example.invalid", host: "showroom.example.invalid", "sec-fetch-site": "same-origin",
@@ -87,6 +88,7 @@ for (const { table_name: table, column_name: column } of columnRows) {
 }
 const permittedTables = new Set(["profiles", "categories", "products", "product_images", "homepage_showroom_settings", "homepage_showroom_items"]);
 const requests = [];
+const uploaded = new Set();
 let forcedFailure = null;
 let serial = Promise.resolve();
 const originalFetch = globalThis.fetch;
@@ -202,6 +204,21 @@ globalThis.fetch = async (input, init = {}) => {
   const uid = identity(init.headers);
   requests.push({ path: url.pathname, method: init.method || "GET" });
   if (url.pathname === "/auth/v1/user") return uid ? response(users.get(uid)) : response({ message: "Missing synthetic session" }, 401);
+  const storageBase = "/storage/v1/object/product-images";
+  if (url.pathname.startsWith(storageBase + "/") && init.method === "POST") {
+    assert(uid);
+    const path = url.pathname.slice(storageBase.length + 1);
+    const metadata = await sharp(init.body).metadata();
+    assert.equal(metadata.format, "webp");
+    assert.equal(metadata.width * 5, metadata.height * 4);
+    uploaded.add(path);
+    return response({ Key: "product-images/" + path });
+  }
+  if (url.pathname === storageBase && init.method === "DELETE") {
+    assert(uid);
+    for (const path of JSON.parse(init.body).prefixes) uploaded.delete(path);
+    return response([]);
+  }
   assert(url.pathname.startsWith("/rest/v1/"), `Unexpected fixture request ${url.pathname}`);
   const task = serial.then(() => requestSQL(url, init, uid));
   serial = task.catch(() => {});
@@ -300,6 +317,26 @@ try {
     assert.equal(globalThis.__showroomInvalidations.length, 0);
     productItem = fresh;
   });
+  await check("A custom image is processed, overrides the catalog photo, and can be removed", async () => {
+    const photo = await sharp({ create: { width: 120, height: 80, channels: 3, background: "#383e45" } }).png().toBuffer();
+    const values = { id: productItem.id, updated_at: productItem.updated_at, source_kind: "product",
+      product_id: product.id, sort_position: 5, title: productItem.title, is_active: "on" };
+    const data = form(values);
+    data.set("image", new File([photo], "synthetic.png", { type: "image/png" }));
+    const result = await saveShowroomItem({}, data);
+    assert.equal(result.ok, true, result.message);
+    expectInvalidation();
+    const current = await row(productItem.id);
+    assert(uploaded.has(current.image_path));
+    assert.equal((await loadHomepageShowroom()).find(card => card.id === current.id).image,
+      `${supabaseUrl}/storage/v1/object/public/product-images/${current.image_path}`);
+    assert.equal((await saveShowroomItem({}, form({ ...values, updated_at: current.updated_at, remove_image: "on" }))).ok, true);
+    expectInvalidation();
+    productItem = await row(current.id);
+    assert.equal(productItem.image_path, null);
+    assert.equal(uploaded.size, 0);
+    assert.match((await loadHomepageShowroom()).find(card => card.id === current.id).image, /^\/images\//);
+  });
   await check("Inactive source and hidden cards never leak through public loader", async () => {
     await db.query("update public.products set status='draft' where id=$1", [product.id]);
     const cards = await loadHomepageShowroom();
@@ -345,4 +382,3 @@ try {
   console.error = originalError;
   await db.close();
 }
-

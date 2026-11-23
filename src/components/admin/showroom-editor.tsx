@@ -1,55 +1,63 @@
 "use client";
 
 import Image from "next/image";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
+import { KulturaProductOrbit } from "@/components/kultura-product-orbit";
+import type { ShowroomCard } from "@/lib/showroom/model";
+import type { ShowroomCategoryOption, ShowroomItem, ShowroomProductOption } from "@/app/admin/showroom/repository";
+import { PreviewImageInput } from "./preview-image-input";
 import styles from "./showroom-editor.module.css";
-
-type ProductOption = {
-  id: string;
-  name: string;
-  slug: string;
-  status: string;
-  image: string | null;
-};
-
-type CategoryOption = { id: string; name: string; slug: string; is_active: boolean; image?: string | null };
-
-type ShowroomItem = {
-  source_kind: "product" | "category";
-  product_id: string | null;
-  category_id: string | null;
-  image_product_id: string | null;
-  title: string;
-  title_ka: string;
-  description: string;
-  description_ka: string;
-  sort_position: number;
-  is_active: boolean;
-};
 
 export function ShowroomItemFields({
   item,
   products,
   categories,
+  savedCards,
+  savedPhoto,
 }: {
   item?: ShowroomItem;
-  products: ProductOption[];
-  categories: CategoryOption[];
+  products: ShowroomProductOption[];
+  categories: ShowroomCategoryOption[];
+  savedCards: ShowroomCard[];
+  savedPhoto?: string | null;
 }) {
   const prefix = useId();
+  const dialog = useRef<HTMLDialogElement>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [localPhoto, setLocalPhoto] = useState<string | null>(null);
+  const [removePhoto, setRemovePhoto] = useState(false);
   const [kind, setKind] = useState(item?.source_kind ?? "product");
   const [productId, setProductId] = useState(item?.product_id ?? "");
   const [categoryId, setCategoryId] = useState(item?.category_id ?? "");
   const [imageProductId, setImageProductId] = useState(item?.image_product_id ?? "");
   const [title, setTitle] = useState(item?.title ?? "");
+  const [titleKa, setTitleKa] = useState(item?.title_ka ?? "");
+  const [description, setDescription] = useState(item?.description ?? "");
+  const [descriptionKa, setDescriptionKa] = useState(item?.description_ka ?? "");
   const selectedProduct = products.find(product => product.id === productId);
   const selectedCategory = categories.find(category => category.id === categoryId);
-  const photo = products.find(product => product.id === imageProductId)?.image
+  const catalogPhoto = products.find(product => product.id === imageProductId && product.status === "active" && product.categoryActive)?.image
     ?? (kind === "product" ? selectedProduct?.image : selectedCategory?.image);
+  const photo = localPhoto ?? (removePhoto ? null : savedPhoto) ?? catalogPhoto ?? null;
   const sourceName = kind === "product" ? selectedProduct?.name : selectedCategory?.name;
   const sourceUnavailable = kind === "product"
-    ? Boolean(selectedProduct && selectedProduct.status !== "active")
+    ? Boolean(selectedProduct && (selectedProduct.status !== "active" || !selectedProduct.categoryActive))
     : Boolean(selectedCategory && !selectedCategory.is_active);
+  const name = title.trim() || sourceName || "Your card";
+  const details = description.trim() || (kind === "category" ? selectedCategory?.description.slice(0, 500) ?? "" : "");
+  const previewCard: ShowroomCard = {
+    id: item?.id ?? "draft-preview",
+    title: name,
+    titleKa: titleKa.trim() || name,
+    description: details,
+    descriptionKa: descriptionKa.trim() || details,
+    image: photo,
+    imageAlt: name,
+    href: kind === "product" ? "/product/" + (selectedProduct?.slug ?? "") : "/shop/" + (selectedCategory?.slug ?? ""),
+    kind,
+  };
+  const savedIndex = savedCards.findIndex(card => card.id === previewCard.id);
+  const remainingCards = savedIndex < 0 ? savedCards : [...savedCards.slice(savedIndex + 1), ...savedCards.slice(0, savedIndex)];
 
   return (
     <div className={styles.editor}>
@@ -96,15 +104,23 @@ export function ShowroomItemFields({
         )}
 
         <label className="k-field" htmlFor={`${prefix}-image`}>
-          <span>CARD PHOTO</span>
+          <span>PHOTO FROM CATALOG</span>
           <select id={`${prefix}-image`} name="image_product_id" value={imageProductId}
             onChange={event => setImageProductId(event.target.value)}>
             <option value="">Use the source photo automatically</option>
-            {products.filter(product => product.image && product.status === "active").map(product => (
+            {products.filter(product => product.image && product.status === "active" && product.categoryActive).map(product => (
               <option key={product.id} value={product.id}>{product.name}</option>
             ))}
           </select>
         </label>
+
+        <PreviewImageInput name="image" label="UPLOAD CARD PHOTO · OPTIONAL" onPreview={setLocalPhoto} />
+        <p className="muted">JPEG, PNG or WebP · up to 3 MB. The uploaded photo takes priority over the catalog photo.</p>
+        {savedPhoto && <label className="check-field">
+          <input name="remove_image" type="checkbox" checked={removePhoto} disabled={Boolean(localPhoto)}
+            onChange={event => setRemovePhoto(event.target.checked)} />
+          Use the catalog photo instead
+        </label>}
 
         <div className="form-grid">
           <label className="k-field" htmlFor={`${prefix}-title`}>
@@ -115,17 +131,17 @@ export function ShowroomItemFields({
           <label className="k-field" htmlFor={`${prefix}-title-ka`}>
             <span>TITLE · ქართული</span>
             <input id={`${prefix}-title-ka`} name="title_ka" type="text" lang="ka" autoComplete="off"
-              maxLength={120} defaultValue={item?.title_ka ?? ""} />
+              maxLength={120} value={titleKa} onChange={event => setTitleKa(event.target.value)} />
           </label>
           <label className="k-field" htmlFor={`${prefix}-description`}>
             <span>DESCRIPTION · ENGLISH</span>
             <textarea id={`${prefix}-description`} name="description" maxLength={400} rows={3}
-              defaultValue={item?.description ?? ""} />
+              value={description} onChange={event => setDescription(event.target.value)} />
           </label>
           <label className="k-field" htmlFor={`${prefix}-description-ka`}>
             <span>DESCRIPTION · ქართული</span>
             <textarea id={`${prefix}-description-ka`} name="description_ka" lang="ka" maxLength={400} rows={3}
-              defaultValue={item?.description_ka ?? ""} />
+              value={descriptionKa} onChange={event => setDescriptionKa(event.target.value)} />
           </label>
         </div>
 
@@ -146,12 +162,23 @@ export function ShowroomItemFields({
         <div className={styles.photo}>
           {photo ? (
             <Image src={photo} alt={title.trim() || sourceName || "Selected card photo"} fill
+              unoptimized={Boolean(localPhoto)}
               sizes="(max-width: 720px) 70vw, 240px" style={{ objectFit: "contain" }} />
           ) : <span className={styles.photoPlaceholder}>Choose a source or photo</span>}
         </div>
-        <strong>{title.trim() || sourceName || "YOUR CARD"}</strong>
-        <span>{kind === "product" ? "VIEW PRODUCT ↗" : "EXPLORE CATEGORY ↗"}</span>
+        <strong>{name}</strong>
+        <button type="button" className="button secondary" onClick={() => {
+          dialog.current?.showModal();
+          setPreviewOpen(true);
+        }}>PREVIEW IN 3D</button>
       </aside>
+      <dialog className={styles.dialog} ref={dialog} aria-labelledby={prefix + "-preview"} onClose={() => setPreviewOpen(false)}>
+        <div className={styles.dialogHeader}>
+          <h2 id={prefix + "-preview"}>3D SHOWROOM PREVIEW</h2>
+          <button type="button" className="button secondary" onClick={() => dialog.current?.close()}>CLOSE</button>
+        </div>
+        {previewOpen && <KulturaProductOrbit preview products={[]} categories={[]} items={[previewCard, ...remainingCards]} />}
+      </dialog>
     </div>
   );
 }

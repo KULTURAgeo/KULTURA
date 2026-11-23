@@ -12,8 +12,9 @@ export type ShowroomProductOption = {
   slug: string;
   status: Tables["products"]["Row"]["status"];
   image: string | null;
+  categoryActive: boolean;
 };
-export type ShowroomCategoryOption = { id: string; name: string; slug: string; is_active: boolean; image: string | null };
+export type ShowroomCategoryOption = { id: string; name: string; slug: string; description: string; is_active: boolean; image: string | null };
 export type AdminShowroomResult = {
   status: "ready" | "not_installed";
   settings: ShowroomSettings | null;
@@ -35,7 +36,7 @@ export async function adminShowroom(): Promise<AdminShowroomResult> {
     (async () => {
       const rows: Omit<ShowroomCategoryOption, "image">[] = [];
       for (let offset = 0; ; offset += 100) {
-        const result = await client.from("categories").select("id,name,slug,is_active")
+        const result = await client.from("categories").select("id,name,slug,description,is_active")
           .order("name").order("id").range(offset, offset + 99);
         if (result.error) throw new Error("Showroom categories unavailable.");
         rows.push(...result.data);
@@ -44,7 +45,7 @@ export async function adminShowroom(): Promise<AdminShowroomResult> {
       return rows;
     })(),
     (async () => {
-      const rows: (ShowroomProductOption & { category_id: string; featured: boolean; created_at: string })[] = [];
+      const rows: (Omit<ShowroomProductOption, "categoryActive"> & { category_id: string; featured: boolean; created_at: string })[] = [];
       for (let offset = 0; ; offset += 100) {
         const result = await client.from("products")
           .select("id,name,slug,status,category_id,featured,created_at,product_images(image_url,storage_path,sort_position)")
@@ -72,6 +73,9 @@ export async function adminShowroom(): Promise<AdminShowroomResult> {
       .slice(0, 12);
     return { ...category, image: candidates.find(product => product.image)?.image ?? null };
   });
-  const products = productData.map(({ id, name, slug, status, image }) => ({ id, name, slug, status, image }));
+  const activeCategories = new Set(categories.filter(category => category.is_active).map(category => category.id));
+  const products = productData.map(({ id, name, slug, status, image, category_id }) => ({
+    id, name, slug, status, image, categoryActive: activeCategories.has(category_id),
+  }));
   return { status: "ready", settings, items: itemResult.data, products, categories: categoryOptions };
 }

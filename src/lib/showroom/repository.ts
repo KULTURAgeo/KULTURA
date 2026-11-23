@@ -3,7 +3,7 @@ import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { createCatalogClient } from "@/lib/supabase/server";
 import { CATALOG_CACHE_TAG, CATALOG_REVALIDATE_SECONDS } from "@/lib/catalog/cache-config";
-import { isShowroomNotInstalled, MAX_SHOWROOM_ITEMS, SHOWROOM_CACHE_TAG, showroomImage, type ShowroomCard } from "./model";
+import { isShowroomNotInstalled, MAX_SHOWROOM_ITEMS, SHOWROOM_CACHE_TAG, showroomImage, showroomUploadUrl, type ShowroomCard } from "./model";
 
 const productColumns = "id,name,slug,status,category_id,product_images(image_url,storage_path,sort_position)" as const;
 
@@ -52,9 +52,10 @@ export async function loadHomepageShowroom(): Promise<ShowroomCard[] | undefined
     if (item.source_kind === "category" && !category) continue;
 
     const selectedImage = item.image_product_id ? products.get(item.image_product_id) : undefined;
-    let image = selectedImage && activeCategoryIds.has(selectedImage.category_id)
+    const productPhoto = selectedImage && activeCategoryIds.has(selectedImage.category_id)
       ? showroomImage(selectedImage.product_images, process.env.SUPABASE_URL)
       : null;
+    let image = showroomUploadUrl(item.image_path, process.env.SUPABASE_URL) ?? productPhoto;
     if (!image && product) image = showroomImage(product.product_images, process.env.SUPABASE_URL);
     if (!image && category) {
       const result = await client.from("products").select(productColumns)

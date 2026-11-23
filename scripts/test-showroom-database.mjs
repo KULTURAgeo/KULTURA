@@ -102,6 +102,20 @@ try {
     assert.equal((await adminQuery('select title from public.homepage_showroom_items where id=$1', [productCard.id])).rows[0].title, 'Latest title');
   });
 
+  await check('Showroom uploads are scoped to the card and require an MFA admin', async () => {
+    const file = randomUUID();
+    const path = `showroom/${productCard.id}/${file}.webp`;
+    const storageInsert = "insert into storage.objects(bucket_id,name) values ('product-images',$1)";
+    await assert.rejects(customerQuery(storageInsert, [path]), error => error.code === '42501');
+    await assert.rejects(asRole('authenticated', admin, storageInsert, [path], { aal: 'aal1' }), error => error.code === '42501');
+    await assert.rejects(adminQuery(storageInsert, [path.replace('.webp', '.png')]), error => error.code === '42501');
+    await adminQuery(storageInsert, [path]);
+    const link = 'update public.homepage_showroom_items set image_path=$1 where id=$2';
+    await assert.rejects(adminQuery(link, [`showroom/${randomUUID()}/${file}.webp`, productCard.id]), error => error.code === '23514');
+    await adminQuery(link, [path, productCard.id]);
+    assert.equal((await publicQuery('select image_path from public.homepage_showroom_items where id=$1', [productCard.id])).rows[0].image_path, path);
+  });
+
   await check('Twelve cards are supported and the database rejects a thirteenth', async () => {
     for (let index = 6; index < 12; index++) await adminQuery("insert into public.homepage_showroom_items(source_kind,category_id,title) values ('category',$1,$2)", [category, `Extra ${index}`]);
     await assert.rejects(adminQuery("insert into public.homepage_showroom_items(source_kind,category_id,title) values ('category',$1,'Thirteenth')", [category]), error => error.code === '23514');
@@ -130,4 +144,3 @@ try {
 } finally {
   await db.close();
 }
-
