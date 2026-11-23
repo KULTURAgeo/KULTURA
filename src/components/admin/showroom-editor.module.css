@@ -30,13 +30,15 @@
   max-height: calc(100dvh - 24px);
   margin: auto;
   padding: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   color: #f6f7f5;
   background: radial-gradient(ellipse at center, #17242e, #080d12 72%);
   border: 1px solid #4d565f;
   border-radius: 16px;
 }
 .dialog::backdrop { background: #000b; }
+.dialog > [data-kultura-showroom] { overflow-x: clip; }
 .dialogHeader {
   position: sticky;
   top: 0;
@@ -52,5 +54,5 @@
 .dialogHeader button { flex: none; color: #f6f7f5; border-color: #687382; }
 @media (max-width: 720px) {
   .editor { grid-template-columns: minmax(0, 1fr); }
-  .preview { width: min(100%, 280px); grid-row: 1; justify-self: center; }
+  .preview { width: min(100%, 280px); justify-self: center; }
 }
