@@ -8,14 +8,14 @@ import { LocalizedColorNames } from "./localized-color-names";
 export function ProductCard({ product, stockLabel }: { product: Product; stockLabel?: string }) {
   return (
     <MotionProductCard>
-      <Link href={`/product/${product.slug}`}>
+      <Link href={`/product/${product.slug}`} prefetch={false}>
         <div className="product-image">
           <Image
             src={product.image}
             alt={product.images[0]?.alt ?? product.name}
             fill
             quality={75}
-            sizes="(max-width: 767px) 50vw, 25vw"
+            sizes="(max-width: 360px) calc(100vw - 40px), (max-width: 767px) calc(50vw - 26px), (max-width: 1480px) 24vw, 350px"
           />
           <div className="product-badge">
             <ProductBadges product={product} />

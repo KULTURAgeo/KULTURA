@@ -111,7 +111,7 @@ export function HomeMotion({
     // so hydration and resizes do not change document layout.
 
     if (phoneTransition) {
-      phoneTransition.style.width = "100vw";
+      phoneTransition.style.width = "100%";
       phoneTransition.style.height = "100svh";
       phoneTransition.style.top = "50%";
       phoneTransition.style.transform = "translate(-50%, -50%)";

@@ -2,6 +2,16 @@
  * KULTURA mobile image + cinematic polish.
  * Loaded after the shared theme/animation styles; desktop visuals are untouched.
  */
+.container {
+  padding-inline: max(var(--space), env(safe-area-inset-left)) max(var(--space), env(safe-area-inset-right));
+}
+.section-heading { flex-wrap: wrap; }
+.section-heading > *, .product-detail > * { min-width: 0; }
+.product-detail { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+.k-field :is(input, select, textarea), .search-sort > * { min-width: 0; max-width: 100%; }
+.product-meta h3, .cart-line-info, .checkout-item-info { min-width: 0; overflow-wrap: anywhere; }
+.table-scroll { overscroll-behavior-inline: contain; }
+
 @media (max-width: 767px) {
   html, body { max-width: 100%; }
   body { overflow-x: clip; }
@@ -40,9 +50,16 @@
   }
   .gallery-main img { object-fit: contain; object-position: center; }
   .product-info { min-width: 0; }
+  .product-detail { grid-template-columns: minmax(0, 1fr); }
   .product-info h1 { font-size: clamp(30px, 8vw, 43px); overflow-wrap: anywhere; }
   .gallery-thumbs { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
   .gallery-thumbs button { flex: 0 0 auto; }
+  .checkout-progress { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .checkout-progress span { overflow-wrap: anywhere; }
+  .k-field :is(input:not([type="file"]), select, textarea),
+  .search-sort :is(input, select) { font-size: max(16px, 1em); }
+  .cart-drawer { padding-inline: clamp(14px, 4vw, 22px); }
+  .cart-drawer .drawer-heading h2 { font-size: clamp(24px, 7vw, 32px); overflow-wrap: anywhere; }
 
   /* Navigation: long translations should not force a sideways viewport. */
   .theme-header { max-width: 100%; }
@@ -130,6 +147,13 @@
       animation: kultura-mobile-image 760ms cubic-bezier(.22,1,.36,1) both;
     }
   }
+}
+@media (max-width: 400px) {
+  :root { --space: clamp(14px, 4vw, 20px); }
+  .cart-line { column-gap: 12px; }
+  .checkout-progress span,
+  .checkout-progress span:nth-child(2),
+  .checkout-progress span:last-child { padding-inline: 5px; }
 }
 @media (max-width: 360px) {
   .product-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }

@@ -13,12 +13,13 @@ const nextConfig: NextConfig = {
     serverActions: { bodySizeLimit: "4mb" },
   },
   images: {
-    deviceSizes: [640, 750, 828, 1080, 1200, 1440, 1920],
+    deviceSizes: [384, 480, 640, 750, 828, 1080, 1200, 1440, 1920],
+    imageSizes: [32, 48, 64, 96, 128, 192, 256, 320],
     remotePatterns: origin
       ? [new URL("/storage/v1/object/public/product-images/**", origin)]
       : [],
     formats: ["image/avif", "image/webp"],
-    qualities: [75, 90],
+    qualities: [65, 75, 90],
     minimumCacheTTL: 86_400,
   },
   async headers() {

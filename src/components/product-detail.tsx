@@ -106,8 +106,9 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
             src={currentImage.src}
             alt={`${currentImage.alt} — ${currentImage.label}`}
             fill
-            priority
-            sizes="(max-width: 767px) 100vw, 55vw"
+            loading="eager"
+            fetchPriority={view === 0 ? "high" : "auto"}
+            sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1480px) 52vw, 720px"
           />
         </div>
         <div className="gallery-thumbs">
@@ -303,8 +304,8 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
               src={currentImage.src}
               alt={`${currentImage.alt} — enlarged ${currentImage.label}`}
               fill
-              sizes="95vw"
-              priority
+              sizes="(max-width: 1140px) 95vw, 1080px"
+              loading="eager"
             />
           </motion.div>
         </motion.div>

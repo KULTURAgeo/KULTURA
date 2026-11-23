@@ -7,6 +7,7 @@
   background: transparent;
   color: #f6f7f5;
 }
+.placeholder { min-block-size: 870px; }
 
 .heading {
   position: relative;
@@ -260,6 +261,7 @@
   .tab { padding: 10px 8px; }
 }
 @media (max-width: 720px) {
+  .placeholder { min-block-size: 760px; }
   .section { --orbit-radius: min(58vw, 220px); padding: 74px 16px 32px; min-height: 0; }
   .heading h2 { max-width: 500px; font-size: clamp(43px, 11vw, 68px); }
   .heading p { max-width: 300px; }

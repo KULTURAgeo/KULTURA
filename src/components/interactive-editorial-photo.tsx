@@ -68,6 +68,7 @@ export function InteractiveEditorialPhoto({
     <Link
       ref={card}
       href={href}
+      prefetch={false}
       className={styles.photo + (featured ? " " + styles.featured : "")}
       aria-label={alt ? `Explore ${alt}` : "Explore KULTURA collection"}
       draggable={false}
@@ -84,6 +85,7 @@ export function InteractiveEditorialPhoto({
           src={image}
           alt={alt}
           fill
+          quality={65}
           sizes={sizes}
           draggable={false}
           className={styles.image}
