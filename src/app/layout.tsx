@@ -110,6 +110,7 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       <head>
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: "try { var theme = localStorage.getItem(\"kultura-theme\"); document.documentElement.dataset.theme = theme === \"light\" ? \"light\" : \"dark\"; } catch { document.documentElement.dataset.theme = \"dark\"; }" }} />
+        <style nonce={nonce}>{":root{background:#080808;color-scheme:dark}:root[data-theme=light]{background:#f6f5f1;color-scheme:light}"}</style>
       </head>
       <body>
         <StructuredData data={structuredData} />

@@ -199,92 +199,17 @@
   min-height: 42px;
 }
 
-.commerce-skeleton {
-  position: relative;
-  overflow: hidden;
-  background: #171717;
-  border: 1px solid #242424;
-}
-
-.commerce-skeleton::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.055), transparent);
-  animation: commerce-skeleton-shimmer 1.3s infinite;
-}
-
-.commerce-skeleton-title {
-  width: min(480px, 75vw);
-  height: 72px;
-  margin-bottom: 32px;
-}
-
-.commerce-skeleton-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.7fr);
-  gap: 20px;
-}
-
-.commerce-skeleton-panel {
-  min-height: 360px;
-}
-
-.commerce-skeleton-tall {
-  min-height: 620px;
-}
-
-.commerce-skeleton-products {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.commerce-skeleton-product {
-  aspect-ratio: 0.78;
-}
-
-.commerce-skeleton-product-page {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.75fr);
-  gap: 30px;
-}
-
-.commerce-skeleton-product-image {
-  min-height: 680px;
-}
-
-.commerce-skeleton-product-copy {
-  min-height: 520px;
-}
-
-@keyframes commerce-skeleton-shimmer {
-  to { transform: translateX(100%); }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .commerce-skeleton::after { animation: none; }
   .gallery-main img { transition: none; }
 }
 
 @media (max-width: 860px) {
-  .review-order-grid,
-  .commerce-skeleton-grid,
-  .commerce-skeleton-product-page {
+  .review-order-grid {
     grid-template-columns: 1fr;
   }
 
   .review-order-summary {
     position: static;
-  }
-
-  .commerce-skeleton-products {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .commerce-skeleton-product-image {
-    min-height: 480px;
   }
 }
 
@@ -315,9 +240,5 @@
   .checkout-promo-row {
     display: grid;
     grid-template-columns: 1fr;
-  }
-
-  .commerce-skeleton-products {
-    gap: 8px;
   }
 }
