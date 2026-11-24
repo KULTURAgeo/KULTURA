@@ -1,7 +1,8 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { useLanguage } from "./language-provider";
 
 /**
  * Progressive enhancements: no replacement wheel handler, no scroll-jacking
@@ -93,112 +94,80 @@ function completeProductPortal(pathname: string) {
 
 export function MotionEnhancements() {
   const pathname = usePathname();
-  const router = useRouter();
+  const search = useSearchParams().toString();
+  const { locale } = useLanguage();
+  const bar = useRef<HTMLDivElement>(null);
+  const previousPath = useRef<string | null>(null);
+  const committedAddress = useRef("");
+  const finishNavigation = useRef<() => void>(() => {});
 
-  useEffect(() => {
-    // Disable document-wide effects for users who request reduced motion.
-    if (reducedMotion()) {
+  useLayoutEffect(() => {
+    finishNavigation.current();
+    committedAddress.current = location.pathname + location.search;
+    const animate = previousPath.current !== null && previousPath.current !== pathname && !reducedMotion();
+    previousPath.current = pathname;
+    if (!animate) {
       discardPortal();
       return;
     }
-    document.documentElement.dataset.motionEnhanced = "true";
-    const main = document.getElementById("main");
-    if (!main) return;
+    const frame = requestAnimationFrame(() => {
+      completeProductPortal(pathname);
+      document.getElementById("main")?.animate([{ opacity: .84 }, { opacity: 1 }], {
+        duration: 250, easing: "ease-out",
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [pathname, search]);
 
-    document.documentElement.classList.remove("k-route-leaving");
-    main.classList.remove("k-route-enter");
-    // Restart entrance animation for client-side navigations.
-    void main.offsetWidth;
-    main.classList.add("k-route-enter");
+  useEffect(() => {
+    const progress = bar.current;
+    if (!progress) return;
+    let show = 0;
+    let expire = 0;
 
-    const selectors = [
-      ".product-card",
-      ".category-grid > a",
-      ".section-heading",
-      ".page-title",
-      ".drop-panel",
-      ".information > p",
-      ".newsletter-inner",
-    ];
+    function finish() {
+      window.clearTimeout(show);
+      window.clearTimeout(expire);
+      if (progress) progress.hidden = true;
+    }
 
-    const tracked: HTMLElement[] = [];
-    const seen = new WeakSet<HTMLElement>();
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        entry.target.classList.add("k-in-view");
-        observer.unobserve(entry.target);
-      }
-    }, { threshold: 0.10, rootMargin: "0px 0px -34px 0px" });
+    function begin() {
+      window.clearTimeout(show);
+      window.clearTimeout(expire);
+      show = window.setTimeout(() => {
+        if (progress) progress.hidden = false;
+      }, 110);
+      expire = window.setTimeout(finish, 15000);
+    }
 
-    // Server-streamed shop results may arrive after hydration. Observe them too.
-    const observeTargets = () => {
-      const candidates = Array.from(main.querySelectorAll<HTMLElement>(selectors.join(",")));
-      for (const element of candidates) {
-        if (seen.has(element) || element.closest("[data-demo-track]") || element.matches("[data-reveal], [data-motion-managed]")) continue;
-        seen.add(element);
-        tracked.push(element);
-        const parent = element.parentElement;
-        const siblings = parent
-          ? Array.from(parent.children).filter((child) => child.matches(".product-card, .category-grid > a"))
-          : [];
-        const index = siblings.indexOf(element);
-        element.style.setProperty("--k-stagger", `${Math.max(0, index) % 4 * 115}ms`);
-        element.classList.add("k-motion-reveal");
-        observer.observe(element);
-      }
-    };
-    observeTargets();
-    const mutationObserver = new MutationObserver(observeTargets);
-    mutationObserver.observe(main, { childList: true, subtree: true });
-    let navigationTimer: number | null = null;
-
-    const onClick = (event: MouseEvent) => {
-      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || event.defaultPrevented) return;
-      if (document.documentElement.dataset.motionMode === "soft") return;
-      const source = event.target;
-      if (!(source instanceof Element)) return;
-      const link = source.closest<HTMLAnchorElement>("a[href]");
+    function onClick(event: MouseEvent) {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
       if (!link || (link.target && link.target !== "_self") || link.hasAttribute("download")) return;
-      if (link.closest("dialog, [contenteditable='true']")) return;
-      const url = new URL(link.href, location.href);
-      const current = new URL(location.href);
-      if (url.origin !== location.origin || (url.pathname === current.pathname && url.search === current.search)) return;
-      // Enhance only storefront pages. Accounts, forms and checkout use normal navigation.
-      const storefront = (path: string) =>
-        path === "/" || path === "/shop" || path.startsWith("/shop/")
-        || path === "/drops" || path === "/about" || path.startsWith("/product/");
-      if (!storefront(url.pathname) || !storefront(current.pathname)) return;
+      if (link.origin !== location.origin || link.pathname + link.search === location.pathname + location.search) return;
+      if (!["http:", "https:"].includes(link.protocol)) return;
+      begin();
+      if (link.pathname.startsWith("/product/")) startProductPortal(link);
+      else discardPortal();
+    }
 
-      // Delay the route for a brief, perceptible departure; Next still handles client navigation.
-      event.preventDefault();
-      if (url.pathname.startsWith("/product/")) startProductPortal(link);
-      document.documentElement.classList.add("k-route-leaving");
-      if (navigationTimer !== null) window.clearTimeout(navigationTimer);
-      navigationTimer = window.setTimeout(() => {
-        navigationTimer = null;
-        router.push(url.pathname + url.search + url.hash);
-      }, 270);
-    };
+    function onHistory() {
+      if (location.pathname + location.search !== committedAddress.current) begin();
+    }
+
+    finishNavigation.current = finish;
     document.addEventListener("click", onClick, { capture: true });
-    const frame = window.requestAnimationFrame(() => completeProductPortal(pathname));
-    const enterTimer = window.setTimeout(() => main.classList.remove("k-route-enter"), 810);
-
+    window.addEventListener("popstate", onHistory);
+    window.addEventListener("pageshow", finish);
     return () => {
-      observer.disconnect();
-      mutationObserver.disconnect();
-      if (navigationTimer !== null) window.clearTimeout(navigationTimer);
-      window.cancelAnimationFrame(frame);
-      window.clearTimeout(enterTimer);
+      finish();
+      discardPortal();
       document.removeEventListener("click", onClick, { capture: true });
-      for (const element of tracked) {
-        element.classList.remove("k-motion-reveal", "k-in-view");
-        element.style.removeProperty("--k-stagger");
-      }
-      main.classList.remove("k-route-enter");
-      document.documentElement.classList.remove("k-route-leaving");
+      window.removeEventListener("popstate", onHistory);
+      window.removeEventListener("pageshow", finish);
     };
-  }, [pathname, router]);
+  }, []);
 
-  return null;
+  return <div ref={bar} className="route-progress" role="progressbar" data-route-progress
+    aria-label={locale === "ka" ? "გვერდი იტვირთება" : "Loading page"} hidden />;
 }

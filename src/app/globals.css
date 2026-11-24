@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "tailwindcss" source("..");
 /* Reserve the homepage layout on first render, before HomeMotion hydrates.
    Keep the body-class selector as a fallback for browsers without :has(). */
 body:has([data-kultura-home]) .announcement,
@@ -845,23 +845,6 @@ footer {
 }
 .mobile-dialog nav a span {
   margin-left: auto;
-}
-.skeleton {
-  background: #222;
-  animation: pulse 1.6s ease-in-out infinite;
-}
-.skeleton-title {
-  height: 60px;
-  width: 55%;
-  margin-bottom: 40px;
-}
-.skeleton-product {
-  aspect-ratio: 4/5;
-}
-@keyframes pulse {
-  50% {
-    opacity: 0.4;
-  }
 }
 @media (min-width: 1600px) {
   .hero-content,

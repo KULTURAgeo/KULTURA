@@ -19,6 +19,20 @@ await check("CSP uses a fresh nonce matching inline framework scripts",async()=>
  const second=await fetch(base+"/");assert.notEqual(second.headers.get("content-security-policy"),policy);
  assert.match(response.headers.get("cache-control"),/no-store/);
 });
+await check("The initial theme background uses nonce-protected CSS", async () => {
+ const response = await fetch(base + "/shop");
+ const policy = response.headers.get("content-security-policy");
+ const nonce = policy?.match(/style-src-elem\s+[^;]*'nonce-([^']+)'/)?.[1];
+ const html = await response.text();
+ assert.ok(nonce, "The policy must require a style nonce");
+ const styles = [...html.matchAll(/<style\b([^>]*)>/g)];
+ assert.match(html, /<style[^>]*>:root\{background:#080808;color-scheme:dark\}/);
+ for (const style of styles)
+   assert.ok(style[1].includes('nonce="' + nonce + '"'), "An inline style is missing its nonce");
+ assert.match(html, /<link[^>]*rel="stylesheet"[^>]*href="\/_next\//);
+ assert.match(html, /data-route-progress/);
+ assert.doesNotMatch(html, /class="[^"]*commerce-skeleton/);
+});
 await check("Missing and cross-site Origin cannot invoke actions",async()=>{
  for(const origin of [undefined,"https://evil.invalid"]){const headers={"content-type":"text/plain"};if(origin)headers.origin=origin;const r=await fetch(base+"/login",{method:"POST",headers,body:"[]"});assert.equal(r.status,403);}
 });

@@ -9,7 +9,7 @@
 .section-heading > *, .product-detail > * { min-width: 0; }
 .product-detail { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
 .k-field :is(input, select, textarea), .search-sort > * { min-width: 0; max-width: 100%; }
-.product-meta h3, .cart-line-info, .checkout-item-info { min-width: 0; overflow-wrap: anywhere; }
+.product-meta h3, .cart-line-info { min-width: 0; overflow-wrap: anywhere; }
 .table-scroll { overscroll-behavior-inline: contain; }
 
 @media (max-width: 767px) {
@@ -54,8 +54,6 @@
   .product-info h1 { font-size: clamp(30px, 8vw, 43px); overflow-wrap: anywhere; }
   .gallery-thumbs { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
   .gallery-thumbs button { flex: 0 0 auto; }
-  .checkout-progress { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .checkout-progress span { overflow-wrap: anywhere; }
   .k-field :is(input:not([type="file"]), select, textarea),
   .search-sort :is(input, select) { font-size: max(16px, 1em); }
   .cart-drawer { padding-inline: clamp(14px, 4vw, 22px); }
@@ -104,27 +102,6 @@
   /* Mobile GPUs are more sensitive to the full-page blur and large-distance
      transforms introduced with Cinematic v2. Retain soft motion, not smear. */
   @media (prefers-reduced-motion: no-preference) {
-    html[data-motion-mode="cinematic"] #main.k-route-enter {
-      animation: kultura-mobile-enter 420ms ease-out both;
-    }
-    html[data-motion-mode="cinematic"].k-route-leaving #main {
-      opacity: .55;
-      filter: none;
-      transform: none;
-      transition: opacity 190ms ease-out;
-    }
-    html[data-motion-mode="cinematic"] .k-motion-reveal {
-      opacity: 0;
-      transform: translate3d(0, 22px, 0);
-      filter: none;
-      transition: opacity 520ms ease-out, transform 580ms cubic-bezier(.22,1,.36,1);
-      transition-delay: var(--k-stagger, 0ms);
-    }
-    html[data-motion-mode="cinematic"] .k-motion-reveal.k-in-view {
-      opacity: 1;
-      transform: translate3d(0,0,0);
-      filter: none;
-    }
     html[data-motion-mode="cinematic"] body.kultura-motion-home [data-reveal] {
       filter: none;
       transform: translate3d(0, 22px, 0);
@@ -151,9 +128,6 @@
 @media (max-width: 400px) {
   :root { --space: clamp(14px, 4vw, 20px); }
   .cart-line { column-gap: 12px; }
-  .checkout-progress span,
-  .checkout-progress span:nth-child(2),
-  .checkout-progress span:last-child { padding-inline: 5px; }
 }
 @media (max-width: 360px) {
   .product-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
@@ -162,10 +136,6 @@
   .category-grid h3 { font-size: 18px; }
 }
 @media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
-  @keyframes kultura-mobile-enter {
-    from { opacity: .2; transform: none; }
-    to { opacity: 1; transform: none; }
-  }
   @keyframes kultura-mobile-hero {
     from { opacity: 0; transform: translate3d(0,20px,0); }
     to { opacity: 1; transform: translate3d(0,0,0); }
