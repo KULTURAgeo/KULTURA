@@ -29,9 +29,9 @@ export default async function Shop({ searchParams }: PageProps<"/shop">) {
         <p className={styles.eyebrow}>
           {categoryName
             ? (isKa ? `${categoryName} · აირჩიე სექცია` : `${categoryName} · CHOOSE A DIVISION`)
-            : "THE KULTURA UNIFORM"}
+            : "Kultura For Everyone"}
         </p>
-        <h1 className={styles.heading}>{translate(locale, "SHOP")} <span className="chrome">/ 03</span></h1>
+        <h1 className={styles.heading}>DECIDE</h1>
       </div>
       <nav className={styles.gateway} aria-label={isKa ? "აირჩიე მაღაზიის სექცია" : "Choose your shop division"}>
         <Link href={shopHref("x", categorySlug)} className={styles.tile} aria-label={isKa ? "X — ქალი" : "Shop X — Woman"}>
