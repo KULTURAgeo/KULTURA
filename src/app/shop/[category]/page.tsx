@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import styles from "./division-switcher.module.css";
-import { isShopDivision } from "@/lib/catalog/divisions";
+import { isShopDivision, shopCategorySlug, shopHref } from "@/lib/catalog/divisions";
 import { localizedPageMetadata } from "@/lib/site";
 import { getServerLocale } from "@/lib/i18n-server";
 import { isSearchIndexableCategorySlug } from "@/lib/seo-indexing";
@@ -46,21 +46,35 @@ export async function generateMetadata({
 
 export default async function Category({
   params,
-}: {
-  params: Promise<{ category: string }>;
-}) {
+  searchParams,
+}: PageProps<"/shop/[category]">) {
   const { category } = await params;
   if (isShopDivision(category)) {
-    const { products, status, categories } = await getShopDivision(category);
+    const [query, { products, status, categories }] = await Promise.all([
+      searchParams,
+      getShopDivision(category),
+    ]);
+    const categorySlug = shopCategorySlug(query.category);
+    const selectedCategory = categories.find((item) => item.slug === categorySlug);
+    const visibleProducts = categorySlug
+      ? products.filter((product) => product.categorySlug === categorySlug)
+      : products;
+    const categoryName = categorySlug
+      ? selectedCategory?.name ?? visibleProducts[0]?.category ?? categorySlug.replaceAll("-", " ")
+      : undefined;
     return (
       <Container className="page-section">
-        <p className="eyebrow"><LocalizedLabel source="THE COLLECTION" /></p>
+        <p className="eyebrow">
+          {categoryName
+            ? <LocalizedCategoryName name={categoryName} slug={categorySlug} />
+            : <LocalizedLabel source="THE COLLECTION" />}
+        </p>
         <h1 className="page-title">{divisionLabel(category)}</h1>
         <nav className={styles.switcher} aria-label="Switch shop division">
           {(["x", "unisex", "y"] as const).map((division) => (
             <Link
               key={division}
-              href={"/shop/" + division}
+              href={shopHref(division, categorySlug)}
               className={styles.option + (division === category ? " " + styles.active : "")}
               aria-current={division === category ? "page" : undefined}
             >
@@ -69,7 +83,12 @@ export default async function Category({
           ))}
         </nav>
         {status !== "ready" ? <CatalogNotice status={status} /> : (
-          <CatalogGrid products={products} categories={categories} />
+          <CatalogGrid
+            key={categorySlug ?? "all"}
+            products={visibleProducts}
+            categories={categorySlug ? [] : categories}
+            initialCategory={categoryName}
+          />
         )}
       </Container>
     );

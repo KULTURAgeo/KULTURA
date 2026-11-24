@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { useLanguage } from "./language-provider";
 import type { Category, Product } from "@/lib/catalog";
+import { shopCategorySlug, shopHref } from "@/lib/catalog/divisions";
 import type { ShowroomCard } from "@/lib/showroom/model";
 import styles from "./kultura-product-orbit.module.css";
 
@@ -118,7 +119,7 @@ function ProductOrbit({ products, categories, items, preview = false }: OrbitPro
       const product = category ? products.find((entry) => entry.categorySlug === category.slug) : undefined;
       return {
         ...item,
-        href: category ? "/shop/" + encodeURIComponent(category.slug) : "/shop",
+        href: shopHref(undefined, category?.slug ?? item.aliases[0]),
         image: product?.image ?? null,
         imageAlt: product?.images[0]?.alt ?? item.en,
         kind: "category" as const,
@@ -134,7 +135,9 @@ function ProductOrbit({ products, categories, items, preview = false }: OrbitPro
       kaDescription: item.descriptionKa || item.description,
       aliases: [],
       shape: ITEMS.find((entry) => entry.aliases.some((alias) => item.href.endsWith("/" + alias)))?.shape ?? ITEMS[0].shape,
-      href: item.href,
+      href: item.kind === "category"
+        ? shopHref(undefined, shopCategorySlug(item.href.slice("/shop/".length)))
+        : item.href,
       image: item.image,
       imageAlt: item.imageAlt,
       kind: item.kind,
