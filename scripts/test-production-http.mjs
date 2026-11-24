@@ -19,16 +19,17 @@ await check("CSP uses a fresh nonce matching inline framework scripts",async()=>
  const second=await fetch(base+"/");assert.notEqual(second.headers.get("content-security-policy"),policy);
  assert.match(response.headers.get("cache-control"),/no-store/);
 });
-await check("The first page paints with nonce-protected inline CSS", async () => {
+await check("The initial theme background uses nonce-protected CSS", async () => {
  const response = await fetch(base + "/shop");
  const policy = response.headers.get("content-security-policy");
  const nonce = policy?.match(/style-src-elem\s+[^;]*'nonce-([^']+)'/)?.[1];
  const html = await response.text();
  assert.ok(nonce, "The policy must require a style nonce");
  const styles = [...html.matchAll(/<style\b([^>]*)>/g)];
- assert.ok(styles.some(style => style[1].includes("data-href=")), "The production stylesheet should be inline");
+ assert.match(html, /<style[^>]*>:root\{background:#080808;color-scheme:dark\}/);
  for (const style of styles)
    assert.ok(style[1].includes('nonce="' + nonce + '"'), "An inline style is missing its nonce");
+ assert.match(html, /<link[^>]*rel="stylesheet"[^>]*href="\/_next\//);
  assert.match(html, /data-route-progress/);
  assert.doesNotMatch(html, /class="[^"]*commerce-skeleton/);
 });

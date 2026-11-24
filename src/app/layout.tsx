@@ -107,7 +107,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: "try { var theme = localStorage.getItem(\"kultura-theme\"); document.documentElement.dataset.theme = theme === \"light\" ? \"light\" : \"dark\"; } catch { document.documentElement.dataset.theme = \"dark\"; }" }} />
         <style nonce={nonce}>{":root{background:#080808;color-scheme:dark}:root[data-theme=light]{background:#f6f5f1;color-scheme:light}"}</style>
