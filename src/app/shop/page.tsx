@@ -6,9 +6,6 @@ import { translate } from "@/lib/i18n";
 import { Container } from "@/components/ui";
 import styles from "./shop-gateway.module.css";
 
-const narrowTileSizes = "(max-width: 480px) 78vw, (max-width: 767px) 72vw, (max-width: 1500px) 28vw, 410px";
-const wideTileSizes = "(max-width: 480px) 78vw, (max-width: 767px) 72vw, (max-width: 1500px) 41vw, 600px";
-
 export async function generateMetadata() {
   const locale = await getServerLocale();
   return localizedPageMetadata(locale, translate(locale, "Shop"), "/shop");
@@ -24,21 +21,20 @@ export default async function Shop() {
       </div>
       <nav className={styles.gateway} aria-label="Choose your shop division">
         <Link href="/shop/x" className={styles.tile} aria-label="Shop X — Woman">
-          <Image src="/images/shop-x.webp" alt="" fill sizes={narrowTileSizes} quality={65}
+          <Image src="/images/shop-x.webp" alt="" fill unoptimized
             fetchPriority="high" loading="eager" className={styles.tileImage} />
           <span className={styles.micro}>KULTURA / 01</span>
           <span className={styles.title}>X</span>
           <span className={styles.arrow} aria-hidden="true">↗</span>
         </Link>
         <Link href="/shop/unisex" className={styles.tile + " " + styles.unisex} aria-label="Shop UNISEX">
-          <Image src="/images/shop-unisex.webp" alt="" fill sizes={wideTileSizes} quality={65} className={styles.tileImage} />
-          <Image src="/images/shop-unisex.webp" alt="" fill sizes={wideTileSizes} quality={65} className={styles.groupPhoto} />
+          <Image src="/images/shop-unisex.webp" alt="" fill unoptimized className={styles.tileImage} />
           <span className={styles.micro}>KULTURA / 02</span>
           <span className={styles.title}>UNISEX</span>
           <span className={styles.arrow} aria-hidden="true">↗</span>
         </Link>
         <Link href="/shop/y" className={styles.tile} aria-label="Shop Y — Men">
-          <Image src="/images/shop-y.webp" alt="" fill sizes={narrowTileSizes} quality={65} className={styles.tileImage} />
+          <Image src="/images/shop-y.webp" alt="" fill unoptimized className={styles.tileImage} />
           <span className={styles.micro}>KULTURA / 03</span>
           <span className={styles.title}>Y</span>
           <span className={styles.arrow} aria-hidden="true">↗</span>
