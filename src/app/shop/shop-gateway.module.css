@@ -52,7 +52,7 @@
   object-position: center 27%;
   transition: transform .7s ease, filter .7s ease;
 }
-.unisex .tileImage { object-position: 78% center; }
+.unisex .tileImage { object-position: 70% center; }
 .tile::after {
   position: absolute;
   inset: 0;
