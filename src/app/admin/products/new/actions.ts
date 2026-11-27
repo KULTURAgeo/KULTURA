@@ -2,19 +2,15 @@
 import { strictForm } from "@/lib/security/input";
 import { resolveAudienceCollections } from "@/lib/admin/audience";
 
-import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { requireActionActor } from "@/lib/auth/guards";
 import { productInput, text, InputError } from "@/lib/validation";
 import { safeFailure, type ActionState } from "@/lib/actions";
-import { processProductImage } from "@/lib/admin/image";
+import { attachProductPhotos, prepareProductPhotos } from "@/lib/admin/image";
+import { invalidateStorefrontCatalog } from "@/lib/catalog/invalidate";
 
 function refreshCatalog() {
-  revalidatePath("/", "page");
-  revalidatePath("/shop", "page");
-  revalidatePath("/shop/[category]", "page");
-  revalidatePath("/product/[slug]", "page");
-  revalidatePath("/drops", "page");
+  invalidateStorefrontCatalog();
   revalidatePath("/admin", "layout");
   revalidatePath("/admin/products");
 }
@@ -24,21 +20,12 @@ export async function createProductWithImage(
   data: FormData,
 ): Promise<ActionState> {
   try {
-    strictForm(data, ["name", "slug", "description", "price", "compare_at_price", "status", "featured", "is_drop", "category_id", "seo_title", "seo_description", "collections", "audience", "image", "image_alt_text", "id", "updated_at"], ["collections"]);
+    strictForm(data, ["name", "slug", "description", "price", "compare_at_price", "status", "featured", "is_drop", "category_id", "seo_title", "seo_description", "collections", "audience", "image", "image_alt_text", "id", "updated_at"], ["collections", "image"]);
     const { client } = await requireActionActor(true);
     const { product, collectionIds } = productInput(data);
-        const audienceCollectionIds = await resolveAudienceCollections(client, data, collectionIds);
-
-    const file = data.get("image");
-    let imageBuffer: Buffer | null = null;
-    let imageAlt = "";
-
-    if (file instanceof File && file.size > 0) {
-      imageBuffer = await processProductImage(file);
-      imageAlt = text(data, "image_alt_text", 500, false);
-    } else if (file && !(file instanceof File)) {
-      throw new InputError("Choose a valid image file.");
-    }
+    const audienceCollectionIds = await resolveAudienceCollections(client, data, collectionIds);
+    const photos = await prepareProductPhotos(data);
+    const imageAlt = text(data, "image_alt_text", 500, false);
 
     const { data: productId, error } = await client.rpc("admin_save_product", {
       p_id: null,
@@ -50,45 +37,12 @@ export async function createProductWithImage(
     if (error) throw error;
     if (!productId) throw new InputError("Product could not be created.");
 
-    if (imageBuffer) {
-      const path = `${productId}/${randomUUID()}.webp`;
-      const uploaded = await client.storage.from("product-images").upload(path, imageBuffer, {
-        contentType: "image/webp",
-        upsert: false,
-        cacheControl: "3600",
-      });
-
-      if (uploaded.error) {
-        refreshCatalog();
-        return {
-          ok: true,
-          message: "Product created, but the image could not be uploaded. Add it from Media.",
-          redirectTo: `/admin/products/${productId}`,
-        };
-      }
-
-      const attached = await client.rpc("admin_attach_image", {
-        p_product_id: productId,
-        p_storage_path: path,
-        p_alt_text: imageAlt || null,
-      });
-
-      if (attached.error) {
-        await client.storage.from("product-images").remove([path]);
-        refreshCatalog();
-        return {
-          ok: true,
-          message: "Product created, but the image could not be attached. Add it from Media.",
-          redirectTo: `/admin/products/${productId}`,
-        };
-      }
-    }
-
+    const { uploaded } = photos.length ? await attachProductPhotos(client, productId, photos, imageAlt) : { uploaded: 0 };
     refreshCatalog();
     return {
       ok: true,
-      message: imageBuffer ? "Product and main image created." : "Product created.",
-      redirectTo: `/admin/products/${productId}`,
+      message: uploaded ? `Product created with ${uploaded} ${uploaded === 1 ? "photo" : "photos"}.` : "Product created.",
+      redirectTo: `/admin/products/${productId}${uploaded < photos.length ? `?photosRemaining=${photos.length - uploaded}#product-media` : ""}`,
     };
   } catch (error) {
     return safeFailure(error);

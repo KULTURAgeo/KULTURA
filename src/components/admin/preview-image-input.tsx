@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
-import { MAX_UPLOAD_BYTES, UPLOAD_SIZE_MESSAGE } from "@/lib/upload-limits";
+import {
+  MAX_UPLOAD_BYTES, UPLOAD_SIZE_MESSAGE, MAX_PRODUCT_PHOTOS, MAX_PRODUCT_PHOTO_BATCH_BYTES,
+  PRODUCT_PHOTO_COUNT_MESSAGE, PRODUCT_PHOTO_BATCH_MESSAGE,
+} from "@/lib/upload-limits";
 
 const MAX_FRAME_WIDTH = 1600;
 const MAX_FRAME_HEIGHT = 2000;
@@ -93,28 +96,38 @@ async function preparePhoto(file: File): Promise<File> {
   throw new Error("The converted image exceeds 3 MB. Try a less complex photograph.");
 }
 
-export function PreviewImageInput({ name, label, required, onPreview }: {
+type PreviewImageInputProps = {
   name: string;
   label: string;
   required?: boolean;
-  onPreview: (url: string | null) => void;
-}) {
+} & (
+  { multiple?: false; onPreview: (url: string | null) => void }
+  | { multiple: true; onPreview: (urls: string[]) => void }
+);
+
+export function PreviewImageInput(props: PreviewImageInputProps) {
+  const { name, label, required, multiple } = props;
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const selectionRef = useRef(0);
-  const urlRef = useRef<string | null>(null);
+  const urlRef = useRef<string[]>([]);
   const [state, setState] = useState<"idle" | "processing" | "ready" | "error">("idle");
   const [message, setMessage] = useState("");
 
   useEffect(() => () => {
     selectionRef.current++;
-    if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+    for (const url of urlRef.current) URL.revokeObjectURL(url);
   }, []);
 
+  function showPreviews(urls: string[]) {
+    urlRef.current = urls;
+    if (props.multiple) props.onPreview(urls);
+    else props.onPreview(urls[0] ?? null);
+  }
+
   function clearPreview() {
-    if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-    urlRef.current = null;
-    onPreview(null);
+    for (const url of urlRef.current) URL.revokeObjectURL(url);
+    showPreviews([]);
   }
 
   function clearSelection() {
@@ -129,10 +142,10 @@ export function PreviewImageInput({ name, label, required, onPreview }: {
     setState("idle");
   }
 
-  async function changePhoto(event: ChangeEvent<HTMLInputElement>) {
+  async function changePhotos(event: ChangeEvent<HTMLInputElement>) {
     const input = event.currentTarget;
-    const source = input.files?.[0];
-    if (!source) {
+    const sources = Array.from(input.files ?? []);
+    if (!sources.length) {
       clearSelection();
       return;
     }
@@ -143,15 +156,21 @@ export function PreviewImageInput({ name, label, required, onPreview }: {
     setMessage(waiting);
     setState("processing");
     try {
-      const prepared = await preparePhoto(source);
-      if (selection !== selectionRef.current) return;
+      if (multiple && sources.length > MAX_PRODUCT_PHOTOS)
+        throw new Error(PRODUCT_PHOTO_COUNT_MESSAGE);
+      const prepared: File[] = [];
+      for (const source of sources) {
+        prepared.push(await preparePhoto(source));
+        if (selection !== selectionRef.current) return;
+      }
+      if (multiple && prepared.reduce((sum, file) => sum + file.size, 0) > MAX_PRODUCT_PHOTO_BATCH_BYTES)
+        throw new Error(PRODUCT_PHOTO_BATCH_MESSAGE);
       const transfer = new DataTransfer();
-      transfer.items.add(prepared);
+      for (const file of prepared) transfer.items.add(file);
       input.files = transfer.files;
-      urlRef.current = URL.createObjectURL(prepared);
-      onPreview(urlRef.current);
+      showPreviews(prepared.map((file) => URL.createObjectURL(file)));
       input.setCustomValidity("");
-      setMessage("Preview ready. Save to upload this photo.");
+      setMessage(prepared.length === 1 ? "Preview ready. Save to upload this photo." : `${prepared.length} previews ready. Save to upload these photos.`);
       setState("ready");
     } catch (error) {
       if (selection !== selectionRef.current) return;
@@ -168,11 +187,13 @@ export function PreviewImageInput({ name, label, required, onPreview }: {
       <label className="k-field" htmlFor={inputId}>
         <span>{label}</span>
         <input ref={inputRef} id={inputId} name={name} type="file" accept="image/jpeg,image/png,image/webp"
-          required={required} onChange={changePhoto} aria-describedby={message ? inputId + "-status" : undefined} />
+          required={required} multiple={multiple} onChange={changePhotos} aria-describedby={message ? inputId + "-status" : undefined} />
       </label>
       {message && <p id={inputId + "-status"} role={state === "error" ? "alert" : "status"}
         className={state === "error" ? "form-error" : "muted"}>{message}</p>}
-      {state !== "idle" && <button type="button" className="button secondary" onClick={clearSelection}>CLEAR SELECTED PHOTO</button>}
+      {state !== "idle" && <button type="button" className="button secondary" onClick={clearSelection}>
+        {multiple ? "CLEAR SELECTED PHOTOS" : "CLEAR SELECTED PHOTO"}
+      </button>}
     </div>
   );
 }

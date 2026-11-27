@@ -17,9 +17,10 @@ function Hidden({ productId, image }: {
 function VariantFields({ variant }: {
     variant?: Product["product_variants"][number];
 }) { return <><div className="form-grid"><Field label="SKU" name="sku" defaultValue={variant?.sku} required maxLength={100}/><Field label="SIZE" name="size" defaultValue={variant?.size} required maxLength={40}/><Field label="COLOR" name="color" defaultValue={variant?.color} required maxLength={80}/><Field label="STOCK" name="stock_quantity" type="number" defaultValue={variant?.stock_quantity ?? 0} required min={0} max={1000000} step="1"/></div><label className="check-field"><input type="checkbox" name="is_active" defaultChecked={variant?.is_active ?? true}/>Active variant</label></>; }
-export function ProductEditor({ product, options }: {
+export function ProductEditor({ product, options, photosRemaining = 0 }: {
     product?: Product;
     options: Options;
+    photosRemaining?: number;
 }) {
     return <><ActionForm action={product ? saveProduct : createProductWithImage} label={product ? "SAVE PRODUCT" : "CREATE PRODUCT"}><input type="hidden" name="id" value={product?.id ?? ""}/><input type="hidden" name="updated_at" value={product?.updated_at ?? ""}/>
  <section className="panel"><h2>GENERAL</h2><div className="form-grid"><Field label="NAME" name="name" autoComplete="off" defaultValue={product?.name} required maxLength={200}/><Field label="SLUG" name="slug" defaultValue={product?.slug} required maxLength={160}/></div><label className="k-field"><span>DESCRIPTION</span><textarea name="description" defaultValue={product?.description} maxLength={10000} rows={5}/></label></section>
@@ -33,10 +34,50 @@ export function ProductEditor({ product, options }: {
    if (divisions.length === 1) return divisions[0].replace("shop-", "");
    return "";
  })()}><option value="" disabled>Choose a division</option><option value="x">X</option><option value="y">Y</option><option value="unisex">UNISEX</option><option value="xys">XYS — All 3 divisions</option></select></label><label className="k-field"><span>CATEGORY</span><select name="category_id" required defaultValue={product?.category_id ?? ""}><option value="" disabled>Choose a category</option>{options.categories.map(c => <option value={c.id} key={c.id}>{c.name}{c.audience ? " · "+c.audience.toUpperCase() : " · NOT ASSIGNED"}{c.is_active ? "" : " (inactive)"}</option>)}</select></label>{!options.categories.length && <p className="muted">Create a category in Supabase before adding products.</p>}<fieldset className="check-list"><legend>COLLECTIONS</legend>{options.collections.filter(c => !["shop-x","shop-y","shop-unisex"].includes(c.slug)).map(c => <label className="check-field" key={c.id}><input type="checkbox" name="collections" value={c.id} defaultChecked={product?.product_collections.some(pc => pc.collection_id === c.id)}/>{c.name}{c.is_active ? "" : " (inactive)"}</label>)}{!options.collections.length && <p className="muted">No collections yet.</p>}</fieldset></section>
- {!product && <section className="panel"><h2>MEDIA</h2><p className="muted">Choose the main product image now, or add images later. JPEG, PNG or WebP · up to 3 MB and 25 megapixels.</p><ProductImagePicker /><Field label="IMAGE ALT TEXT · OPTIONAL" name="image_alt_text" maxLength={500}/></section>}
+ {!product && <section className="panel">
+   <h2>MEDIA</h2>
+   <p className="muted">Choose up to 10 photos. The first becomes the main photo. JPEG, PNG or WebP · up to 3 MB and 25 megapixels per file.</p>
+   <ProductImagePicker />
+   <Field label="PHOTO ALT TEXT FOR THIS BATCH · OPTIONAL" name="image_alt_text" maxLength={500}/>
+ </section>}
  <section className="panel"><h2>VISIBILITY</h2><label className="k-field"><span>STATUS</span><select name="status" defaultValue={product?.status ?? "draft"}><option value="draft">Draft</option><option value="active">Active</option>{product?.status === "archived" && <option value="archived">Archived</option>}</select></label><label className="check-field"><input type="checkbox" name="featured" defaultChecked={product?.featured}/>Featured on homepage</label><label className="check-field"><input type="checkbox" name="is_drop" defaultChecked={product?.is_drop}/>Part of the current drop</label></section>
  <section className="panel"><h2>SEO</h2><Field label="SEO TITLE" name="seo_title" defaultValue={product?.seo_title ?? ""} maxLength={200}/><label className="k-field"><span>SEO DESCRIPTION</span><textarea name="seo_description" defaultValue={product?.seo_description ?? ""} maxLength={500} rows={3}/></label></section></ActionForm>
- {product ? <><section className="panel"><h2>MEDIA</h2><p className="muted">JPEG, PNG or WebP · up to 3 MB and 25 megapixels. Uploaded assets are public.</p><div className="admin-image-grid">{product.product_images.map((image, index) => <article className="image-editor" key={image.id}><Image src={mapProduct({ ...product, category: null, variants: product.product_variants, images: [image] }, process.env.SUPABASE_URL).image} alt={image.alt_text ?? product.name} width={400} height={400}/><ActionForm action={updateImage} label="SAVE ALT TEXT"><Hidden productId={product.id} image={image}/><Field label="ALT TEXT" name="alt_text" defaultValue={image.alt_text ?? ""} maxLength={500}/></ActionForm><div className="image-controls">{index > 0 && <ActionForm action={moveImage} label="MOVE UP"><Hidden productId={product.id} image={image}/><input type="hidden" name="direction" value="up"/></ActionForm>}{index < product.product_images.length - 1 && <ActionForm action={moveImage} label="MOVE DOWN"><Hidden productId={product.id} image={image}/><input type="hidden" name="direction" value="down"/></ActionForm>}<ActionForm action={removeImage} label="REMOVE" confirm="Remove this product image?"><Hidden productId={product.id} image={image}/></ActionForm></div></article>)}</div><ActionForm action={uploadImage} label="UPLOAD IMAGE"><input type="hidden" name="product_id" value={product.id}/><ProductImagePicker key={product.product_images.map(image => image.id).join("|")} product={{ name: product.name, price: product.price }} hasMainImage={product.product_images.length > 0} /><Field label="ALT TEXT" name="alt_text" maxLength={500}/></ActionForm></section>
+ {product ? <><section className="panel" id="product-media">
+   <h2>MEDIA</h2>
+   {photosRemaining > 0 && <p role="alert" className="form-error">
+     The product was created. Choose only the last {photosRemaining} {photosRemaining === 1 ? "photo" : "photos"} again to finish the upload.
+   </p>}
+   <p className="muted">Choose up to 10 photos to add to the gallery. JPEG, PNG or WebP · up to 3 MB and 25 megapixels per file. Uploaded assets are public.</p>
+   <div className="admin-image-grid">
+     {product.product_images.map((image, index) => <article className="image-editor" key={image.id}>
+       <Image src={mapProduct({ ...product, category: null, variants: product.product_variants, images: [image] }, process.env.SUPABASE_URL).image}
+         alt={image.alt_text ?? product.name} width={400} height={400}/>
+       <ActionForm action={updateImage} label="SAVE ALT TEXT">
+         <Hidden productId={product.id} image={image}/>
+         <Field label="ALT TEXT" name="alt_text" defaultValue={image.alt_text ?? ""} maxLength={500}/>
+       </ActionForm>
+       <div className="image-controls">
+         {index > 0 && <ActionForm action={moveImage} label="MOVE UP">
+           <Hidden productId={product.id} image={image}/>
+           <input type="hidden" name="direction" value="up"/>
+         </ActionForm>}
+         {index < product.product_images.length - 1 && <ActionForm action={moveImage} label="MOVE DOWN">
+           <Hidden productId={product.id} image={image}/>
+           <input type="hidden" name="direction" value="down"/>
+         </ActionForm>}
+         <ActionForm action={removeImage} label="REMOVE" confirm="Remove this product image?">
+           <Hidden productId={product.id} image={image}/>
+         </ActionForm>
+       </div>
+     </article>)}
+   </div>
+   <ActionForm action={uploadImage} label="UPLOAD PHOTOS">
+     <input type="hidden" name="product_id" value={product.id}/>
+     <ProductImagePicker key={product.product_images.map(image => image.id).join("|")}
+       product={{ name: product.name, price: product.price }} hasMainImage={product.product_images.length > 0}/>
+     <Field label="PHOTO ALT TEXT FOR THIS BATCH · OPTIONAL" name="alt_text" maxLength={500}/>
+   </ActionForm>
+ </section>
  <section className="panel"><h2>VARIANTS & INVENTORY</h2>{!product.product_variants.length ? <p>No variants yet.</p> : <div className="table-scroll"><table className="k-table"><caption className="sr-only">Inventory</caption><thead><tr><th>VARIANT</th><th>SKU</th><th>STOCK</th><th>STATUS</th></tr></thead><tbody>{product.product_variants.map(v => <tr key={v.id}><td>{v.color} / {v.size}</td><td>{v.sku}</td><td>{v.stock_quantity}</td><td>{v.is_active ? "Active" : "Inactive"}</td></tr>)}</tbody></table></div>}
  {product.product_variants.map(v => <details className="variant-editor" key={v.id}><summary>Edit {v.color} / {v.size} · {v.sku}</summary><ActionForm action={saveVariant} label="SAVE VARIANT"><Hidden productId={product.id} image={v}/><VariantFields variant={v}/></ActionForm></details>)}
  <details className="variant-editor"><summary>ADD A VARIANT</summary><ActionForm action={saveVariant} label="ADD VARIANT"><input type="hidden" name="product_id" value={product.id}/><VariantFields /></ActionForm></details></section>

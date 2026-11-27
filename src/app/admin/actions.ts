@@ -1,12 +1,11 @@
 "use server";
 import { strictForm } from "@/lib/security/input";
 import { resolveAudienceCollections } from "@/lib/admin/audience";
-import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { requireActionActor } from "@/lib/auth/guards";
 import { productInput, variantInput, promoInput, text, id, version, InputError } from "@/lib/validation";
 import { safeFailure, type ActionState } from "@/lib/actions";
-import { processProductImage } from "@/lib/admin/image";
+import { attachProductPhotos, prepareProductPhotos } from "@/lib/admin/image";
 import { invalidateStorefrontCatalog } from "@/lib/catalog/invalidate";
 import { notifyFulfillmentStatus } from "@/lib/notifications/order-notifications";
 function refresh() {
@@ -65,28 +64,22 @@ export async function saveVariant(_state: ActionState, data: FormData): Promise<
 }
 export async function uploadImage(_state: ActionState, data: FormData): Promise<ActionState> {
     try {
-    strictForm(data, ["product_id", "alt_text", "image"], []);
+    strictForm(data, ["product_id", "alt_text", "image"], ["image"]);
         const { client } = await requireActionActor(true);
         const productId = id(data.get("product_id"));
         const { data: product, error: productError } = await client.from("products").select("id").eq("id", productId).single();
         if (productError || !product)
             throw new InputError("Product unavailable.");
         const alt = text(data, "alt_text", 500, false);
-        const file = data.get("image");
-        if (!(file instanceof File))
-            throw new InputError("Choose an image.");
-        const buffer = await processProductImage(file);
-        const path = productId + "/" + randomUUID() + ".webp";
-        const { error } = await client.storage.from("product-images").upload(path, buffer, { contentType: "image/webp", upsert: false, cacheControl: "3600" });
-        if (error)
-            throw error;
-        const attached = await client.rpc("admin_attach_image", { p_product_id: productId, p_storage_path: path, p_alt_text: alt || null });
-        if (attached.error) {
-            await client.storage.from("product-images").remove([path]);
-            throw attached.error;
-        }
+        const photos = await prepareProductPhotos(data, true);
+        const { uploaded, error } = await attachProductPhotos(client, productId, photos, alt);
+        if (!uploaded) throw error;
         refresh();
-        return { ok: true, message: "Image uploaded." };
+        const remaining = photos.length - uploaded;
+        return remaining
+            ? { ok: false, message: `Uploaded ${uploaded} of ${photos.length} photos. Choose only the last ${remaining} again.` }
+            : { ok: true, message: uploaded === 1 ? "Photo uploaded." : `${uploaded} photos uploaded.`,
+                redirectTo: `/admin/products/${productId}#product-media` };
     }
     catch (error) {
         return safeFailure(error);

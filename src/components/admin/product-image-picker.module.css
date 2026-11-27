@@ -13,6 +13,20 @@
   letter-spacing: .08em;
 }
 .previews h3 { overflow-wrap: anywhere; }
+.thumbnails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 10px;
+}
+.thumbnails button {
+  padding: 2px;
+  border: 1px solid var(--line);
+  background: transparent;
+  cursor: pointer;
+}
+.thumbnails button[aria-pressed="true"] { border-color: currentColor; }
+.thumbnails img { display: block; }
 @media (max-width: 640px) {
   .previews { grid-template-columns: minmax(0, 1fr); }
 }

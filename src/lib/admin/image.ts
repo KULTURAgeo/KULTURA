@@ -1,11 +1,65 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { InputError } from "../validation";
-import { MAX_UPLOAD_BYTES, UPLOAD_SIZE_MESSAGE } from "../upload-limits";
+import {
+  MAX_UPLOAD_BYTES, UPLOAD_SIZE_MESSAGE, MAX_PRODUCT_PHOTOS, MAX_PRODUCT_PHOTO_BATCH_BYTES,
+  PRODUCT_PHOTO_COUNT_MESSAGE, PRODUCT_PHOTO_BATCH_MESSAGE,
+} from "../upload-limits";
+import type { requireActionActor } from "../auth/guards";
 export { MAX_UPLOAD_BYTES } from "../upload-limits";
 
 const FRAME_WIDTH = 1600;
 const FRAME_HEIGHT = 2000;
+
+export async function prepareProductPhotos(data: FormData, required = false): Promise<Buffer[]> {
+  const files = data.getAll("image").flatMap((entry) => {
+    if (!(entry instanceof File)) throw new InputError("Choose valid image files.");
+    return entry.name === "" && entry.size === 0 ? [] : [entry];
+  });
+  if (required && files.length === 0) throw new InputError("Choose at least one photo.");
+  if (files.length > MAX_PRODUCT_PHOTOS) throw new InputError(PRODUCT_PHOTO_COUNT_MESSAGE);
+  if (files.reduce((sum, file) => sum + file.size, 0) > MAX_PRODUCT_PHOTO_BATCH_BYTES)
+    throw new InputError(PRODUCT_PHOTO_BATCH_MESSAGE);
+
+  const photos: Buffer[] = [];
+  for (const file of files) photos.push(await processProductImage(file));
+  return photos;
+}
+
+type AdminClient = Awaited<ReturnType<typeof requireActionActor>>["client"];
+
+export async function attachProductPhotos(
+  client: AdminClient, productId: string, photos: Buffer[], alt: string,
+): Promise<{ uploaded: number; error?: unknown }> {
+  const bucket = client.storage.from("product-images");
+  let uploaded = 0;
+  for (const photo of photos) {
+    try {
+      const path = `${productId}/${randomUUID()}.webp`;
+      const stored = await bucket.upload(path, photo, {
+        contentType: "image/webp",
+        upsert: false,
+        cacheControl: "3600",
+      });
+      if (stored.error) throw stored.error;
+
+      const attached = await client.rpc("admin_attach_image", {
+        p_product_id: productId,
+        p_storage_path: path,
+        p_alt_text: alt || null,
+      });
+      if (attached.error) {
+        await bucket.remove([path]);
+        throw attached.error;
+      }
+      uploaded++;
+    } catch (error) {
+      return { uploaded, error };
+    }
+  }
+  return { uploaded };
+}
 
 /**
  * Store an entire product photograph in a 4:5 canvas. The object is never
