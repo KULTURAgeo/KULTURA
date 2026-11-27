@@ -136,6 +136,17 @@ await check("Admin actions require verified second factor",async()=>assert.rejec
 await check("Admin role revocation takes effect on subsequent verification",()=>assert.rejects(()=>verifyActor(client({id:admin},"customer"),true),e=>e.code==="forbidden"));
 await check("Upload decodes and re-encodes safe WebP",async()=>{const bytes=await sharp({create:{width:10,height:10,channels:3,background:"#000"}}).png().toBuffer();const result=await processProductImage(new File([bytes],"../../evil.png",{type:"image/png"}));assert.equal((await sharp(result).metadata()).format,"webp");});
 await check("Upload rejects SVG, fake MIME and oversized files",async()=>{await assert.rejects(()=>processProductImage(new File(["<svg/>"],"a.svg",{type:"image/svg+xml"})));await assert.rejects(()=>processProductImage(new File(["not an image"],"a.png",{type:"image/png"})));await assert.rejects(()=>processProductImage(new File([new Uint8Array(3*1024*1024+1)],"a.png",{type:"image/png"})));});
+await check("Photo processing preserves EXIF orientation in the 4:5 frame", async () => {
+  const blue = await sharp({create:{width:20,height:20,channels:3,background:"#0000ff"}}).png().toBuffer();
+  const source = await sharp({create:{width:40,height:20,channels:3,background:"#ff0000"}})
+    .composite([{input:blue,left:20,top:0}]).withMetadata({orientation:6}).jpeg().toBuffer();
+  const output = await processProductImage(new File([source],"portrait.jpg",{type:"image/jpeg"}));
+  const {data,info} = await sharp(output).removeAlpha().raw().toBuffer({resolveWithObject:true});
+  assert.deepEqual([info.width,info.height],[32,40]);
+  const pixel = y => (y * info.width + 16) * info.channels;
+  assert.ok(data[pixel(8)] > data[pixel(8) + 2]);
+  assert.ok(data[pixel(32) + 2] > data[pixel(32)]);
+});
 await check("Product photo batches retain file order and enforce the combined request limit", async () => {
   const selection = new FormData();
   for (const width of [16, 24]) {

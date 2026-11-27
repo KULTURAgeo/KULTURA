@@ -63,8 +63,7 @@ export async function attachProductPhotos(
 
 /**
  * Store an entire product photograph in a 4:5 canvas. The object is never
- * cropped, distorted or upscaled. Empty space is filled with the input image's
- * corner background color, which avoids grey bars for studio product shots.
+ * cropped, distorted or upscaled. The white matte matches the upload preview.
  */
 export async function processProductImage(file: File): Promise<Buffer> {
   if (file.size < 1 || file.size > MAX_UPLOAD_BYTES) {
@@ -93,52 +92,27 @@ export async function processProductImage(file: File): Promise<Buffer> {
       throw new InputError("Choose a valid, non-animated JPEG, PNG or WebP image.");
     }
 
-    // Normalize image orientation before measuring it.
-    const normalized = await input.rotate().toBuffer();
-    const oriented = sharp(normalized);
-    const dimensions = await oriented.metadata();
-    const width = dimensions.width ?? 0;
-    const height = dimensions.height ?? 0;
+    const { width, height } = metadata.autoOrient;
     if (!width || !height) throw new InputError("Image dimensions are invalid.");
 
-    // Sample the unobstructed top-left studio background. Transparent images
-    // receive a white backdrop, without changing or recoloring the garment.
-    const sampleSize = Math.min(12, width, height);
-    const corner = await sharp(normalized)
-      .extract({ left: 0, top: 0, width: sampleSize, height: sampleSize })
-      .ensureAlpha()
-      .stats();
-    const alpha = corner.channels[3]?.mean ?? 255;
-    const background = alpha < 240
-      ? { r: 255, g: 255, b: 255, alpha: 1 }
-      : {
-          r: Math.round(corner.channels[0].mean),
-          g: Math.round(corner.channels[1].mean),
-          b: Math.round(corner.channels[2].mean),
-          alpha: 1,
-        };
-
-    // Build the smallest 4:5 frame that contains every original pixel,
-    // scaling down only if a side exceeds the optimized frame limit.
+    // Size the 4:5 canvas using the oriented dimensions. All intermediate
+    // pixels stay lossless until the final WebP is encoded.
     const frameWidth = Math.max(width, Math.ceil(height * 4 / 5));
     const frameHeight = Math.ceil(frameWidth * 5 / 4);
     const scale = Math.min(1, FRAME_WIDTH / frameWidth, FRAME_HEIGHT / frameHeight);
-    // Enforce a strict 4:5 ratio even after rounding.
     const canvasWidth = Math.max(4, Math.floor(frameWidth * scale / 4) * 4);
     const canvasHeight = canvasWidth * 5 / 4;
     const fit = Math.min(1, canvasWidth / width, canvasHeight / height);
     const imageWidth = Math.max(1, Math.floor(width * fit));
     const imageHeight = Math.max(1, Math.floor(height * fit));
-    const resized = await sharp(normalized)
-      .resize(imageWidth, imageHeight, { fit: "fill" })
-      .toBuffer();
+    const resized = await input.autoOrient().resize(imageWidth, imageHeight, { fit: "fill" }).png().toBuffer();
 
     const padded = sharp({
       create: {
         width: canvasWidth,
         height: canvasHeight,
         channels: 4,
-        background,
+        background: "#ffffff",
       },
     }).composite([{
       input: resized,
