@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, useIsPresent, useReducedMotion, type Variants } from "motion/react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { ProductImage } from "@/lib/catalog";
 import { useLanguage } from "./language-provider";
 import styles from "./product-card-preview.module.css";
@@ -49,6 +49,8 @@ export function ProductCardPreview({ href, name, photos, badges, children }: {
 }) {
   const { locale } = useLanguage();
   const reducedMotion = useReducedMotion();
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [touchPreview, setTouchPreview] = useState(false);
   const [gallery, setGallery] = useState<{ active: Slide; pending: Slide | null }>({
     active: { index: 0, direction: 1 },
     pending: null,
@@ -59,6 +61,19 @@ export function ProductCardPreview({ href, name, photos, badges, children }: {
   const pending = gallery.pending;
   const pendingPhoto = pending ? photos[pending.index] : undefined;
   const isKa = locale === "ka";
+
+  useEffect(() => {
+    if (!touchPreview) return;
+
+    function dismissOutside(event: PointerEvent) {
+      if (event.target instanceof Node && !cardRef.current?.contains(event.target)) {
+        setTouchPreview(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", dismissOutside);
+    return () => document.removeEventListener("pointerdown", dismissOutside);
+  }, [touchPreview]);
 
   function changePhoto(direction: Direction) {
     const index = (current + direction + count) % count;
@@ -74,7 +89,10 @@ export function ProductCardPreview({ href, name, photos, badges, children }: {
   }
 
   return (
-    <div className={styles.card}>
+    <div ref={cardRef} className={styles.card} data-touch-preview={touchPreview ? "" : undefined}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setTouchPreview(false);
+      }}>
       <Link className={styles.link} href={href} prefetch={false}>
         <div className="product-image">
           <AnimatePresence initial={false} custom={gallery.active.direction}>
@@ -94,6 +112,11 @@ export function ProductCardPreview({ href, name, photos, badges, children }: {
       )}
       {count > 1 && (
         <div className={styles.controls} role="group" aria-label={isKa ? `${name} — ფოტოები` : `${name} photos`}>
+          {!touchPreview && (
+            <button className={styles.touchReveal} type="button" tabIndex={-1}
+              aria-label={isKa ? "ფოტოების დათვალიერება" : "Browse photos"}
+              onClick={() => setTouchPreview(true)} />
+          )}
           <button className={styles.previous} type="button"
             aria-label={isKa ? "წინა ფოტო" : "Previous photo"} onClick={() => changePhoto(-1)}>
             <span aria-hidden="true">‹</span>
