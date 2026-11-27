@@ -365,9 +365,6 @@ p {
   object-position: center;
   transition: transform 0.5s;
 }
-.product-card a:hover img {
-  transform: scale(1.045);
-}
 .product-badge {
   position: absolute;
   left: 12px;
