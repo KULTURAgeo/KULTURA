@@ -13,6 +13,7 @@ import { MAX_QUANTITY } from "@/lib/cart/model";
 import { ProductBadges } from "./product-badges";
 import { SizeGuide } from "./size-guide";
 import { WishlistButton } from "./wishlist-button";
+import { defaultSwatch, optionKey, orderSizes } from "@/lib/variant-options";
 
 export function ProductDetail({ product, wishlistSaved = false }: { product: Product; wishlistSaved?: boolean }) {
   const cart = useCart();
@@ -25,11 +26,16 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
   const [view, setView] = useState(0);
   const [message, setMessage] = useState("");
   const [zoomOpen, setZoomOpen] = useState(false);
-  const colors = [...new Set(product.variants.map((v) => v.color))];
+  const variantColors = new Map(product.variants.map((variant) => [optionKey(variant.color), variant.color]));
+  const swatches = new Map(product.colors?.map(({ name, hex }) => [optionKey(name), hex]));
+  const colors = [...new Set([...(product.colors?.map(({ name }) => optionKey(name)) ?? []), ...variantColors.keys()])]
+    .flatMap((key) => variantColors.get(key) ?? []);
   const [color, setColor] = useState(colors[0]);
   const variant = product.variants.find(
     (v) => v.size === size && v.color === color,
   );
+  const sizes = orderSizes(product.variants.map((v) => v.size));
+  const colorVariants = new Map(product.variants.filter((v) => v.color === color).map((v) => [optionKey(v.size), v]));
   const soldOut = product.variants.every((v) => v.stock === 0);
   const maxQuantity = variant ? Math.min(variant.stock, MAX_QUANTITY) : 1;
   const gallery =
@@ -136,7 +142,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
         <p>{product.description}</p>
         <fieldset>
           <legend>{t("COLOR")} — {color ? colorDisplayName(locale, color).toUpperCase() : ""}</legend>
-          {colors.map((c) => (
+          <div className="product-color-options">{colors.map((c) => (
             <button
               key={c}
               aria-pressed={color === c}
@@ -148,33 +154,38 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
                 setMessage("");
               }}
             >
-              <span />
+              <span aria-hidden="true" style={{ backgroundColor: swatches.get(optionKey(c)) ?? defaultSwatch(c) }} />
               {colorDisplayName(locale, c)}
             </button>
-          ))}
+          ))}</div>
         </fieldset>
         <fieldset>
           <legend>{t("SELECT SIZE")}</legend>
           <div className="size-options">
-            {product.variants
-              .filter((v) => v.color === color)
-              .map((v) => (
+            {sizes.map((option) => {
+                const available = colorVariants.get(optionKey(option));
+                const stock = available?.stock ?? 0;
+                const left = stock > 0 && stock <= 3 ? (locale === "ka" ? `დარჩა ${stock}` : `${stock} left`) : null;
+                return (
                 <button
-                  key={v.sku}
-                  disabled={v.stock === 0}
-                  aria-pressed={size === v.size}
+                  key={option}
+                  disabled={!stock}
+                  aria-pressed={Boolean(available && size === available.size)}
                   onClick={() => {
-                    setSize(v.size);
+                    if (!available) return;
+                    setSize(available.size);
                     setQuantity(1);
                     setMessage("");
                   }}
                 >
-                  {v.size}
+                  {option}
+                  {left && <small>{left}</small>}
                   <span className="sr-only">
-                    {v.stock === 0 ? " — sold out" : ""}
+                    {stock === 0 ? ` — ${t("Sold out")}` : ""}
                   </span>
                 </button>
-              ))}
+                );
+              })}
           </div>
           <SizeGuide product={product} />
         </fieldset>

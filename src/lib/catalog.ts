@@ -6,6 +6,7 @@ export type Variant = {
   stock: number;
 };
 export type ProductImage = { src: string; alt: string };
+export type ProductColor = { name: string; hex: string | null };
 export type Category = { name: string; slug: string };
 export type Product = {
   id: string;
@@ -17,6 +18,7 @@ export type Product = {
   categorySlug: string;
   image: string;
   images: ProductImage[];
+  colors?: ProductColor[];
   description: string;
   featured: boolean;
   drop: boolean;

@@ -6,6 +6,7 @@ import {addLine,removeLine,changeQuantity,normalizeLines,readStoredCart,quoteLin
 import {verifyActor} from "../src/lib/auth/access.ts";
 import {price,safeNext,variantInput,productInput,promoInput} from "../src/lib/validation.ts";
 import {attachProductPhotos,prepareProductPhotos,processProductImage} from "../src/lib/admin/image.ts";
+import {makeVariantSku,orderSizes} from "../src/lib/variant-options.ts";
 const passed=[];const check=async(name,fn)=>{await fn();passed.push(name);};
 const a="10000000-0000-4000-8000-000000000001",b="10000000-0000-4000-8000-000000000002",admin="10000000-0000-4000-8000-000000000003";
 const db=await createTestDatabase();
@@ -25,6 +26,37 @@ await check("Metadata cannot promote customer",async()=>assert.equal((await db.q
 for(const who of [a,admin])await check("Protected role update denied: "+who,()=>denied(who,"update profiles set role='admin' where id=$1",[who]));
 await check("Anonymous product RPC denied",()=>as(null,()=>assert.rejects(()=>db.query(save,[null,null,JSON.stringify(product),[]]),e=>e.code==="42501"),"anon"));
 await check("Customer product RPC denied",()=>denied(a,save,[null,null,JSON.stringify(product),[]]));
+const saveMatrix = "select admin_save_variant_matrix($1,$2,$3,$4::jsonb,$5::jsonb) saved";
+const newVariant = { id:null, updated_at:null, color:"Matrix Brown", size:"XS", sku:"MATRIX-BRN-XS", stock_quantity:2, is_active:true, sort_position:0 };
+const matrixArgs = (rows, colors = []) => [p.id, p.updated_at, "MATRIX", JSON.stringify(colors), JSON.stringify(rows)];
+await check("Variant matrix requires an MFA-verified administrator", async () => {
+  await denied(a, saveMatrix, matrixArgs([newVariant]));
+  await as(admin, async () => {
+    await db.query("select set_config('request.jwt.claims','{\"aal\":\"aal1\"}',true)");
+    await assert.rejects(() => db.query(saveMatrix, matrixArgs([newVariant])), e => e.code === "42501");
+  });
+});
+await check("Variant matrix saves stock, SKU, color and status together without replacing variant IDs", () => as(admin, async () => {
+  const update = {...v, stock_quantity:3, is_active:false};
+  const colors = [{name:newVariant.color,hex:"#805835",sort_position:0}];
+  const result = await db.query(saveMatrix, matrixArgs([newVariant,update], colors));
+  assert.equal(result.rows[0].saved, 2);
+  const existing = (await db.query("select id,stock_quantity,is_active from product_variants where id=$1",[v.id])).rows[0];
+  assert.deepEqual(existing, {id:v.id,stock_quantity:3,is_active:false});
+  const created = (await db.query("select c.hex,v.stock_quantity from product_variants v join product_colors c on c.id=v.color_id where v.sku=$1",[newVariant.sku])).rows[0];
+  assert.deepEqual(created, {hex:"#805835",stock_quantity:2});
+}));
+await check("Duplicate combinations and stale inventory abort the whole variant save", async () => {
+  await denied(admin, saveMatrix, matrixArgs([newVariant,{...newVariant,sku:"DUPLICATE",color:"matrix brown"}]), "23505");
+  await denied(admin, saveMatrix, matrixArgs([newVariant,{...v,updated_at:"2020-01-01",stock_quantity:0}]), "40001");
+  assert.equal((await db.query("select 1 from product_colors where name='Matrix Brown'")).rows.length,0);
+  assert.equal((await db.query("select base_sku from products where id=$1",[p.id])).rows[0].base_sku,null);
+});
+await check("Variant option order and generated SKUs are stable", () => {
+  assert.deepEqual(orderSizes(["XL","M","L","S","XS","m","42","39"]),["XS","S","m","L","XL","39","42"]);
+  assert.equal(makeVariantSku("KNITBOMBER","Brown","M",new Set()),"KNITBOMBER-BRN-M");
+  assert.equal(makeVariantSku("KNITBOMBER","Brown","M",new Set(["KNITBOMBER-BRN-M"])),"KNITBOMBER-BRN-M-2");
+});
 await check("Customer direct price/inventory updates affect no rows",()=>as(a,async()=>{
 assert.equal((await db.query("update products set price=1 where id=$1 returning id",[p.id])).rows.length,0);
 assert.equal((await db.query("update product_variants set stock_quantity=999 where id=$1 returning id",[v.id])).rows.length,0);
