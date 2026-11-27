@@ -113,11 +113,14 @@ try {
     "Listing retrieves multiple PostgREST pages without 100-row truncation",
   );
   const raw = (await db.query(publicSql, ["heavy-tee", 100, 0])).rows[0];
+  const black = "eb471125-3bde-4e85-b0ac-66d776e92fd0";
+  raw.colors = [{ id: black, name: "Black", hex: "#181818", sort_position: 0 }];
   raw.images = [
     {
       image_url: null,
       storage_path: "shirts/black tee.jpg",
       alt_text: "Back",
+      color_id: black,
       sort_position: 1,
     },
     {
@@ -129,8 +132,11 @@ try {
   ];
   const mapped = mapProduct(raw, process.env.SUPABASE_URL);
   assert.equal(mapped.images[0].alt, "Front");
+  assert.equal(mapped.images[0].color, undefined);
+  assert.equal(mapped.image, "/images/tee.jpg");
+  assert.equal(mapped.images[1].color, "Black");
   assert.ok(mapped.images[1].src.endsWith("shirts/black%20tee.jpg"));
-  checks.push("Image ordering, alt text and storage-path encoding");
+  checks.push("Gallery color association preserves shared images, cover order, alt text and encoded storage paths");
   raw.images = [
     {
       image_url: "https://untrusted.example/image.jpg",

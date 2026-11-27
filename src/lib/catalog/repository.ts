@@ -32,9 +32,9 @@ type ProductFilters = {
 const productSelect = `
  id,slug,name,price,compare_at_price,description,featured,is_drop,created_at,seo_title,seo_description,
  category:categories!inner(name,slug),
- colors:product_colors(name,hex,sort_position),
+ colors:product_colors(id,name,hex,sort_position),
  variants:product_variants(id,sku,size,color,stock_quantity,is_active,sort_position),
- images:product_images(image_url,storage_path,alt_text,sort_position)
+ images:product_images(image_url,storage_path,alt_text,sort_position,color_id)
 ` as const;
 
 function reportFailure(operation: string) {

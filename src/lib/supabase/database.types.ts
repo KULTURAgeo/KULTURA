@@ -515,6 +515,7 @@ alt_text: string | null;
 sort_position: number;
 created_at: string;
 updated_at: string;
+color_id: string | null;
 };
 Insert: {
 id?: string;
@@ -525,6 +526,7 @@ alt_text?: string | null;
 sort_position?: number;
 created_at?: string;
 updated_at?: string;
+color_id?: string | null;
 };
 Update: {
 id?: string;
@@ -535,8 +537,9 @@ alt_text?: string | null;
 sort_position?: number;
 created_at?: string;
 updated_at?: string;
+color_id?: string | null;
 };
-Relationships: [{"foreignKeyName":"product_images_product_id_fkey","columns":["product_id"],"isOneToOne":false,"referencedRelation":"products","referencedColumns":["id"]}];
+Relationships: [{"foreignKeyName":"product_images_product_color_fkey","columns":["color_id","product_id"],"isOneToOne":false,"referencedRelation":"product_colors","referencedColumns":["id","product_id"]},{"foreignKeyName":"product_images_product_id_fkey","columns":["product_id"],"isOneToOne":false,"referencedRelation":"products","referencedColumns":["id"]}];
 };
 product_variants: {
 Row: {

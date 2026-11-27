@@ -1,20 +1,13 @@
-import Image from "next/image";
 import { ProductImagePicker } from "./product-image-picker";
 import { ActionForm, Field } from "@/components/action-form";
-import { saveProduct, archiveProduct, deleteProduct, uploadImage, updateImage, removeImage, moveImage } from "@/app/admin/actions";
+import { saveProduct, archiveProduct, deleteProduct } from "@/app/admin/actions";
 import { VariantMatrix } from "./variant-matrix";
+import { ProductGallery } from "./product-gallery";
 import { createProductWithImage } from "@/app/admin/products/new/actions";
 import type { adminProduct, adminOptions } from "@/lib/admin/repository";
-import { mapProduct } from "@/lib/catalog/mapper";
+import { productImageSource } from "@/lib/catalog/mapper";
 type Product = NonNullable<Awaited<ReturnType<typeof adminProduct>>>;
 type Options = Awaited<ReturnType<typeof adminOptions>>;
-function Hidden({ productId, image }: {
-    productId: string;
-    image: {
-        id: string;
-        updated_at: string;
-    };
-}) { return <><input type="hidden" name="product_id" value={productId}/><input type="hidden" name="id" value={image.id}/><input type="hidden" name="updated_at" value={image.updated_at}/></>; }
 export function ProductEditor({ product, options, photosRemaining = 0 }: {
     product?: Product;
     options: Options;
@@ -45,36 +38,14 @@ export function ProductEditor({ product, options, photosRemaining = 0 }: {
    {photosRemaining > 0 && <p role="alert" className="form-error">
      The product was created. Choose only the last {photosRemaining} {photosRemaining === 1 ? "photo" : "photos"} again to finish the upload.
    </p>}
-   <p className="muted">Choose up to 10 photos to add to the gallery. JPEG, PNG or WebP · up to 3 MB and 25 megapixels per file. Uploaded assets are public.</p>
-   <div className="admin-image-grid">
-     {product.product_images.map((image, index) => <article className="image-editor" key={image.id}>
-       <Image src={mapProduct({ ...product, category: null, variants: product.product_variants, images: [image] }, process.env.SUPABASE_URL).image}
-         alt={image.alt_text ?? product.name} width={400} height={400}/>
-       <ActionForm action={updateImage} label="SAVE ALT TEXT">
-         <Hidden productId={product.id} image={image}/>
-         <Field label="ALT TEXT" name="alt_text" defaultValue={image.alt_text ?? ""} maxLength={500}/>
-       </ActionForm>
-       <div className="image-controls">
-         {index > 0 && <ActionForm action={moveImage} label="MOVE UP">
-           <Hidden productId={product.id} image={image}/>
-           <input type="hidden" name="direction" value="up"/>
-         </ActionForm>}
-         {index < product.product_images.length - 1 && <ActionForm action={moveImage} label="MOVE DOWN">
-           <Hidden productId={product.id} image={image}/>
-           <input type="hidden" name="direction" value="down"/>
-         </ActionForm>}
-         <ActionForm action={removeImage} label="REMOVE" confirm="Remove this product image?">
-           <Hidden productId={product.id} image={image}/>
-         </ActionForm>
-       </div>
-     </article>)}
-   </div>
-   <ActionForm action={uploadImage} label="UPLOAD PHOTOS">
-     <input type="hidden" name="product_id" value={product.id}/>
-     <ProductImagePicker key={product.product_images.map(image => image.id).join("|")}
-       product={{ name: product.name, price: product.price }} hasMainImage={product.product_images.length > 0}/>
-     <Field label="PHOTO ALT TEXT FOR THIS BATCH · OPTIONAL" name="alt_text" maxLength={500}/>
-   </ActionForm>
+   <ProductGallery productId={product.id} name={product.name} colors={product.product_colors}
+     photos={product.product_images.map((image) => ({
+       id: image.id,
+       src: productImageSource(image, process.env.SUPABASE_URL) ?? "/images/product-placeholder.svg",
+       alt: image.alt_text ?? "",
+       colorId: image.color_id ?? "",
+       updatedAt: image.updated_at,
+     }))} />
  </section>
  <VariantMatrix key={[product.updated_at, ...product.product_variants.map((variant) => variant.updated_at)].join("|")}
    productId={product.id} updatedAt={product.updated_at} slug={product.slug} savedBaseSku={product.base_sku}
