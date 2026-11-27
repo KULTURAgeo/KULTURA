@@ -1,4 +1,5 @@
 import type { Product } from "../catalog";
+import { optionKey } from "../variant-options";
 import type { Database } from "../supabase/database.types";
 type Row<T extends keyof Database["public"]["Tables"]> =
   Database["public"]["Tables"][T]["Row"];
@@ -17,6 +18,7 @@ export type CatalogRow = Pick<
   | "seo_description"
 > & {
   category: Pick<Row<"categories">, "name" | "slug"> | null;
+  colors?: Pick<Row<"product_colors">, "name" | "hex" | "sort_position">[];
   variants: Pick<
     Row<"product_variants">,
     "id" | "sku" | "size" | "color" | "stock_quantity" | "is_active" | "sort_position"
@@ -27,6 +29,8 @@ export type CatalogRow = Pick<
   >[];
 };
 export function mapProduct(row: CatalogRow, supabaseUrl?: string): Product {
+  const colors = [...(row.colors ?? [])].sort((a, b) => a.sort_position - b.sort_position || a.name.localeCompare(b.name));
+  const colorNames = new Map(colors.map((color) => [optionKey(color.name), color.name]));
   const images = [...row.images]
     .sort((a, b) => a.sort_position - b.sort_position)
     .flatMap((image, index) => {
@@ -69,6 +73,7 @@ export function mapProduct(row: CatalogRow, supabaseUrl?: string): Product {
             alt: "Product photograph coming soon",
           },
         ],
+    colors: colors.map(({ name, hex }) => ({ name, hex })),
     description: row.description,
     featured: row.featured,
     drop: row.is_drop,
@@ -82,7 +87,7 @@ export function mapProduct(row: CatalogRow, supabaseUrl?: string): Product {
         id: v.id,
         sku: v.sku,
         size: v.size,
-        color: v.color,
+        color: colorNames.get(optionKey(v.color)) ?? v.color,
         stock: v.stock_quantity,
       })),
   };

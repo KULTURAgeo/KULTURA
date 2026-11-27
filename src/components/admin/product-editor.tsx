@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { ProductImagePicker } from "./product-image-picker";
 import { ActionForm, Field } from "@/components/action-form";
-import { saveProduct, archiveProduct, deleteProduct, saveVariant, uploadImage, updateImage, removeImage, moveImage } from "@/app/admin/actions";
+import { saveProduct, archiveProduct, deleteProduct, uploadImage, updateImage, removeImage, moveImage } from "@/app/admin/actions";
+import { VariantMatrix } from "./variant-matrix";
 import { createProductWithImage } from "@/app/admin/products/new/actions";
 import type { adminProduct, adminOptions } from "@/lib/admin/repository";
 import { mapProduct } from "@/lib/catalog/mapper";
@@ -14,9 +15,6 @@ function Hidden({ productId, image }: {
         updated_at: string;
     };
 }) { return <><input type="hidden" name="product_id" value={productId}/><input type="hidden" name="id" value={image.id}/><input type="hidden" name="updated_at" value={image.updated_at}/></>; }
-function VariantFields({ variant }: {
-    variant?: Product["product_variants"][number];
-}) { return <><div className="form-grid"><Field label="SKU" name="sku" defaultValue={variant?.sku} required maxLength={100}/><Field label="SIZE" name="size" defaultValue={variant?.size} required maxLength={40}/><Field label="COLOR" name="color" defaultValue={variant?.color} required maxLength={80}/><Field label="STOCK" name="stock_quantity" type="number" defaultValue={variant?.stock_quantity ?? 0} required min={0} max={1000000} step="1"/></div><label className="check-field"><input type="checkbox" name="is_active" defaultChecked={variant?.is_active ?? true}/>Active variant</label></>; }
 export function ProductEditor({ product, options, photosRemaining = 0 }: {
     product?: Product;
     options: Options;
@@ -78,9 +76,9 @@ export function ProductEditor({ product, options, photosRemaining = 0 }: {
      <Field label="PHOTO ALT TEXT FOR THIS BATCH · OPTIONAL" name="alt_text" maxLength={500}/>
    </ActionForm>
  </section>
- <section className="panel"><h2>VARIANTS & INVENTORY</h2>{!product.product_variants.length ? <p>No variants yet.</p> : <div className="table-scroll"><table className="k-table"><caption className="sr-only">Inventory</caption><thead><tr><th>VARIANT</th><th>SKU</th><th>STOCK</th><th>STATUS</th></tr></thead><tbody>{product.product_variants.map(v => <tr key={v.id}><td>{v.color} / {v.size}</td><td>{v.sku}</td><td>{v.stock_quantity}</td><td>{v.is_active ? "Active" : "Inactive"}</td></tr>)}</tbody></table></div>}
- {product.product_variants.map(v => <details className="variant-editor" key={v.id}><summary>Edit {v.color} / {v.size} · {v.sku}</summary><ActionForm action={saveVariant} label="SAVE VARIANT"><Hidden productId={product.id} image={v}/><VariantFields variant={v}/></ActionForm></details>)}
- <details className="variant-editor"><summary>ADD A VARIANT</summary><ActionForm action={saveVariant} label="ADD VARIANT"><input type="hidden" name="product_id" value={product.id}/><VariantFields /></ActionForm></details></section>
+ <VariantMatrix key={[product.updated_at, ...product.product_variants.map((variant) => variant.updated_at)].join("|")}
+   productId={product.id} updatedAt={product.updated_at} slug={product.slug} savedBaseSku={product.base_sku}
+   savedColors={product.product_colors} variants={product.product_variants} />
  {product.status !== "archived" && <section className="panel"><h2>ARCHIVE PRODUCT</h2><p className="muted">Hide this product while keeping historical orders intact.</p><ActionForm action={archiveProduct} label="ARCHIVE PRODUCT" confirm="Archive this product and hide it from the store?"><input type="hidden" name="id" value={product.id}/><input type="hidden" name="updated_at" value={product.updated_at}/><label className="check-field"><input type="checkbox" name="confirm_archive" required/>I want to archive this product</label></ActionForm></section>}
   <section className="panel"><h2>PERMANENTLY DELETE PRODUCT</h2><p className="muted">This permanently removes the product, variants, wishlist and collection links. Products used by order history or checkout cannot be deleted; archive those instead.</p><ActionForm action={deleteProduct} label="DELETE PRODUCT" confirm={`Permanently delete "${product.name}"? This cannot be undone.`}><input type="hidden" name="id" value={product.id}/><input type="hidden" name="updated_at" value={product.updated_at}/><Field label="TYPE THE EXACT PRODUCT NAME" name="confirm_name" required maxLength={200}/></ActionForm></section></> : <p className="muted">Create the product first, then add variants or additional images.</p>}</>;
 }
