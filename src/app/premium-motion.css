@@ -5,13 +5,9 @@
 
   /* Hover only on capable desktop pointers. */
   @media (hover: hover) and (pointer: fine) {
-    .product-card .product-image img,
     .category-grid > a,
     .galleryCard img {
       transition: transform 520ms cubic-bezier(.22,1,.36,1), border-color 220ms ease;
-    }
-    .product-card a:hover .product-image img {
-      transform: scale(1.04);
     }
     .button:not(:disabled), .icon-button:not(:disabled), .theme-mode-button {
       transition: transform 230ms cubic-bezier(.22,1,.36,1), background-color 200ms ease,
@@ -243,9 +239,6 @@ body:has(.route-progress:not([hidden])) .k-scroll-progress { visibility: hidden;
   @media (hover:hover) and (pointer:fine) {
     html[data-motion-mode="cinematic"] .product-card.k-in-view:hover {
       transform: translate3d(0,-9px,0) scale(1.01);
-    }
-    html[data-motion-mode="cinematic"] .product-card a:hover .product-image img {
-      transform: scale(1.095);
     }
     html[data-motion-mode="cinematic"] .category-grid a.k-in-view:hover {
       transform: translate3d(0,-5px,0);
