@@ -1,0 +1,63 @@
+.card {
+  position: relative;
+  min-width: 0;
+}
+
+.link {
+  display: block;
+  min-width: 0;
+}
+
+.controls {
+  position: absolute;
+  inset: 0 0 auto;
+  aspect-ratio: 4 / 5;
+  pointer-events: none;
+}
+
+.controls button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid #fff6;
+  border-radius: 50%;
+  color: #fff;
+  background: #151515df;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.controls button:is(:hover, :focus-visible) {
+  background: #080808;
+}
+
+.controls button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px #111;
+}
+
+.previous { left: 6px; }
+.next { right: 6px; }
+
+.count {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: #151515df;
+  color: #fff;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+}
