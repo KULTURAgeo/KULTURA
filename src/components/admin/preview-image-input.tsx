@@ -163,10 +163,15 @@ export function PreviewImageInput(props: PreviewImageInputProps) {
         prepared.push(await preparePhoto(source));
         if (selection !== selectionRef.current) return;
       }
-      if (multiple && prepared.reduce((sum, file) => sum + file.size, 0) > MAX_PRODUCT_PHOTO_BATCH_BYTES)
+      // Product batches that fit can send originals. The generated files still
+      // supply the framed previews and keep larger batches within the request limit.
+      const uploads = multiple && sources.reduce((sum, file) => sum + file.size, 0) <= MAX_PRODUCT_PHOTO_BATCH_BYTES
+        ? sources
+        : prepared;
+      if (multiple && uploads.reduce((sum, file) => sum + file.size, 0) > MAX_PRODUCT_PHOTO_BATCH_BYTES)
         throw new Error(PRODUCT_PHOTO_BATCH_MESSAGE);
       const transfer = new DataTransfer();
-      for (const file of prepared) transfer.items.add(file);
+      for (const file of uploads) transfer.items.add(file);
       input.files = transfer.files;
       showPreviews(prepared.map((file) => URL.createObjectURL(file)));
       input.setCustomValidity("");
