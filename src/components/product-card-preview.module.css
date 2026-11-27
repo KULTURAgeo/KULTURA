@@ -8,6 +8,22 @@
   min-width: 0;
 }
 
+.slide,
+.preload {
+  position: absolute;
+  inset: 0;
+}
+
+.slide {
+  overflow: hidden;
+  background: #fff;
+}
+
+.preload {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .card .photo {
     transition: transform 360ms cubic-bezier(.22, 1, .36, 1);
@@ -56,18 +72,3 @@
 
 .previous { left: 6px; }
 .next { right: 6px; }
-
-.count {
-  position: absolute;
-  left: 50%;
-  bottom: 14px;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  padding: 4px 8px;
-  border-radius: 12px;
-  background: #151515df;
-  color: #fff;
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.25;
-}
