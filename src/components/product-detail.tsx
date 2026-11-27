@@ -38,23 +38,26 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
   const colorVariants = new Map(product.variants.filter((v) => v.color === color).map((v) => [optionKey(v.size), v]));
   const soldOut = product.variants.every((v) => v.stock === 0);
   const maxQuantity = variant ? Math.min(variant.stock, MAX_QUANTITY) : 1;
+  const matchingPhotos = color ? product.images.filter((image) => image.color && optionKey(image.color) === optionKey(color)) : [];
+  const sharedPhotos = product.images.filter((image) => !image.color);
+  const galleryPhotos = color ? [...matchingPhotos, ...sharedPhotos] : product.images;
   const gallery =
-    product.images.length > 1
-      ? product.images.map((image, i) => ({
+    galleryPhotos.length > 1
+      ? galleryPhotos.map((image, i) => ({
           ...image,
           label: i === 0 ? t("Front view") : `${t("VIEW")} ${i + 1}`,
           crop: false,
         }))
       : [
           {
-            src: product.image,
-            alt: product.images[0]?.alt ?? product.name,
+            src: galleryPhotos[0]?.src ?? product.image,
+            alt: galleryPhotos[0]?.alt ?? product.name,
             label: t("Front view"),
             crop: false,
           },
           {
-            src: product.image,
-            alt: product.images[0]?.alt ?? product.name,
+            src: galleryPhotos[0]?.src ?? product.image,
+            alt: galleryPhotos[0]?.alt ?? product.name,
             label: t("Detail crop"),
             crop: true,
           },
@@ -149,6 +152,7 @@ export function ProductDetail({ product, wishlistSaved = false }: { product: Pro
               className="color-choice"
               onClick={() => {
                 setColor(c);
+                setView(0);
                 setSize("");
                 setQuantity(1);
                 setMessage("");

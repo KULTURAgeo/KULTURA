@@ -125,7 +125,7 @@ export async function adminProduct(productId: string) {
   const { data, error } = await client
     .from("products")
     .select(
-      "id,category_id,slug,name,base_sku,description,price,compare_at_price,status,featured,is_drop,seo_title,seo_description,created_at,updated_at,product_colors(name,hex,sort_position),product_variants(id,sku,size,color,stock_quantity,is_active,sort_position,updated_at),product_images(id,image_url,storage_path,alt_text,sort_position,updated_at),product_collections(collection_id)",
+      "id,category_id,slug,name,base_sku,description,price,compare_at_price,status,featured,is_drop,seo_title,seo_description,created_at,updated_at,product_colors(id,name,hex,sort_position),product_variants(id,sku,size,color,stock_quantity,is_active,sort_position,updated_at),product_images(id,image_url,storage_path,alt_text,color_id,sort_position,updated_at),product_collections(collection_id)",
     )
     .eq("id", id(productId))
     .maybeSingle();
