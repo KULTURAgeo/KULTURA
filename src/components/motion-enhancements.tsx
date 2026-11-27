@@ -32,7 +32,7 @@ function reducedMotion() {
 function startProductPortal(link: HTMLAnchorElement) {
   if (reducedMotion()) return;
   const card = link.closest(".product-card");
-  const image = card?.querySelector<HTMLImageElement>(".product-image img");
+  const image = card?.querySelector<HTMLImageElement>(".product-image img:not([data-card-photo-outgoing])");
   const frame = image?.closest<HTMLElement>(".product-image");
   if (!image || !frame || !image.complete) return;
   const source = frame.getBoundingClientRect();
