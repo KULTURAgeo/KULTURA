@@ -5,7 +5,7 @@ import {createTestDatabase} from "./database-harness.mjs";
 import {addLine,removeLine,changeQuantity,normalizeLines,readStoredCart,quoteLines} from "../src/lib/cart/model.ts";
 import {verifyActor} from "../src/lib/auth/access.ts";
 import {price,safeNext,variantInput,productInput,promoInput} from "../src/lib/validation.ts";
-import {processProductImage} from "../src/lib/admin/image.ts";
+import {attachProductPhotos,prepareProductPhotos,processProductImage} from "../src/lib/admin/image.ts";
 const passed=[];const check=async(name,fn)=>{await fn();passed.push(name);};
 const a="10000000-0000-4000-8000-000000000001",b="10000000-0000-4000-8000-000000000002",admin="10000000-0000-4000-8000-000000000003";
 const db=await createTestDatabase();
@@ -136,7 +136,48 @@ await check("Admin actions require verified second factor",async()=>assert.rejec
 await check("Admin role revocation takes effect on subsequent verification",()=>assert.rejects(()=>verifyActor(client({id:admin},"customer"),true),e=>e.code==="forbidden"));
 await check("Upload decodes and re-encodes safe WebP",async()=>{const bytes=await sharp({create:{width:10,height:10,channels:3,background:"#000"}}).png().toBuffer();const result=await processProductImage(new File([bytes],"../../evil.png",{type:"image/png"}));assert.equal((await sharp(result).metadata()).format,"webp");});
 await check("Upload rejects SVG, fake MIME and oversized files",async()=>{await assert.rejects(()=>processProductImage(new File(["<svg/>"],"a.svg",{type:"image/svg+xml"})));await assert.rejects(()=>processProductImage(new File(["not an image"],"a.png",{type:"image/png"})));await assert.rejects(()=>processProductImage(new File([new Uint8Array(3*1024*1024+1)],"a.png",{type:"image/png"})));});
-await writeFile("qa/phase3-results.json",JSON.stringify({scope:"Local PostgreSQL RLS, pure cart/validation, server authorization contract, image decoding. Hosted Auth and Storage not exercised.",passed:passed.length,checks:passed},null,2));
+await check("Product photo batches retain file order and enforce the combined request limit", async () => {
+  const selection = new FormData();
+  for (const width of [16, 24]) {
+    const bytes = await sharp({create:{width,height:20,channels:3,background:"#111"}}).png().toBuffer();
+    selection.append("image", new File([bytes], `photo-${width}.png`, {type:"image/png"}));
+  }
+  const photos = await prepareProductPhotos(selection, true);
+  assert.deepEqual(await Promise.all(photos.map(async photo => (await sharp(photo).metadata()).width)), [16,24]);
+  assert.deepEqual(await prepareProductPhotos(new FormData()), []);
+  await assert.rejects(() => prepareProductPhotos(new FormData(), true), /at least one photo/);
+  const oversized = new FormData();
+  for (const name of ["first.png","second.png"])
+    oversized.append("image", new File([new Uint8Array(2 * 1024 * 1024)], name, {type:"image/png"}));
+  await assert.rejects(() => prepareProductPhotos(oversized), /3.5 MB together/);
+  selection.append("image", new File(["invalid"], "invalid.png", {type:"image/png"}));
+  await assert.rejects(() => prepareProductPhotos(selection), /could not be decoded/);
+});
+await check("Photo attachment appends in order and cleans up a failed attachment", async () => {
+  const stored = [], attached = [], removed = [];
+  const rejection = new Error("Attachment failed");
+  const client = {
+    storage:{from(bucket){
+      assert.equal(bucket,"product-images");
+      return {
+        async upload(path, bytes) { stored.push({path, photo:bytes.toString()}); return {error:null}; },
+        async remove(paths) { removed.push(...paths); return {error:null}; },
+      };
+    }},
+    async rpc(name, input) {
+      assert.equal(name,"admin_attach_image");
+      assert.equal(input.p_product_id,a);
+      if (attached.length === 1) return {error:rejection};
+      attached.push(input.p_storage_path);
+      return {error:null};
+    },
+  };
+  const result = await attachProductPhotos(client, a, ["first","second","third"].map(photo => Buffer.from(photo)), "");
+  assert.deepEqual(result, {uploaded:1,error:rejection});
+  assert.deepEqual(stored.map(row => row.photo), ["first","second"]);
+  assert.deepEqual(attached, [stored[0].path]);
+  assert.deepEqual(removed, [stored[1].path]);
+});
+await writeFile("qa/phase3-results.json",JSON.stringify({scope:"Local PostgreSQL RLS, pure cart/validation, server authorization contract, image decoding and mocked photo uploads. Hosted Auth and Storage not exercised.",passed:passed.length,checks:passed},null,2));
 console.log(passed.length+" Phase 3 checks passed");
 }finally{await db.close();}
-
