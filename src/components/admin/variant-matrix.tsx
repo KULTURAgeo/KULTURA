@@ -109,7 +109,7 @@ export function VariantMatrix({ productId, updatedAt, slug, savedBaseSku, savedC
         <label className="k-field">
           <span>BASE SKU</span>
           <input name="base_sku" value={baseSku} onChange={(event) => setBaseSku(event.target.value.toUpperCase())}
-            required maxLength={40} pattern="[A-Z0-9][A-Z0-9_\\-]{0,39}" />
+            required maxLength={40} pattern={"[A-Z0-9][A-Z0-9_\\-]{0,39}"} />
         </label>
         <div className={styles.options}>
           <div role="group" aria-label="Colors to generate">
@@ -178,7 +178,7 @@ export function VariantMatrix({ productId, updatedAt, slug, savedBaseSku, savedC
                       <label className={styles.cellField}>
                         <span>SKU</span>
                         <input aria-label={`${label} SKU`} value={row.sku} required maxLength={100}
-                          pattern="[A-Z0-9][A-Z0-9_\\-]{0,99}"
+                          pattern={"[A-Z0-9][A-Z0-9_\\-]{0,99}"}
                           onChange={(event) => updateRow(row, { sku: event.target.value.toUpperCase() })} />
                       </label>
                       <label className={styles.switch}>
